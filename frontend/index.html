@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartTrade Vision</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- =========================
+         1. شاشة تسجيل الدخول
+         ========================= -->
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="auth-box">
+            <div class="auth-header">
+                <img src="/images/logo.png" alt="Logo" class="auth-logo" width="100" style="width: 100px;">
+                <h2 id="auth-title">تسجيل الدخول</h2>
+                <p id="auth-subtitle">سجل دخولك لبدء تحليل الأسواق</p>
+            </div>
+
+            <form id="login-form">
+                <div class="input-group">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="login-email" placeholder="البريد الإلكتروني" required>
+                </div>
+                <div class="input-group">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="login-password" placeholder="كلمة المرور" required>
+                </div>
+                <button type="submit" class="action-btn primary auth-btn">دخول</button>
+            </form>
+
+            <form id="register-form" class="hidden">
+                <div class="input-group">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="reg-email" placeholder="البريد الإلكتروني" required>
+                </div>
+                <div class="input-group">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="reg-password" placeholder="كلمة المرور" required>
+                </div>
+                <button type="submit" class="action-btn success auth-btn">إنشاء حساب جديد</button>
+            </form>
+
+            <div class="auth-footer">
+                <p id="toggle-auth-text">ليس لديك حساب؟ <span id="toggle-auth-btn">أنشئ حساباً مجاناً</span></p>
+            </div>
+            
+            <p id="auth-msg" class="auth-msg"></p>
+        </div>
+    </div>
+
+    <!-- =========================
+         2. نافذة الباقات والدفع (المطورة 💎)
+         ========================= -->
+    <div id="subscription-modal" class="modal hidden">
+        <div class="modal-content large-modal">
+            <span class="close-modal" id="close-sub">&times;</span>
+            <h2>اختر باقتك وابدأ الأرباح 🚀</h2>
+            <p class="sub-desc">باقات شحن رصيد التحليل الذكي - ادفع مرة واحدة واستخدمها متى شئت</p>
+            
+            <!-- شبكة الباقات -->
+            <div class="pricing-grid">
+                <!-- باقة 5$ -->
+                <div class="price-card">
+                    <div class="price-header">المبتدئ</div>
+                    <div class="price-amount">5$</div>
+                    <div class="price-credits">15 تحليل</div>
+                    <ul class="price-features">
+                        <li><i class="fa-solid fa-check"></i> دقة عالية</li>
+                        <li><i class="fa-solid fa-check"></i> جميع الاستراتيجيات</li>
+                    </ul>
+                </div>
+
+                <!-- باقة 10$ -->
+                <div class="price-card popular">
+                    <div class="popular-badge">شائع</div>
+                    <div class="price-header">المتداول</div>
+                    <div class="price-amount">10$</div>
+                    <div class="price-credits">35 تحليل</div>
+                    <ul class="price-features">
+                        <li><i class="fa-solid fa-check"></i> أفضل للبداية</li>
+                        <li><i class="fa-solid fa-check"></i> دعم فني</li>
+                    </ul>
+                </div>
+
+                <!-- باقة 30$ -->
+                <div class="price-card premium-card">
+                    <div class="price-header">المحترف</div>
+                    <div class="price-amount">30$</div>
+                    <div class="price-credits">120 تحليل</div>
+                    <ul class="price-features">
+                        <li><i class="fa-solid fa-check"></i> توفير ممتاز</li>
+                        <li><i class="fa-solid fa-check"></i> أولوية في السيرفر</li>
+                    </ul>
+                </div>
+
+                <!-- باقة 50$ -->
+                <div class="price-card vip-card">
+                    <div class="price-header">VIP الحيتان</div>
+                    <div class="price-amount">50$</div>
+                    <div class="price-credits">250 تحليل</div>
+                    <ul class="price-features">
+                        <li><i class="fa-solid fa-crown"></i> أوفر خيار</li>
+                        <li><i class="fa-solid fa-check"></i> تحليلات ضخمة</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- معلومات الدفع -->
+            <div class="payment-section">
+                <h3>طريقة الدفع وتفعيل الباقة</h3>
+                <div class="pay-card bank-card">
+                    <div class="pay-info-row">
+                        <div class="bank-logo"><i class="fa-solid fa-building-columns"></i> بنك فلسطين</div>
+                        <div class="iban-display">
+                            <span>رقم الآيبان (USD):</span>
+                            <code id="iban-addr">PS72PALS045802050490013100000</code>
+                            <button class="copy-small" id="copy-iban-btn"><i class="fa-solid fa-copy"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-support">
+                    <p>بعد تحويل مبلغ الباقة المطلوبة، أرسل الإيصال واتساب للتفعيل الفوري:</p>
+                    <a href="https://wa.me/970594060648" target="_blank" class="whatsapp-btn">
+                        <i class="fa-brands fa-whatsapp"></i> إرسال الإيصال وتفعيل الباقة
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- بانر إعلاني -->
+    <div class="ad-banner top-ad">
+        <span class="ad-text" data-i18n="ad_space">مساحة إعلانية</span>
+    </div>
+
+    <!-- الشريط العلوي -->
+    <header class="top-bar">
+        <div class="logo-area">
+            <img src="/images/logo.png" class="logo-img" alt="Logo">
+            <div class="brand-text">
+                <span class="brand-name">SMART TRADE</span>
+                <span class="brand-sub">VISION AI</span>
+            </div>
+        </div>
+
+        <div class="header-controls">
+            <div id="user-info" class="user-info hidden">
+                <button id="upgrade-btn" class="upgrade-btn">
+                    <i class="fa-solid fa-crown"></i> شحن الرصيد
+                </button>
+
+                <span class="credits-badge">
+                    <i class="fa-solid fa-coins"></i> 
+                    <span id="credits-count">0</span>
+                </span>
+                <button id="logout-btn" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+
+            <button id="lang-btn" class="lang-btn">
+                <i class="fa-solid fa-globe"></i>
+                <span id="lang-text">English</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- شريط الأسعار -->
+    <div class="ticker-container">
+        <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+            {
+            "symbols": [
+                { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" },
+                { "proName": "BITSTAMP:BTCUSD", "title": "Bitcoin" },
+                { "proName": "BITSTAMP:ETHUSD", "title": "Ethereum" },
+                { "proName": "OANDA:XAUUSD", "title": "Gold" }
+            ],
+            "showSymbolLogo": true,
+            "colorTheme": "dark",
+            "isTransparent": false,
+            "displayMode": "adaptive",
+            "locale": "en"
+            }
+            </script>
+        </div>
+    </div>
+
+    <main>
+        <div class="main-container">
+            <div class="upload-card">
+                <h2 data-i18n="title">تحليل الشارت الذكي</h2>
+                <p class="subtitle" data-i18n="subtitle">ارفع صورة الشارت ودع الذكاء الاصطناعي يكتشف الفرص</p>
+                
+                <div class="drop-zone" id="drop-zone">
+                    <i class="fa-solid fa-cloud-arrow-up icon-upload"></i>
+                    <p data-i18n="drag_drop">اضغط هنا لاختيار الصورة</p>
+                    <input type="file" id="chartUpload" accept="image/*" hidden>
+                </div>
+
+                <div class="controls">
+                    <button id="uploadBtn" class="action-btn secondary">
+                        <i class="fa-solid fa-upload"></i> <span data-i18n="upload_btn">رفع الصورة</span>
+                    </button>
+                    <div class="divider"></div>
+                    <label for="analysis-type" data-i18n="analysis_label">نوع التحليل المطلوب</label>
+                    <select id="analysis-type">
+                        <option value="smc">تحليل السيولة (SMC / ICT)</option>
+                        <option value="classic">دعم ومقاومة (Classic)</option>
+                        <option value="trend">اتجاهات (Trendlines)</option>
+                        <option value="harmonics">نماذج هارمونيك (Harmonics)</option>
+                    </select>
+                    <button id="run-btn" class="action-btn primary">
+                        <i class="fa-solid fa-microchip"></i> <span data-i18n="run_btn">بدء التحليل</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="loading-box" class="loading hidden">
+                <div class="spinner"></div>
+                <p data-i18n="analyzing">جاري التحليل بواسطة AI...</p>
+            </div>
+
+            <div id="result-box" class="result-box hidden">
+                <h3 data-i18n="result_title">نتائج التوصية</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label" data-i18n="signal">الإشارة</span>
+                        <span id="r-signal" class="stat-value highlight">---</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label" data-i18n="entry">الدخول</span>
+                        <span id="r-entry" class="stat-value">---</span>
+                    </div>
+                    <div class="stat-item stop-loss">
+                        <span class="stat-label" data-i18n="sl">الوقف (SL)</span>
+                        <span id="r-sl" class="stat-value">---</span>
+                    </div>
+                    <div class="stat-item take-profit">
+                        <span class="stat-label" data-i18n="tp">الهدف (TP)</span>
+                        <span id="r-tp" class="stat-value">---</span>
+                    </div>
+                </div>
+                <p class="img-label" data-i18n="chart_img">الشارت المعالج:</p>
+                <img id="processed-img" class="processed-img" src="" alt="Processed Chart">
+                <button id="close-result" class="close-btn" data-i18n="close_btn">إغلاق النتيجة</button>
+            </div>
+        </div>
+    </main>
+
+    <div class="ad-banner bottom-ad">
+        <span class="ad-text" data-i18n="ad_space">مساحة إعلانية</span>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
