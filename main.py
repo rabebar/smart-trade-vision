@@ -212,3 +212,4 @@ def make_me_king(db: Session = Depends(get_db)):
     user.is_premium = True
     db.commit()
     return {"status": "success", "message": f"مبروك! {user.email} أصبح الآن المدير والرصيد مليون! 👑"}
+# UPDATE ADMIN ACCESS NOW
