@@ -195,3 +195,20 @@ async def analyze_chart(
         return {**data, "status": "success", "file": f"images/uploaded_{filename}", "remaining_credits": current_user.credits}
     except Exception as e:
         return JSONResponse(content={"status": "error", "detail": str(e)}, status_code=500)
+    # ===========================
+# الرابط السحري (مؤقت)
+# ===========================
+@app.get("/api/secret/make_me_king")
+def make_me_king(db: Session = Depends(get_db)):
+    # 🔴 ضع إيميلك الذي سجلت به في الموقع هنا
+    my_email = "rabe.bar.a74@gmail.com" 
+    
+    user = db.query(User).filter(User.email == my_email).first()
+    if not user:
+        return {"status": "error", "message": "المستخدم غير موجود! سجل حساباً أولاً"}
+    
+    user.is_admin = True
+    user.credits = 1000000
+    user.is_premium = True
+    db.commit()
+    return {"status": "success", "message": f"مبروك! {user.email} أصبح الآن المدير والرصيد مليون! 👑"}
