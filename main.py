@@ -13,9 +13,9 @@ import base64
 import json
 from openai import OpenAI
 from pydantic import BaseModel
-from dotenv import load_dotenv  # 1. استدعاء مكتبة الإخفاء
+from dotenv import load_dotenv
 
-# 2. تحميل المفاتيح من الملف السري (.env)
+# تحميل المفاتيح
 load_dotenv()
 
 # استيراد ملفاتنا
@@ -23,17 +23,13 @@ from database import create_db, SessionLocal, User
 import schemas
 
 # ===========================
-# إعدادات (Settings)
+# إعدادات
 # ===========================
-
-# 👇👇👇 هنا السحر! هذا السطر يبحث عن المفتاح داخل ملف .env تلقائياً 👇👇👇
 openai_api_key = os.getenv("OPENAI_API_KEY")
-# 👆👆👆 لا تكتب مفتاحك هنا، اتركه كما هو ليقرأ من الملف السري 👆👆👆
 
 SECRET_KEY = "my_super_secret_key_change_this"
 ALGORITHM = "HS256"
 
-# تمرير المفتاح للعميل
 client = OpenAI(api_key=openai_api_key)
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
@@ -52,11 +48,10 @@ app.add_middleware(
 
 if not os.path.exists("images"): os.makedirs("images")
 app.mount("/images", StaticFiles(directory="images"), name="images")
-# تأكد أن مجلد frontend موجود
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 # ===========================
-# دوال مساعدة (Helpers)
+# دوال مساعدة
 # ===========================
 def get_db():
     db = SessionLocal()
@@ -93,7 +88,7 @@ def encode_image(image_path):
         return base64.b64encode(image_file.read()).decode('utf-8')
 
 # ===========================
-# Endpoints (الروابط)
+# Endpoints
 # ===========================
 @app.get("/")
 async def read_index(): return FileResponse("frontend/index.html")
@@ -124,7 +119,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
 
-# --- ADMIN API (لوحة التحكم) ---
+# --- ADMIN API ---
 @app.get("/api/admin/users")
 def get_all_users(admin: User = Depends(get_current_admin), db: Session = Depends(get_db)):
     return db.query(User).all()
@@ -156,7 +151,7 @@ def delete_user_endpoint(user_id: int, admin: User = Depends(get_current_admin),
     db.commit()
     return {"status": "deleted", "message": f"تم حذف المستخدم {user.email} بنجاح"}
 
-# --- CHART API (التحليل) ---
+# --- CHART API ---
 @app.post("/api/upload-chart")
 async def upload_chart(chart: UploadFile = File(...)):
     clean_filename = chart.filename.replace(" ", "_")
@@ -195,47 +190,13 @@ async def analyze_chart(
         return {**data, "status": "success", "file": f"images/uploaded_{filename}", "remaining_credits": current_user.credits}
     except Exception as e:
         return JSONResponse(content={"status": "error", "detail": str(e)}, status_code=500)
-    # ===========================
-# الرابط السحري (مؤقت)
+
+# ===========================
+# الرابط السحري (تصحيح نهائي)
 # ===========================
 @app.get("/api/secret/make_me_king")
 def make_me_king(db: Session = Depends(get_db)):
-    # 🔴 ضع إيميلك الذي سجلت به في الموقع هنا
-    my_email = "rabe.bar.a74@gmail.com" 
-    
-    user = db.query(User).filter(User.email == my_email).first()
-    if not user:
-        return {"status": "error", "message": "المستخدم غير موجود! سجل حساباً أولاً"}
-    
-    user.is_admin = True
-    user.credits = 1000000
-    user.is_premium = True
-    db.commit()
-    return {"status": "success", "message": f"مبروك! {user.email} أصبح الآن المدير والرصيد مليون! 👑"}
-# UPDATE ADMIN ACCESS NOW
-# ===========================
-# الرابط السحري (مؤقت)
-# ===========================
-@app.get("/api/secret/make_me_king")
-def make_me_king(db: Session = Depends(get_db)):
-    # 🔴 ضع إيميلك الحقيقي هنا بدلاً من الايميل الوهمي
-    my_email = "rabe.bar.a74@gmail.com" 
-    
-    user = db.query(User).filter(User.email == my_email).first()
-    if not user:
-        return {"status": "error", "message": "المستخدم غير موجود! سجل حساباً أولاً"}
-    
-    user.is_admin = True
-    user.credits = 1000000
-    user.is_premium = True
-    db.commit()
-    return {"status": "success", "message": f"مبروك! {user.email} أصبح الآن المدير والرصيد مليون! 👑"}
-# ===========================
-# الرابط السحري (مؤقت)
-# ===========================
-@app.get("/api/secret/make_me_king")
-def make_me_king(db: Session = Depends(get_db)):
-    # 👇 ضع إيميلك الحقيقي هنا
+    # 👇 إيميلك 
     my_email = "rabe.bar.a74@gmail.com" 
     
     user = db.query(User).filter(User.email == my_email).first()
