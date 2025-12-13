@@ -9,3 +9,4 @@ openai
 requests
 jinja2
 aiofiles
+python-dotenv
