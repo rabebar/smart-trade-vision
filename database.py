@@ -3,22 +3,30 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 import os
 from dotenv import load_dotenv
 
+# ===========================
 # تحميل متغيرات البيئة
+# ===========================
 load_dotenv()
 
-# ===========================
-# 1. إصلاح رابط الاتصال لـ Render
-# ===========================
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# تأكد من وجود الرابط وإصلاح البادئة إذا لزم الأمر
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is not set")
+
+# إصلاح البادئة القديمة
+if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# إنشاء المحرك
+# فرض SSL لـ Render
+if "sslmode=" not in DATABASE_URL:
+    DATABASE_URL += "?sslmode=require"
+
+# ===========================
+# إنشاء محرك الاتصال
+# ===========================
 engine = create_engine(
     DATABASE_URL,
-    pool_pre_ping=True
+    pool_pre_ping=True,
 )
 
 SessionLocal = sessionmaker(
@@ -30,15 +38,13 @@ SessionLocal = sessionmaker(
 Base = declarative_base()
 
 # ===========================
-# 2. تعريف جدول المستخدمين
+# نموذج المستخدم
 # ===========================
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
-    
-    # تم تعديل الاسم هنا ليطابق ملف main.py
     password_hash = Column(String, nullable=False)
 
     credits = Column(Integer, default=3)
@@ -46,7 +52,6 @@ class User(Base):
     is_admin = Column(Boolean, default=False)
 
 # ===========================
-# 3. إنشاء الجداول تلقائياً
+# إنشاء الجداول
 # ===========================
-# هذا السطر مهم جداً: يبني الجداول فوراً عند تشغيل السيرفر
 Base.metadata.create_all(bind=engine)
