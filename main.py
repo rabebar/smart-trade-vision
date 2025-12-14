@@ -3,14 +3,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+
 from sqlalchemy.orm import Session
+from sqlalchemy import text
+
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
+
 import shutil
 import os
 import base64
 import json
+
 from openai import OpenAI
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -25,11 +30,11 @@ import schemas
 # ===========================
 # إعدادات عامة
 # ===========================
-SECRET_KEY = "CHANGE_THIS_SECRET_KEY"
+SECRET_KEY = os.getenv("SECRET_KEY", "CHANGE_THIS_SECRET_KEY")  # الأفضل تحطه بمتغير بيئة
 ALGORITHM = "HS256"
 
 openai_api_key = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=openai_api_key)
+client = OpenAI(api_key=openai_api_key) if openai_api_key else None
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
@@ -54,7 +59,6 @@ if not os.path.exists("images"):
 # ربط ملفات الصور والفرونت إند
 app.mount("/images", StaticFiles(directory="images"), name="images")
 
-# ملاحظة: تأكد أن مجلد frontend موجود وفيه الملفات
 if os.path.exists("frontend"):
     app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
@@ -89,15 +93,15 @@ def get_current_user(
 ):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
-            raise HTTPException(status_code=401)
+        email: str | None = payload.get("sub")
+        if not email:
+            raise HTTPException(status_code=401, detail="Invalid token")
     except JWTError:
-        raise HTTPException(status_code=401)
+        raise HTTPException(status_code=401, detail="Invalid token")
 
     user = db.query(User).filter(User.email == email).first()
-    if user is None:
-        raise HTTPException(status_code=401)
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
     return user
 
@@ -109,19 +113,15 @@ def get_current_admin(current_user: User = Depends(get_current_user)):
 # ===========================
 # Utils
 # ===========================
-def encode_image(image_path):
+def encode_image(image_path: str):
     with open(image_path, "rb") as f:
         return base64.b64encode(f.read()).decode("utf-8")
 
 # ===========================
 # Pages
 # ===========================
-# تم حذف الرابط القديم المتعارض من هنا
-# سيتم استخدام الرابط في نهاية الملف للتحقق من التشغيل
-
 @app.get("/admin")
 async def admin_page():
-    # تأكد أن الملف موجود لتجنب الأخطاء
     if os.path.exists("frontend/admin.html"):
         return FileResponse("frontend/admin.html")
     return {"error": "Admin page not found"}
@@ -173,7 +173,7 @@ def all_users(admin: User = Depends(get_current_admin), db: Session = Depends(ge
     return db.query(User).all()
 
 class UpdateCredit(BaseModel):
-    user_id: str
+    user_id: int
     credits: int
     is_premium: bool
 
@@ -185,7 +185,7 @@ def update_user(
 ):
     user = db.query(User).filter(User.id == data.user_id).first()
     if not user:
-        raise HTTPException(status_code=404)
+        raise HTTPException(status_code=404, detail="User not found")
 
     user.credits = data.credits
     user.is_premium = data.is_premium
@@ -194,7 +194,7 @@ def update_user(
 
 @app.delete("/api/admin/delete_user/{user_id}")
 def delete_user(
-    user_id: str,
+    user_id: int,
     admin: User = Depends(get_current_admin),
     db: Session = Depends(get_db)
 ):
@@ -203,7 +203,7 @@ def delete_user(
 
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(status_code=404)
+        raise HTTPException(status_code=404, detail="User not found")
 
     db.delete(user)
     db.commit()
@@ -233,7 +233,10 @@ async def analyze_chart(
     image_path = f"images/uploaded_{filename}"
     if not os.path.exists(image_path):
         raise HTTPException(status_code=404, detail="Image not found")
-        
+
+    if client is None:
+        raise HTTPException(status_code=500, detail="OPENAI_API_KEY is missing")
+
     base64_image = encode_image(image_path)
 
     try:
@@ -249,7 +252,9 @@ async def analyze_chart(
             max_tokens=300
         )
 
-        data = json.loads(response.choices[0].message.content.replace("```json", "").replace("```", ""))
+        raw = response.choices[0].message.content or "{}"
+        cleaned = raw.replace("```json", "").replace("```", "").strip()
+        data = json.loads(cleaned)
 
         if not current_user.is_premium:
             current_user.credits -= 1
@@ -286,13 +291,13 @@ def make_me_king(db: Session = Depends(get_db)):
 # ===========================
 @app.get("/")
 def read_root():
-    # هذا الرابط مهم جداً عشان Render يتأكد إن الموقع شغال
     return {"message": "App is running", "status": "ok"}
+
 @app.get("/health-db")
 def health_db():
     try:
         db = SessionLocal()
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         return {"db": "ok"}
     except Exception as e:
         return {"db": "error", "detail": str(e)}
