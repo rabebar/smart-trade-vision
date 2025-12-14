@@ -198,7 +198,6 @@ document.getElementById("run-btn").addEventListener("click", async () => {
         const data = await response.json();
         document.getElementById("loading-box").classList.add("hidden");
 
-        // 👈👈 التعديل هنا: إذا انتهى الرصيد نفتح نافذة الدفع فوراً
         if (data.detail === "OUT_OF_CREDITS") {
             document.getElementById("subscription-modal").classList.remove("hidden");
             return;
@@ -265,7 +264,7 @@ const authTitle = document.getElementById("auth-title");
 toggleBtn.addEventListener("click", () => {
     loginForm.classList.toggle("hidden");
     regForm.classList.toggle("hidden");
-    
+
     if (loginForm.classList.contains("hidden")) {
         authTitle.innerText = currentLang === "ar" ? "إنشاء حساب جديد" : "Create Account";
         toggleBtn.innerText = currentLang === "ar" ? "تسجيل الدخول" : "Login";
@@ -277,6 +276,7 @@ toggleBtn.addEventListener("click", () => {
 
 regForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const email = document.getElementById("reg-email").value;
     const password = document.getElementById("reg-password").value;
     const msg = document.getElementById("auth-msg");
@@ -301,36 +301,32 @@ regForm.addEventListener("submit", async (e) => {
 });
 
 /* =========================================
-   10. منطق نافذة الاشتراك والدفع (جديد 💰)
+   10. منطق نافذة الاشتراك والدفع
    ========================================= */
 const subModal = document.getElementById("subscription-modal");
 const upgradeBtn = document.getElementById("upgrade-btn");
 const closeSubBtn = document.getElementById("close-sub");
 const copyIbanBtn = document.getElementById("copy-iban-btn");
 
-// فتح النافذة عند الضغط على زر الترقية
 upgradeBtn.addEventListener("click", () => {
     subModal.classList.remove("hidden");
 });
 
-// إغلاق النافذة
 closeSubBtn.addEventListener("click", () => {
     subModal.classList.add("hidden");
 });
 
-// إغلاق النافذة عند الضغط خارج المربع
 window.addEventListener("click", (e) => {
     if (e.target === subModal) {
         subModal.classList.add("hidden");
     }
 });
 
-// نسخ الآيبان
 copyIbanBtn.addEventListener("click", () => {
     const ibanInput = document.getElementById("iban-addr");
     ibanInput.select();
-    ibanInput.setSelectionRange(0, 99999); // للهواتف
-    
+    ibanInput.setSelectionRange(0, 99999);
+
     navigator.clipboard.writeText(ibanInput.value).then(() => {
         const originalText = copyIbanBtn.innerHTML;
         copyIbanBtn.innerHTML = '<i class="fa-solid fa-check"></i> تم النسخ';

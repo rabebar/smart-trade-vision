@@ -1,27 +1,38 @@
+import os
 from sqlalchemy import create_engine, Column, Integer, String, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from dotenv import load_dotenv
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./users.db"
+load_dotenv()
+
+# PostgreSQL من Render
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    DATABASE_URL,
+    pool_pre_ping=True
 )
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
 
 Base = declarative_base()
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String, primary_key=True, index=True)   # UUID مخزن كنص
     email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-    
+    password_hash = Column(String)
+
     credits = Column(Integer, default=3)
     is_premium = Column(Boolean, default=False)
-    is_admin = Column(Boolean, default=False)  # 👈 الإضافة الجديدة
+    is_admin = Column(Boolean, default=False)
 
+# ❌ لا تنشئ الجداول هنا
 def create_db():
-    Base.metadata.create_all(bind=engine)
+    pass

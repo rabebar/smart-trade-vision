@@ -8,6 +8,70 @@
     <link rel="stylesheet" href="/static/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- تنسيقات قسم إدارة المخاطر -->
+    <style>
+        .risk-container {
+            background-color: #fcfcfc;
+            border-right: 5px solid #ffc107; /* شريط أصفر يمين */
+            padding: 25px;
+            margin-top: 30px;
+            font-family: 'Cairo', sans-serif;
+            text-align: right;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+        }
+        .risk-title {
+            color: #d9534f;
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .risk-points {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            font-size: 0.95em;
+            color: #444;
+        }
+        .risk-points li {
+            margin-bottom: 12px;
+            padding-right: 25px;
+            position: relative;
+            line-height: 1.6;
+        }
+        .risk-points li::before {
+            content: "🛡️";
+            position: absolute;
+            right: 0;
+            top: 2px;
+            font-size: 1.1em;
+        }
+        .legal-disclaimer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.85em;
+            color: #777;
+            line-height: 1.7;
+            text-align: justify;
+        }
+        /* الوضع المظلم للتنبيهات (اختياري اذا كان موقعك يدعم الدارك مود) */
+        @media (prefers-color-scheme: dark) {
+            .risk-container {
+                background-color: #1e1e1e;
+                border-color: #333;
+                color: #ddd;
+            }
+            .risk-points, .legal-disclaimer {
+                color: #ccc;
+            }
+        }
+    </style>
 </head>
 <body>
 
@@ -251,6 +315,28 @@
                 <img id="processed-img" class="processed-img" src="" alt="Processed Chart">
                 <button id="close-result" class="close-btn" data-i18n="close_btn">إغلاق النتيجة</button>
             </div>
+
+            <!-- =========================
+                 قسم إدارة المخاطر وإخلاء المسؤولية (الجديد)
+                 ========================= -->
+            <div class="risk-container">
+                <div class="risk-title">
+                    <i class="fa-solid fa-triangle-exclamation"></i> تعليمات هامة لإدارة المخاطر
+                </div>
+                
+                <ul class="risk-points">
+                    <li><strong>إدارة رأس المال:</strong> لا تخاطر بأكثر من 1-3% من إجمالي رأس مالك في الصفقة الواحدة. التداول هو فن إدارة المخاطر وليس مقامرة.</li>
+                    <li><strong>الالتزام بوقف الخسارة (Stop Loss):</strong> ستوب لوز هو صمام الأمان الوحيد. عدم وضعه أو تحريكه أثناء الخسارة يؤدي حتماً لخسارة الحساب.</li>
+                    <li><strong>التحكم النفسي:</strong> تجنب التداول الانتقامي لتعويض الخسائر بسرعة. السوق موجود دائماً، والفرص تتجدد.</li>
+                </ul>
+            
+                <div class="legal-disclaimer">
+                    <strong>تنويه قانوني وإخلاء مسؤولية:</strong><br>
+                    المعلومات والتحليلات المقدمة عبر تطبيق <strong>SMART TRADE VISION</strong> تعتمد على خوارزميات الذكاء الاصطناعي وهي لأغراض <strong>تعليمية وإرشادية فقط</strong>. نحن لا نقدم "توصيات مالية" ملزمة ولا نتحمل مسؤولية أي قرارات بيع أو شراء تتخذها بناءً على هذه البيانات. الأسواق المالية تنطوي على مخاطر عالية، تأكد من فهمك للمخاطر وقانونية التداول في بلدك قبل البدء.
+                </div>
+            </div>
+            <!-- نهاية القسم الجديد -->
+
         </div>
     </main>
 
