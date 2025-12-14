@@ -30,7 +30,7 @@ if DATABASE_URL.startswith("postgresql://"):
 # ===========================
 # Engine
 # ===========================
-e# 🔴 إجبار psycopg v3 بدون الاعتماد على scheme من البيئة
+# 🔴 إجبار psycopg v3 بدون الاعتماد على scheme من البيئة
 engine = create_engine(
     "postgresql+psycopg://" + DATABASE_URL.split("://", 1)[1],
     pool_pre_ping=True,
