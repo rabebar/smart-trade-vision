@@ -1,42 +1,55 @@
-from sqlalchemy import create_engine, Column, Integer, String, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 import os
 from dotenv import load_dotenv
 
-# تحميل متغيرات البيئة
+# ===========================
+# Load ENV
+# ===========================
 load_dotenv()
 
-# ===========================
-# DATABASE CONFIG
-# ===========================
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL is not set")
 
-# إصلاح postgres:// القديمة
+# ===========================
+# Normalize DATABASE URL
+# ===========================
+
+# Fix old postgres://
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
+# Force SQLAlchemy to use psycopg v3 explicitly
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace(
+        "postgresql://", "postgresql+psycopg://", 1
+    )
+
 # ===========================
-# ENGINE (SSL via connect_args فقط)
+# Engine
 # ===========================
+e# 🔴 إجبار psycopg v3 بدون الاعتماد على scheme من البيئة
 engine = create_engine(
-    DATABASE_URL,
+    "postgresql+psycopg://" + DATABASE_URL.split("://", 1)[1],
     pool_pre_ping=True,
+    future=True,
     connect_args={"sslmode": "require"}
 )
 
+
 SessionLocal = sessionmaker(
+    bind=engine,
     autocommit=False,
     autoflush=False,
-    bind=engine
+    future=True
 )
 
 Base = declarative_base()
 
 # ===========================
-# USER MODEL
+# User Model
 # ===========================
 class User(Base):
     __tablename__ = "users"
@@ -50,6 +63,15 @@ class User(Base):
     is_admin = Column(Boolean, default=False)
 
 # ===========================
-# CREATE TABLES
+# Create tables
 # ===========================
 Base.metadata.create_all(bind=engine)
+
+# ===========================
+# DB Health Check
+# ===========================
+def test_db_connection():
+    with engine.connect() as conn:
+        conn.execute(text("SELECT 1"))
+        conn.commit()
+    return True
