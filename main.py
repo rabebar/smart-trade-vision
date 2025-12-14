@@ -288,3 +288,13 @@ def make_me_king(db: Session = Depends(get_db)):
 def read_root():
     # هذا الرابط مهم جداً عشان Render يتأكد إن الموقع شغال
     return {"message": "App is running", "status": "ok"}
+@app.get("/health-db")
+def health_db():
+    try:
+        db = SessionLocal()
+        db.execute("SELECT 1")
+        return {"db": "ok"}
+    except Exception as e:
+        return {"db": "error", "detail": str(e)}
+    finally:
+        db.close()
