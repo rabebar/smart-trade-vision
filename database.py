@@ -3,30 +3,28 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 import os
 from dotenv import load_dotenv
 
-# ===========================
 # تحميل متغيرات البيئة
-# ===========================
 load_dotenv()
 
+# ===========================
+# DATABASE CONFIG
+# ===========================
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL is not set")
 
-# إصلاح البادئة القديمة
+# إصلاح postgres:// القديمة
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# فرض SSL لـ Render
-if "sslmode=" not in DATABASE_URL:
-    DATABASE_URL += "?sslmode=require"
-
 # ===========================
-# إنشاء محرك الاتصال
+# ENGINE (SSL via connect_args فقط)
 # ===========================
 engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True,
+    connect_args={"sslmode": "require"}
 )
 
 SessionLocal = sessionmaker(
@@ -38,7 +36,7 @@ SessionLocal = sessionmaker(
 Base = declarative_base()
 
 # ===========================
-# نموذج المستخدم
+# USER MODEL
 # ===========================
 class User(Base):
     __tablename__ = "users"
@@ -52,6 +50,6 @@ class User(Base):
     is_admin = Column(Boolean, default=False)
 
 # ===========================
-# إنشاء الجداول
+# CREATE TABLES
 # ===========================
 Base.metadata.create_all(bind=engine)
