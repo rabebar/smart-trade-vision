@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 # تحميل المتغيرات
 load_dotenv()
 
-# استيراد قاعدة البيانات (PostgreSQL)
+# استيراد قاعدة البيانات
 from database import SessionLocal, User
 import schemas
 
@@ -47,12 +47,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Static files
+# التأكد من وجود المجلدات
 if not os.path.exists("images"):
     os.makedirs("images")
 
+# ربط ملفات الصور والفرونت إند
 app.mount("/images", StaticFiles(directory="images"), name="images")
-app.mount("/static", StaticFiles(directory="frontend"), name="static")
+
+# ملاحظة: تأكد أن مجلد frontend موجود وفيه الملفات
+if os.path.exists("frontend"):
+    app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 # ===========================
 # DB Dependency
@@ -112,13 +116,15 @@ def encode_image(image_path):
 # ===========================
 # Pages
 # ===========================
-@app.get("/")
-async def index():
-    return FileResponse("frontend/index.html")
+# تم حذف الرابط القديم المتعارض من هنا
+# سيتم استخدام الرابط في نهاية الملف للتحقق من التشغيل
 
 @app.get("/admin")
 async def admin_page():
-    return FileResponse("frontend/admin.html")
+    # تأكد أن الملف موجود لتجنب الأخطاء
+    if os.path.exists("frontend/admin.html"):
+        return FileResponse("frontend/admin.html")
+    return {"error": "Admin page not found"}
 
 # ===========================
 # Auth API
@@ -225,6 +231,9 @@ async def analyze_chart(
         raise HTTPException(status_code=400, detail="OUT_OF_CREDITS")
 
     image_path = f"images/uploaded_{filename}"
+    if not os.path.exists(image_path):
+        raise HTTPException(status_code=404, detail="Image not found")
+        
     base64_image = encode_image(image_path)
 
     try:
@@ -271,3 +280,11 @@ def make_me_king(db: Session = Depends(get_db)):
     user.credits = 1_000_000
     db.commit()
     return {"status": "KING MODE ACTIVATED 👑"}
+
+# ===========================
+# Health Check / Root
+# ===========================
+@app.get("/")
+def read_root():
+    # هذا الرابط مهم جداً عشان Render يتأكد إن الموقع شغال
+    return {"message": "App is running", "status": "ok"}
