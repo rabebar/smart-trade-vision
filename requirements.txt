@@ -10,3 +10,4 @@ requests
 jinja2
 aiofiles
 psycopg[binary]
+python-dotenv
