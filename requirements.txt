@@ -9,5 +9,4 @@ openai
 requests
 jinja2
 aiofiles
-python-dotenv
-psycopg2-binary
+psycopg[binary]
