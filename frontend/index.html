@@ -1,349 +1,582 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartTrade Vision</title>
-    <link rel="icon" type="image/png" href="/images/logo.png">
-    <link rel="stylesheet" href="/static/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- تنسيقات قسم إدارة المخاطر -->
-    <style>
-        .risk-container {
-            background-color: #fcfcfc;
-            border-right: 5px solid #ffc107; /* شريط أصفر يمين */
-            padding: 25px;
-            margin-top: 30px;
-            font-family: 'Cairo', sans-serif;
-            text-align: right;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border: 1px solid #eee;
-        }
-        .risk-title {
-            color: #d9534f;
-            font-weight: 700;
-            font-size: 1.1em;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .risk-points {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-            font-size: 0.95em;
-            color: #444;
-        }
-        .risk-points li {
-            margin-bottom: 12px;
-            padding-right: 25px;
-            position: relative;
-            line-height: 1.6;
-        }
-        .risk-points li::before {
-            content: "🛡️";
-            position: absolute;
-            right: 0;
-            top: 2px;
-            font-size: 1.1em;
-        }
-        .legal-disclaimer {
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid #e0e0e0;
-            font-size: 0.85em;
-            color: #777;
-            line-height: 1.7;
-            text-align: justify;
-        }
-        /* الوضع المظلم للتنبيهات (اختياري اذا كان موقعك يدعم الدارك مود) */
-        @media (prefers-color-scheme: dark) {
-            .risk-container {
-                background-color: #1e1e1e;
-                border-color: #333;
-                color: #ddd;
-            }
-            .risk-points, .legal-disclaimer {
-                color: #ccc;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CANA AI</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <!-- ✅ كسر كاش -->
+  <link rel="stylesheet" href="/static/style.css?v=fix_final_9" />
 </head>
+
 <body>
 
-    <!-- =========================
-         1. شاشة تسجيل الدخول
-         ========================= -->
-    <div id="auth-overlay" class="auth-overlay">
-        <div class="auth-box">
-            <div class="auth-header">
-                <img src="/images/logo.png" alt="Logo" class="auth-logo" width="100" style="width: 100px;">
-                <h2 id="auth-title">تسجيل الدخول</h2>
-                <p id="auth-subtitle">سجل دخولك لبدء تحليل الأسواق</p>
-            </div>
-
-            <form id="login-form">
-                <div class="input-group">
-                    <i class="fa-solid fa-envelope"></i>
-                    <input type="email" id="login-email" placeholder="البريد الإلكتروني" required>
-                </div>
-                <div class="input-group">
-                    <i class="fa-solid fa-lock"></i>
-                    <input type="password" id="login-password" placeholder="كلمة المرور" required>
-                </div>
-                <button type="submit" class="action-btn primary auth-btn">دخول</button>
-            </form>
-
-            <form id="register-form" class="hidden">
-                <div class="input-group">
-                    <i class="fa-solid fa-envelope"></i>
-                    <input type="email" id="reg-email" placeholder="البريد الإلكتروني" required>
-                </div>
-                <div class="input-group">
-                    <i class="fa-solid fa-lock"></i>
-                    <input type="password" id="reg-password" placeholder="كلمة المرور" required>
-                </div>
-                <button type="submit" class="action-btn success auth-btn">إنشاء حساب جديد</button>
-            </form>
-
-            <div class="auth-footer">
-                <p id="toggle-auth-text">ليس لديك حساب؟ <span id="toggle-auth-btn">أنشئ حساباً مجاناً</span></p>
-            </div>
-            
-            <p id="auth-msg" class="auth-msg"></p>
-        </div>
+  <!-- NAV -->
+  <header class="navbar">
+    <div class="logo-container">
+      <div class="logo-icon"><i class="fa-solid fa-cubes"></i></div>
+      <div class="brand-text">
+        <h1>CANA</h1>
+        <span>AI TRADING</span>
+      </div>
     </div>
 
-    <!-- =========================
-         2. نافذة الباقات والدفع (المطورة 💎)
-         ========================= -->
-    <div id="subscription-modal" class="modal hidden">
-        <div class="modal-content large-modal">
-            <span class="close-modal" id="close-sub">&times;</span>
-            <h2>اختر باقتك وابدأ الأرباح 🚀</h2>
-            <p class="sub-desc">باقات شحن رصيد التحليل الذكي - ادفع مرة واحدة واستخدمها متى شئت</p>
-            
-            <!-- شبكة الباقات -->
-            <div class="pricing-grid">
-                <!-- باقة 5$ -->
-                <div class="price-card">
-                    <div class="price-header">المبتدئ</div>
-                    <div class="price-amount">5$</div>
-                    <div class="price-credits">15 تحليل</div>
-                    <ul class="price-features">
-                        <li><i class="fa-solid fa-check"></i> دقة عالية</li>
-                        <li><i class="fa-solid fa-check"></i> جميع الاستراتيجيات</li>
-                    </ul>
-                </div>
+    <div class="nav-controls">
+      <!-- ✅ زر الباقات/الشحن (أيقونة واحدة) -->
+      <button id="open-subscription" class="icon-btn" title="الباقات / الشحن">
+        <i class="fa-solid fa-gem"></i>
+      </button>
 
-                <!-- باقة 10$ -->
-                <div class="price-card popular">
-                    <div class="popular-badge">شائع</div>
-                    <div class="price-header">المتداول</div>
-                    <div class="price-amount">10$</div>
-                    <div class="price-credits">35 تحليل</div>
-                    <ul class="price-features">
-                        <li><i class="fa-solid fa-check"></i> أفضل للبداية</li>
-                        <li><i class="fa-solid fa-check"></i> دعم فني</li>
-                    </ul>
-                </div>
+      <!-- ✅ اللغة -->
+      <button id="lang-btn" class="lang-switcher" title="Language">
+        <span id="lang-text">English</span> <i class="fa-solid fa-globe"></i>
+      </button>
 
-                <!-- باقة 30$ -->
-                <div class="price-card premium-card">
-                    <div class="price-header">المحترف</div>
-                    <div class="price-amount">30$</div>
-                    <div class="price-credits">120 تحليل</div>
-                    <ul class="price-features">
-                        <li><i class="fa-solid fa-check"></i> توفير ممتاز</li>
-                        <li><i class="fa-solid fa-check"></i> أولوية في السيرفر</li>
-                    </ul>
-                </div>
-
-                <!-- باقة 50$ -->
-                <div class="price-card vip-card">
-                    <div class="price-header">VIP الحيتان</div>
-                    <div class="price-amount">50$</div>
-                    <div class="price-credits">250 تحليل</div>
-                    <ul class="price-features">
-                        <li><i class="fa-solid fa-crown"></i> أوفر خيار</li>
-                        <li><i class="fa-solid fa-check"></i> تحليلات ضخمة</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- معلومات الدفع -->
-            <div class="payment-section">
-                <h3>طريقة الدفع وتفعيل الباقة</h3>
-                <div class="pay-card bank-card">
-                    <div class="pay-info-row">
-                        <div class="bank-logo"><i class="fa-solid fa-building-columns"></i> بنك فلسطين</div>
-                        <div class="iban-display">
-                            <span>رقم الآيبان (USD):</span>
-                            <code id="iban-addr">PS72PALS045802050490013100000</code>
-                            <button class="copy-small" id="copy-iban-btn"><i class="fa-solid fa-copy"></i></button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="contact-support">
-                    <p>بعد تحويل مبلغ الباقة المطلوبة، أرسل الإيصال واتساب للتفعيل الفوري:</p>
-                    <a href="https://wa.me/970594060648" target="_blank" class="whatsapp-btn">
-                        <i class="fa-brands fa-whatsapp"></i> إرسال الإيصال وتفعيل الباقة
-                    </a>
-                </div>
-            </div>
+      <!-- ✅ معلومات المستخدم -->
+      <div id="user-info" class="user-info hidden">
+        <div class="credits-pill" title="Credits">
+          <i class="fa-solid fa-coins"></i>
+          <span id="credits-count">0</span>
         </div>
+
+        <button id="portfolio-btn" class="icon-btn" title="المحفظة">
+          <i class="fa-solid fa-wallet"></i>
+        </button>
+
+        <div class="nav-user-badge">
+          <span id="nav-username">user</span>
+        </div>
+
+        <button id="logout-btn" class="btn-gradient small">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ✅ TICKERS -->
+  <div class="tickers-wrapper">
+
+    <!-- ✅ Price Ticker Tape (TradingView) -->
+    <div class="top-tape glass-panel">
+      <div class="tradingview-widget-container" style="height:46px;width:100%;">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript"
+          src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js"
+          async>
+        {
+          "symbols": [
+            {"proName":"FOREXCOM:EURUSD","title":"EURUSD"},
+            {"proName":"OANDA:XAUUSD","title":"Gold"},
+            {"proName":"FOREXCOM:GBPUSD","title":"GBPUSD"},
+            {"proName":"FOREXCOM:USDJPY","title":"USDJPY"},
+            {"proName":"BINANCE:BTCUSDT","title":"BTC"},
+            {"proName":"BINANCE:ETHUSDT","title":"ETH"}
+          ],
+          "showSymbolLogo": true,
+          "isTransparent": true,
+          "displayMode": "adaptive",
+          "colorTheme": "dark",
+          "locale": "en"
+        }
+        </script>
+      </div>
     </div>
 
-    <!-- بانر إعلاني -->
-    <div class="ad-banner top-ad">
-        <span class="ad-text" data-i18n="ad_space">مساحة إعلانية</span>
+    <!-- ✅ News Ticker -->
+    <div class="news-ticker-container">
+      <div class="ticker-label">
+        <span id="ticker-label-text">أخبار الاقتصاد</span>
+      </div>
+      <div class="ticker-wrap">
+        <div class="ticker-move" id="news-ticker-content">
+          <div class="ticker-item">...</div>
+        </div>
+      </div>
     </div>
 
-    <!-- الشريط العلوي -->
-    <header class="top-bar">
-        <div class="logo-area">
-            <img src="/images/logo.png" class="logo-img" alt="Logo">
-            <div class="brand-text">
-                <span class="brand-name">SMART TRADE</span>
-                <span class="brand-sub">VISION AI</span>
-            </div>
-        </div>
+  </div>
 
-        <div class="header-controls">
-            <div id="user-info" class="user-info hidden">
-                <button id="upgrade-btn" class="upgrade-btn">
-                    <i class="fa-solid fa-crown"></i> شحن الرصيد
-                </button>
+  <!-- HERO -->
+  <section class="hero-section">
+    <div class="hero-grid-layout">
 
-                <span class="credits-badge">
-                    <i class="fa-solid fa-coins"></i> 
-                    <span id="credits-count">0</span>
-                </span>
-                <button id="logout-btn" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i></button>
-            </div>
-
-            <button id="lang-btn" class="lang-btn">
-                <i class="fa-solid fa-globe"></i>
-                <span id="lang-text">English</span>
-            </button>
-        </div>
-    </header>
-
-    <!-- شريط الأسعار -->
-    <div class="ticker-container">
-        <div class="tradingview-widget-container">
+      <!-- ✅ EURUSD (Left widget) -->
+      <div class="hero-side-widget glass-panel">
+        <div class="widget-title">EURUSD</div>
+        <div class="side-box" id="eurusd-widget">
+          <div class="tradingview-widget-container" style="height:100%;width:100%;">
             <div class="tradingview-widget-container__widget"></div>
-            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+            <script type="text/javascript"
+              src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js"
+              async>
             {
-            "symbols": [
-                { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" },
-                { "proName": "BITSTAMP:BTCUSD", "title": "Bitcoin" },
-                { "proName": "BITSTAMP:ETHUSD", "title": "Ethereum" },
-                { "proName": "OANDA:XAUUSD", "title": "Gold" }
-            ],
-            "showSymbolLogo": true,
-            "colorTheme": "dark",
-            "isTransparent": false,
-            "displayMode": "adaptive",
-            "locale": "en"
+              "interval": "15m",
+              "width": "100%",
+              "height": "100%",
+              "symbol": "FOREXCOM:EURUSD",
+              "showIntervalTabs": true,
+              "displayMode": "single",
+              "locale": "en",
+              "colorTheme": "dark",
+              "isTransparent": true
             }
             </script>
+          </div>
         </div>
+      </div>
+
+      <!-- Center content -->
+      <div class="hero-content-center">
+        <div class="glow-circle"></div>
+        <h1 class="main-title" data-i18n="title_hero">CANA AI ثورة التداول <br> بقدرات الذكاء الاصطناعي الفائق</h1>
+        <p class="hero-sub" data-i18n="subtitle">تجاوز التحليل البشري. خوارزميات متخصصة تكشف لك ما لا تراه العين.</p>
+        <div class="scroll-indicator">↓</div>
+      </div>
+
+      <!-- ✅ XAUUSD (Right widget) -->
+      <div class="hero-side-widget glass-panel">
+        <div class="widget-title">XAUUSD</div>
+        <div class="side-box" id="xauusd-widget">
+          <div class="tradingview-widget-container" style="height:100%;width:100%;">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript"
+              src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js"
+              async>
+            {
+              "interval": "15m",
+              "width": "100%",
+              "height": "100%",
+              "symbol": "OANDA:XAUUSD",
+              "showIntervalTabs": true,
+              "displayMode": "single",
+              "locale": "en",
+              "colorTheme": "dark",
+              "isTransparent": true
+            }
+            </script>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- STEPS -->
+  <section class="steps-section">
+    <div class="steps-container">
+      <div class="step-card">
+        <div class="step-icon"><i class="fa-solid fa-camera"></i></div>
+        <h3 data-i18n="step1_title">1. التقط الصورة</h3>
+        <p data-i18n="step1_desc">صور الشارت ثم الصقها هنا (Ctrl+V).</p>
+      </div>
+      <div class="step-arrow"><i class="fa-solid fa-arrow-left"></i></div>
+
+      <div class="step-card">
+        <div class="step-icon"><i class="fa-solid fa-sliders"></i></div>
+        <h3 data-i18n="step2_title">2. اختر الاستراتيجية</h3>
+        <p data-i18n="step2_desc">حدد نوع التحليل والفريم.</p>
+      </div>
+      <div class="step-arrow"><i class="fa-solid fa-arrow-left"></i></div>
+
+      <div class="step-card">
+        <div class="step-icon"><i class="fa-solid fa-bullseye"></i></div>
+        <h3 data-i18n="step3_title">3. اقتنص الفرصة</h3>
+        <p data-i18n="step3_desc">تحليل فوري للدخول والهدف.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <main class="app-container">
+    <div class="glass-card">
+      <div class="card-header">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <h2 data-i18n="upload_header">مركز تحليل CANA</h2>
+      </div>
+
+      <!-- Upload -->
+      <div id="drop-zone" class="drop-zone">
+        <div class="icon-large"><i class="fa-regular fa-image"></i></div>
+        <h3 data-i18n="drag_drop">اضغط للرفع أو الصق الصورة (Ctrl+V)</h3>
+        <p style="margin-top:10px; color:#94a3b8;">PNG / JPG</p>
+        <input id="chartUpload" type="file" accept="image/*" style="display:none;" />
+      </div>
+
+      <!-- Controls -->
+      <div class="controls-grid">
+        <div class="control-group">
+          <label data-i18n="analysis_label">الاستراتيجية</label>
+          <div class="custom-select-wrapper">
+            <select id="analysis-type">
+              <option value="smc">SMC</option>
+              <option value="ict">ICT</option>
+              <option value="cana">CANA</option>
+            </select>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label data-i18n="timeframe_label">الإطار الزمني</label>
+          <div class="custom-select-wrapper">
+            <select id="timeframe-select">
+              <option value="5m">5m</option>
+              <option value="15m" selected>15m</option>
+              <option value="1H">1H</option>
+              <option value="4H">4H</option>
+              <option value="Daily">Daily</option>
+            </select>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+        </div>
+      </div>
+
+      <button id="run-btn" class="btn-gradient full-width pulse-animation" data-i18n="run_btn">
+        تحليل CANA الذكي
+      </button>
     </div>
 
-    <main>
-        <div class="main-container">
-            <div class="upload-card">
-                <h2 data-i18n="title">تحليل الشارت الذكي</h2>
-                <p class="subtitle" data-i18n="subtitle">ارفع صورة الشارت ودع الذكاء الاصطناعي يكتشف الفرص</p>
-                
-                <div class="drop-zone" id="drop-zone">
-                    <i class="fa-solid fa-cloud-arrow-up icon-upload"></i>
-                    <p data-i18n="drag_drop">اضغط هنا لاختيار الصورة</p>
-                    <input type="file" id="chartUpload" accept="image/*" hidden>
-                </div>
-
-                <div class="controls">
-                    <button id="uploadBtn" class="action-btn secondary">
-                        <i class="fa-solid fa-upload"></i> <span data-i18n="upload_btn">رفع الصورة</span>
-                    </button>
-                    <div class="divider"></div>
-                    <label for="analysis-type" data-i18n="analysis_label">نوع التحليل المطلوب</label>
-                    <select id="analysis-type">
-                        <option value="smc">تحليل السيولة (SMC / ICT)</option>
-                        <option value="classic">دعم ومقاومة (Classic)</option>
-                        <option value="trend">اتجاهات (Trendlines)</option>
-                        <option value="harmonics">نماذج هارمونيك (Harmonics)</option>
-                    </select>
-                    <button id="run-btn" class="action-btn primary">
-                        <i class="fa-solid fa-microchip"></i> <span data-i18n="run_btn">بدء التحليل</span>
-                    </button>
-                </div>
-            </div>
-
-            <div id="loading-box" class="loading hidden">
-                <div class="spinner"></div>
-                <p data-i18n="analyzing">جاري التحليل بواسطة AI...</p>
-            </div>
-
-            <div id="result-box" class="result-box hidden">
-                <h3 data-i18n="result_title">نتائج التوصية</h3>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <span class="stat-label" data-i18n="signal">الإشارة</span>
-                        <span id="r-signal" class="stat-value highlight">---</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label" data-i18n="entry">الدخول</span>
-                        <span id="r-entry" class="stat-value">---</span>
-                    </div>
-                    <div class="stat-item stop-loss">
-                        <span class="stat-label" data-i18n="sl">الوقف (SL)</span>
-                        <span id="r-sl" class="stat-value">---</span>
-                    </div>
-                    <div class="stat-item take-profit">
-                        <span class="stat-label" data-i18n="tp">الهدف (TP)</span>
-                        <span id="r-tp" class="stat-value">---</span>
-                    </div>
-                </div>
-                <p class="img-label" data-i18n="chart_img">الشارت المعالج:</p>
-                <img id="processed-img" class="processed-img" src="" alt="Processed Chart">
-                <button id="close-result" class="close-btn" data-i18n="close_btn">إغلاق النتيجة</button>
-            </div>
-
-            <!-- =========================
-                 قسم إدارة المخاطر وإخلاء المسؤولية (الجديد)
-                 ========================= -->
-            <div class="risk-container">
-                <div class="risk-title">
-                    <i class="fa-solid fa-triangle-exclamation"></i> تعليمات هامة لإدارة المخاطر
-                </div>
-                
-                <ul class="risk-points">
-                    <li><strong>إدارة رأس المال:</strong> لا تخاطر بأكثر من 1-3% من إجمالي رأس مالك في الصفقة الواحدة. التداول هو فن إدارة المخاطر وليس مقامرة.</li>
-                    <li><strong>الالتزام بوقف الخسارة (Stop Loss):</strong> ستوب لوز هو صمام الأمان الوحيد. عدم وضعه أو تحريكه أثناء الخسارة يؤدي حتماً لخسارة الحساب.</li>
-                    <li><strong>التحكم النفسي:</strong> تجنب التداول الانتقامي لتعويض الخسائر بسرعة. السوق موجود دائماً، والفرص تتجدد.</li>
-                </ul>
-            
-                <div class="legal-disclaimer">
-                    <strong>تنويه قانوني وإخلاء مسؤولية:</strong><br>
-                    المعلومات والتحليلات المقدمة عبر تطبيق <strong>SMART TRADE VISION</strong> تعتمد على خوارزميات الذكاء الاصطناعي وهي لأغراض <strong>تعليمية وإرشادية فقط</strong>. نحن لا نقدم "توصيات مالية" ملزمة ولا نتحمل مسؤولية أي قرارات بيع أو شراء تتخذها بناءً على هذه البيانات. الأسواق المالية تنطوي على مخاطر عالية، تأكد من فهمك للمخاطر وقانونية التداول في بلدك قبل البدء.
-                </div>
-            </div>
-            <!-- نهاية القسم الجديد -->
-
-        </div>
-    </main>
-
-    <div class="ad-banner bottom-ad">
-        <span class="ad-text" data-i18n="ad_space">مساحة إعلانية</span>
+    <!-- ✅ Loading Overlay -->
+    <div id="loading-box" class="loading-overlay hidden">
+      <div class="cyber-spinner"></div>
+      <p data-i18n="analyzing">نظام CANA يعالج البيانات...</p>
     </div>
 
-    <script src="/static/script.js"></script>
+    <!-- Result -->
+    <div id="result-box" class="glass-card hidden">
+      <div class="result-header">
+        <h2 data-i18n="result_title">نتائج التوصية</h2>
+        <div id="signal-badge-display" class="signal-badge">WAIT</div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dash-card main-sig">
+          <span class="lbl" data-i18n="signal">الإشارة</span>
+          <span class="val" id="r-signal">---</span>
+        </div>
+        <div class="dash-card">
+          <span class="lbl" data-i18n="entry">الدخول</span>
+          <span class="val" id="r-entry">---</span>
+        </div>
+        <div class="dash-card">
+          <span class="lbl" data-i18n="tp">الهدف (TP)</span>
+          <span class="val" id="r-tp">---</span>
+        </div>
+        <div class="dash-card">
+          <span class="lbl" data-i18n="sl">الوقف (SL)</span>
+          <span class="val" id="r-sl">---</span>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item"><i class="fa-solid fa-clock"></i> <span id="r-timeframe">---</span></div>
+        <div class="info-item"><i class="fa-solid fa-city"></i> <span id="r-session">---</span></div>
+        <div class="info-item"><i class="fa-solid fa-hourglass-half"></i> <span id="r-validity">---</span></div>
+      </div>
+
+      <div class="notes-container">
+        <h4 data-i18n="notes_label">منطق CANA</h4>
+        <p id="r-notes">---</p>
+        <p id="r-reason" style="margin-top:10px; color:#cbd5e1;">---</p>
+      </div>
+
+      <div class="chart-preview">
+        <div data-i18n="chart_img">الشارت المعالج:</div>
+        <img id="processed-img" src="" alt="processed chart"/>
+      </div>
+
+      <button id="close-result" class="btn-outline" data-i18n="close_btn">إغلاق التقرير</button>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="cana-footer">
+    <div class="footer-content">
+
+      <div class="footer-col">
+        <div class="footer-logo"><i class="fa-solid fa-cubes"></i> CANA AI</div>
+        <p class="footer-text">
+          منصة تحليل تداول بالذكاء الاصطناعي. هدفنا: توصيات واضحة، واجهة أنيقة، وتجربة استخدام احترافية.
+        </p>
+        <div class="social-icons">
+          <a href="#" aria-label="X"><i class="fa-brands fa-x-twitter"></i></a>
+          <a href="#" aria-label="Telegram"><i class="fa-brands fa-telegram"></i></a>
+          <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4 data-i18n="links_title">روابط</h4>
+        <ul class="footer-links" style="list-style:none; padding:0; margin:0;">
+          <li><a href="#" id="open-pricing-footer" data-i18n="link_pricing">الباقات والأسعار</a></li>
+          <li><a href="#" id="open-privacy" data-i18n="link_privacy">سياسة الخصوصية</a></li>
+          <li><a href="#" id="open-terms" data-i18n="link_terms">شروط الاستخدام</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 data-i18n="contact_title">التواصل</h4>
+        <p class="footer-text" style="text-align:right;">
+          <i class="fa-solid fa-location-dot" style="color:#3b82f6;"></i>
+          <span data-i18n="addr_text">فلسطين - رام الله</span>
+        </p>
+        <a class="whatsapp-link" href="https://wa.me/970594060648" target="_blank" rel="noreferrer">
+          <i class="fa-brands fa-whatsapp"></i> واتساب الدعم
+        </a>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">© 2025 CANA AI — All Rights Reserved</div>
+  </footer>
+
+  <!-- AUTH MODAL -->
+  <div id="auth-overlay" class="modal-overlay hidden">
+    <div class="modal-glass">
+      <div class="close-icon" id="close-auth">✕</div>
+
+      <h2 id="auth-title">Welcome to CANA</h2>
+
+      <div class="auth-tabs">
+        <button id="tab-login" class="auth-tab-btn active">Login</button>
+        <button id="tab-register" class="auth-tab-btn">Register</button>
+      </div>
+
+      <form id="login-form">
+        <div class="input-field">
+          <i class="fa-solid fa-envelope"></i>
+          <input id="login-email" type="email" placeholder="Email" />
+        </div>
+        <div class="input-field">
+          <i class="fa-solid fa-lock"></i>
+          <input id="login-password" type="password" placeholder="Password" />
+        </div>
+        <button class="btn-gradient full-width" type="submit">Login</button>
+      </form>
+
+      <form id="register-form" class="hidden">
+        <div class="input-field">
+          <i class="fa-solid fa-envelope"></i>
+          <input id="reg-email" type="email" placeholder="Email" />
+        </div>
+        <div class="input-field">
+          <i class="fa-solid fa-lock"></i>
+          <input id="reg-password" type="password" placeholder="Password" />
+        </div>
+        <div class="input-field">
+          <i class="fa-solid fa-lock"></i>
+          <input id="reg-password2" type="password" placeholder="Confirm Password" />
+        </div>
+        <button class="btn-gradient full-width" type="submit">Create Account</button>
+      </form>
+
+      <div id="auth-msg" class="error-msg"></div>
+    </div>
+  </div>
+
+  <!-- PORTFOLIO MODAL -->
+  <div id="portfolio-modal" class="modal-overlay hidden">
+    <div class="modal-glass extra-large">
+      <div class="close-icon" id="close-portfolio">✕</div>
+
+      <div class="portfolio-header-strip">
+        <div class="user-identity">
+          <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
+          <div class="user-text">
+            <h3 id="port-username">User</h3>
+            <span id="port-plan-badge" class="plan-badge">Trader Plan</span>
+          </div>
+        </div>
+        <div class="user-finance">
+          <div class="finance-item">
+            <span class="f-label">Credits</span>
+            <span id="port-credits" class="f-value">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="portfolio-grid">
+        <div class="panel-box">
+          <div class="panel-title"><i class="fa-solid fa-clock-rotate-left"></i> History</div>
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Date</th><th>Signal</th><th>Entry</th><th>TP</th><th>Share</th>
+              </tr>
+            </thead>
+            <tbody id="history-list">
+              <tr><td colspan="5">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel-box tool-mini">
+          <div class="panel-title"><i class="fa-solid fa-calculator"></i> Tools</div>
+
+          <div class="grid-2 mini-form">
+            <input id="calc-balance" placeholder="Balance" />
+            <input id="calc-risk" placeholder="Risk %" />
+            <input id="calc-sl" class="full-span" placeholder="SL (pips)" />
+            <button class="btn-gradient tiny full-span" onclick="calculateRisk()">Calc Lot</button>
+          </div>
+
+          <div id="risk-res" class="mini-res hidden">
+            <div id="res-lot">---</div>
+          </div>
+
+          <hr style="border:0; border-top:1px solid #334155; margin:14px 0;">
+
+          <div class="grid-2 mini-form">
+            <input id="calc-lot-size" placeholder="Lot" />
+            <input id="calc-pips-num" placeholder="Pips" />
+            <button class="btn-gradient tiny full-span" onclick="calculatePipVal()">Calc $</button>
+          </div>
+
+          <div id="pip-res" class="mini-res hidden">
+            <div id="res-profit">---</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBSCRIPTION / PRICING MODAL -->
+  <div id="subscription-modal" class="modal-overlay hidden">
+    <div class="modal-glass large">
+      <div class="close-icon" id="close-sub">✕</div>
+
+      <h2 style="margin-bottom:10px;">الباقات والاشتراك</h2>
+      <p style="color:#94a3b8; margin-bottom:20px;">اختر الباقة ثم اتبع معلومات التحويل.</p>
+
+      <div class="pricing-container">
+        <div class="plan-card featured">
+          <div class="badge">Popular</div>
+          <h3>Starter</h3>
+          <div class="price">$5</div>
+          <p style="color:#94a3b8; font-size:0.9rem;">15 Analyses</p>
+          <button class="btn-outline">Select</button>
+        </div>
+
+        <div class="plan-card">
+          <h3>Pro</h3>
+          <div class="price">$15</div>
+          <p style="color:#94a3b8; font-size:0.9rem;">60 Analyses</p>
+          <button class="btn-outline">Select</button>
+        </div>
+
+        <div class="plan-card">
+          <h3>Ultra</h3>
+          <div class="price">$30</div>
+          <p style="color:#94a3b8; font-size:0.9rem;">150 Analyses</p>
+          <button class="btn-outline">Select</button>
+        </div>
+
+        <div class="plan-card vip-card">
+          <div class="vip-badge">VIP</div>
+          <h3>WHALE</h3>
+          <div class="price">$99</div>
+          <p style="color:#94a3b8; font-size:0.9rem;">Unlimited*</p>
+          <button class="btn-outline">Select</button>
+        </div>
+      </div>
+
+      <div class="payment-section-styled">
+        <div class="pay-title">Payment Details</div>
+
+        <div class="bank-details-box">
+          <div class="bank-header">
+            <div class="bank-logo-text">
+              <i class="fa-solid fa-building-columns"></i> Bank Transfer
+            </div>
+            <div class="branch-name">Palestine</div>
+          </div>
+
+          <div class="details-grid">
+            <div class="detail-item">
+              <span class="label">Bank</span>
+              <span class="value">Bank of Palestine</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">SWIFT / BIC</span>
+              <span class="value">PALSPS22</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Branch</span>
+              <span class="value">Main Branch</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Buraq</span>
+              <span class="value highlight-buraq">Available (Instant)</span>
+            </div>
+          </div>
+
+          <div class="iban-wrapper">
+            <span class="iban-label">IBAN</span>
+            <div class="iban-code-box">
+              <code id="iban-code">PS00BOP0000000000000000000000</code>
+              <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('iban-code').innerText)">
+                <i class="fa-regular fa-copy"></i> Copy
+              </button>
+            </div>
+          </div>
+
+          <a class="whatsapp-link" href="https://wa.me/970594060648" target="_blank" rel="noreferrer">
+            <i class="fa-brands fa-whatsapp"></i> WhatsApp Support
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TERMS MODAL -->
+  <div id="terms-modal" class="modal-overlay hidden">
+    <div class="modal-glass">
+      <div class="close-icon" id="close-terms">✕</div>
+      <h2 data-i18n="terms_title">شروط الاستخدام</h2>
+      <div style="color:#cbd5e1; line-height:1.8; margin-top:15px;" data-i18n="terms_body">
+        <p>CANA AI أداة تعليمية وليست نصيحة مالية.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIVACY MODAL -->
+  <div id="privacy-modal" class="modal-overlay hidden">
+    <div class="modal-glass">
+      <div class="close-icon" id="close-privacy">✕</div>
+      <h2 data-i18n="privacy_title">سياسة الخصوصية</h2>
+      <div style="color:#cbd5e1; line-height:1.8; margin-top:15px;" data-i18n="privacy_body">
+        <p>نحمي بياناتك ولا نشاركها.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Share Card Template -->
+  <div id="share-card-template" class="share-card-hidden">
+    <div class="sc-header">
+      <div class="sc-logo">CANA AI</div>
+      <div style="color:#94a3b8;font-size:0.8rem;">AI TRADING</div>
+    </div>
+    <div class="sc-body">
+      <div class="sc-row main" id="sc-signal">WAIT</div>
+      <div class="sc-row"><span>Entry</span><span id="sc-entry">---</span></div>
+      <div class="sc-row"><span>TP</span><span id="sc-tp">---</span></div>
+      <div class="sc-row"><span>SL</span><span id="sc-sl">---</span></div>
+    </div>
+    <div class="sc-footer">CANA • MRTRADE</div>
+  </div>
+
+  <!-- html2canvas for share -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <!-- ✅ كسر كاش -->
+  <script src="/static/script.js?v=fix_final_9"></script>
 </body>
 </html>

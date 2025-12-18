@@ -1,142 +1,94 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة المدير - SmartTrade</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <!-- استخدام نفس أيقونات الموقع -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CANA Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background: #0f172a; color: white; font-family: 'Cairo', sans-serif; padding: 30px; }
-        .container { max-width: 1100px; margin: 0 auto; background: #1e293b; padding: 30px; border-radius: 15px; border: 1px solid #334155; }
-        
-        h1 { color: #f59e0b; text-align: center; margin-bottom: 30px; }
-        .back-link { display: inline-block; color: #94a3b8; text-decoration: none; margin-bottom: 20px; font-weight: bold; }
-        .back-link:hover { color: white; }
-
-        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
-        th { padding: 15px; text-align: right; color: #94a3b8; font-size: 0.9rem; }
-        
-        td { background: #0f172a; padding: 15px; border-top: 1px solid #334155; border-bottom: 1px solid #334155; }
-        td:first-child { border-right: 1px solid #334155; border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
-        td:last-child { border-left: 1px solid #334155; border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
-
-        input[type="number"] { background: #1e293b; border: 1px solid #475569; color: #f59e0b; padding: 8px; border-radius: 6px; width: 80px; text-align: center; font-weight: bold; }
-        input[type="checkbox"] { transform: scale(1.5); accent-color: #f59e0b; cursor: pointer; }
-        
-        .btn { cursor: pointer; padding: 8px 15px; border-radius: 6px; border: none; font-weight: bold; transition: 0.2s; color: white; margin-left: 5px; }
-        .save-btn { background: #10b981; }
-        .save-btn:hover { background: #059669; }
-        
-        .del-btn { background: #ef4444; }
-        .del-btn:hover { background: #dc2626; }
-
-        .admin-badge { background: #f59e0b; color: black; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; margin-right: 5px; }
+        :root { --bg: #050b14; --panel: #111827; --border: #1f2937; --primary: #3b82f6; --accent: #f59e0b; --text: #f3f4f6; }
+        body { background: var(--bg); color: var(--text); font-family: 'Outfit', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+        .header h1 { margin: 0; color: var(--primary); }
+        .btn { padding: 8px 15px; border-radius: 6px; cursor: pointer; border: none; font-weight: bold; }
+        .btn-refresh { background: var(--panel); color: var(--text); border: 1px solid var(--border); }
+        .btn-save { background: var(--primary); color: white; }
+        .btn-delete { background: #dc2626; color: white; }
+        table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 10px; overflow: hidden; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: #1f2937; color: var(--accent); }
+        input[type="number"] { background: #000; border: 1px solid var(--border); color: #fff; padding: 5px; width: 60px; border-radius: 4px; }
+        input[type="checkbox"] { transform: scale(1.5); accent-color: var(--primary); }
+        .badge { padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
+        .badge-admin { background: var(--accent); color: #000; }
+        .whale-check { accent-color: #d946ef; }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <a href="/" class="back-link"><i class="fa-solid fa-arrow-right"></i> العودة للموقع</a>
-        <h1>🛠️ لوحة التحكم والإدارة</h1>
-        
-        <table>
+<div class="container">
+    <div class="header">
+        <h1><i class="fa-solid fa-shield-halved"></i> CANA Admin Panel</h1>
+        <button class="btn btn-refresh" onclick="loadUsers()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+    </div>
+    <div style="overflow-x: auto;">
+        <table id="users-table">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>المستخدم</th>
-                    <th>الرصيد الحالي</th>
-                    <th>VIP</th>
-                    <th>التحكم</th>
+                    <th>ID</th><th>Email</th><th>Credits</th><th>Premium?</th><th>Whale VIP? 🐋</th><th>Role</th><th>Actions</th>
                 </tr>
             </thead>
-            <tbody id="users-table">
-                <!-- سيتم تعبئة البيانات هنا -->
-            </tbody>
+            <tbody id="users-list"></tbody>
         </table>
     </div>
-
-    <script>
-        const token = localStorage.getItem("token");
-        if (!token) window.location.href = "/";
-
-        async function loadUsers() {
-            try {
-                const res = await fetch("/api/admin/users", {
-                    headers: { "Authorization": "Bearer " + token }
-                });
-                
-                if (res.status === 403) {
-                    document.body.innerHTML = "<h2 style='text-align:center; color:red; margin-top:50px;'>⛔ ممنوع الدخول! هذه الصفحة للمدراء فقط.</h2>";
-                    return;
-                }
-
-                const users = await res.json();
-                const tbody = document.getElementById("users-table");
-                tbody.innerHTML = "";
-
-                users.forEach(user => {
-                    const isAdminBadge = user.is_admin ? '<span class="admin-badge">ADMIN</span>' : '';
-                    
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td style="color:#64748b;">#${user.id}</td>
-                        <td>
-                            ${user.email} ${isAdminBadge}
-                            <div style="font-size:0.8rem; color:#64748b;">كلمة المرور مشفرة</div>
-                        </td>
-                        <td><input type="number" value="${user.credits}" id="c-${user.id}"></td>
-                        <td><input type="checkbox" ${user.is_premium ? 'checked' : ''} id="v-${user.id}"></td>
-                        <td>
-                            <button class="btn save-btn" onclick="saveUser(${user.id})" title="حفظ التعديلات"><i class="fa-solid fa-check"></i> حفظ</button>
-                            ${!user.is_admin ? `<button class="btn del-btn" onclick="deleteUser(${user.id})" title="حذف المستخدم"><i class="fa-solid fa-trash"></i></button>` : ''}
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch (err) {
-                console.error(err);
-                alert("حدث خطأ أثناء تحميل البيانات");
-            }
-        }
-
-        async function saveUser(id) {
-            const credits = document.getElementById(`c-${id}`).value;
-            const isPremium = document.getElementById(`v-${id}`).checked;
-
-            if(confirm("هل أنت متأكد من حفظ التعديلات لهذا المستخدم؟")) {
-                const res = await fetch("/api/admin/update_user", {
-                    method: "POST",
-                    headers: { 
-                        "Content-Type": "application/json",
-                        "Authorization": "Bearer " + token
-                    },
-                    body: JSON.stringify({ user_id: id, credits: parseInt(credits), is_premium: isPremium })
-                });
-
-                if (res.ok) alert("✅ تم تحديث بيانات المستخدم بنجاح!");
-                else alert("❌ فشل التحديث");
-            }
-        }
-
-        async function deleteUser(id) {
-            if(confirm("⚠️ تحذير خطير!\nهل أنت متأكد تماماً أنك تريد حذف هذا المستخدم نهائياً؟\nلا يمكن التراجع عن هذا الإجراء.")) {
-                const res = await fetch(`/api/admin/delete_user/${id}`, {
-                    method: "DELETE",
-                    headers: { "Authorization": "Bearer " + token }
-                });
-
-                if (res.ok) {
-                    alert("🗑️ تم حذف المستخدم بنجاح.");
-                    loadUsers(); // إعادة تحميل القائمة
-                } else {
-                    const data = await res.json();
-                    alert("❌ خطأ: " + data.detail);
-                }
-            }
-        }
-
-        loadUsers();
-    </script>
+</div>
+<script>
+    const token = localStorage.getItem("token");
+    if (!token) { alert("Please login as admin first!"); window.location.href = "/"; }
+    async function loadUsers() {
+        try {
+            const res = await fetch("/api/admin/users", { headers: { "Authorization": "Bearer " + token } });
+            if (!res.ok) throw new Error("Unauthorized");
+            const users = await res.json();
+            const tbody = document.getElementById("users-list");
+            tbody.innerHTML = "";
+            users.forEach(u => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>#${u.id}</td>
+                    <td>${u.email}</td>
+                    <td><input type="number" id="cred-${u.id}" value="${u.credits}"></td>
+                    <td><input type="checkbox" id="prem-${u.id}" ${u.is_premium ? "checked" : ""}></td>
+                    <td><input type="checkbox" class="whale-check" id="whale-${u.id}" ${u.is_whale ? "checked" : ""}></td>
+                    <td>${u.is_admin ? '<span class="badge badge-admin">ADMIN</span>' : 'User'}</td>
+                    <td>
+                        <button class="btn btn-save" onclick="saveUser(${u.id})"><i class="fa-solid fa-save"></i></button>
+                        ${!u.is_admin ? `<button class="btn btn-delete" onclick="deleteUser(${u.id})"><i class="fa-solid fa-trash"></i></button>` : ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (e) { alert("Error loading users: " + e.message); }
+    }
+    async function saveUser(id) {
+        const credits = document.getElementById(`cred-${id}`).value;
+        const isPremium = document.getElementById(`prem-${id}`).checked;
+        const isWhale = document.getElementById(`whale-${id}`).checked;
+        try {
+            const res = await fetch("/api/admin/update_user", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+                body: JSON.stringify({ user_id: id, credits: parseInt(credits), is_premium: isPremium, is_whale: isWhale })
+            });
+            if (res.ok) alert("User updated successfully! ✅"); else alert("Failed to update.");
+        } catch (e) { alert("Error: " + e.message); }
+    }
+    async function deleteUser(id) {
+        if(!confirm("Are you sure?")) return;
+        try { const res = await fetch(`/api/admin/delete_user/${id}`, { method: "DELETE", headers: { "Authorization": "Bearer " + token } }); if(res.ok) loadUsers(); } catch(e) { alert("Error."); }
+    }
+    loadUsers();
+</script>
 </body>
 </html>

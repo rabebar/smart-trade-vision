@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة القيادة | CANA AI</title>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+    <!-- ربط نفس ملف الستايل الأساسي -->
+    <link rel="stylesheet" href="/static/style.css?v=fix_final_9">
+
+    <style>
+        /* تنسيقات خاصة بالداشبورد (تكميلية) */
+        .dash-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 20px;
+        }
+
+        /* توزيع الشبكة */
+        .col-12 { grid-column: span 12; }
+        .col-8  { grid-column: span 8; }
+        .col-4  { grid-column: span 4; }
+        .col-6  { grid-column: span 6; }
+
+        @media (max-width: 1024px) {
+            .col-8, .col-4 { grid-column: span 12; }
+        }
+        @media (max-width: 768px) {
+            .col-6 { grid-column: span 12; }
+        }
+
+        /* تحسين مظهر الودجت */
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 10px;
+        }
+        .widget-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* جدول السجل */
+        .dash-table { width: 100%; border-collapse: collapse; }
+        .dash-table th { text-align: right; color: var(--text-muted); padding: 10px; background: rgba(0,0,0,0.2); }
+        .dash-table td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #fff; }
+        .status-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
+        .bg-green { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .bg-red { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        /* الحاسبة */
+        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .calc-res { 
+            background: rgba(245, 158, 11, 0.1); 
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: var(--accent);
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR (مطابق للموقع الأصلي مع تعديل بسيط) -->
+    <header class="navbar">
+        <div class="logo-container">
+            <div class="logo-icon"><i class="fa-solid fa-chart-line"></i></div>
+            <div class="brand-text">
+                <h1>DASHBOARD</h1>
+                <span>CANA TRADER</span>
+            </div>
+        </div>
+
+        <div class="nav-controls">
+            <!-- زر العودة للرئيسية -->
+            <a href="/" class="icon-btn" title="الرئيسية">
+                <i class="fa-solid fa-home"></i> الرئيسية
+            </a>
+            
+            <div class="credits-pill">
+                <i class="fa-solid fa-coins"></i>
+                <span id="dash-credits">...</span>
+            </div>
+
+            <div class="nav-user-badge">
+                <span id="dash-username">User</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 1. شريط الأسعار المتحرك -->
+    <div style="height: 50px; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+            {
+                "symbols": [
+                    {"proName": "FOREXCOM:SPXUSD", "title": "S&P 500"},
+                    {"proName": "FOREXCOM:NSXUSD", "title": "Nasdaq"},
+                    {"proName": "FX_IDC:EURUSD", "title": "EUR/USD"},
+                    {"proName": "FX_IDC:GBPUSD", "title": "GBP/USD"},
+                    {"proName": "OANDA:XAUUSD", "title": "Gold"},
+                    {"proName": "BITSTAMP:BTCUSD", "title": "Bitcoin"}
+                ],
+                "showSymbolLogo": true,
+                "isTransparent": false,
+                "displayMode": "adaptive",
+                "colorTheme": "dark",
+                "locale": "ar_AE"
+            }
+            </script>
+        </div>
+    </div>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="dash-container">
+
+        <!-- الصف الأول: الأدوات والحاسبة + جدول التحليلات -->
+        
+        <!-- حاسبة المخاطرة والبيب (يسار) -->
+        <div class="glass-card col-4">
+            <div class="widget-header">
+                <div class="widget-title"><i class="fa-solid fa-calculator"></i> أدوات إدارة المخاطر</div>
+            </div>
+
+            <!-- تبويبات بسيطة -->
+            <div class="auth-tabs" style="margin-bottom: 15px;">
+                <button class="auth-tab-btn active" onclick="switchCalc('risk')">المخاطرة</button>
+                <button class="auth-tab-btn" onclick="switchCalc('pip')">قيمة النقطة</button>
+            </div>
+
+            <!-- حاسبة المخاطرة -->
+            <div id="calc-risk-box">
+                <div class="input-field">
+                    <input id="d-balance" type="number" placeholder="رصيد المحفظة ($)">
+                </div>
+                <div class="calc-grid">
+                    <div class="input-field"><input id="d-risk" type="number" placeholder="المخاطرة %"></div>
+                    <div class="input-field"><input id="d-sl" type="number" placeholder="الوقف (Pips)"></div>
+                </div>
+                <button class="btn-gradient full-width small" onclick="calcRiskDash()">احسب اللوت</button>
+                <div id="res-risk-dash" class="calc-res"></div>
+            </div>
+
+            <!-- حاسبة البيب -->
+            <div id="calc-pip-box" class="hidden">
+                <div class="calc-grid">
+                    <div class="input-field"><input id="d-lot" type="number" placeholder="حجم اللوت"></div>
+                    <div class="input-field"><input id="d-pips" type="number" placeholder="عدد النقاط"></div>
+                </div>
+                <button class="btn-gradient full-width small" onclick="calcPipDash()">احسب الربح المتوقع</button>
+                <div id="res-pip-dash" class="calc-res"></div>
+            </div>
+        </div>
+
+        <!-- جدول سجل التحليلات (يمين) -->
+        <div class="glass-card col-8">
+            <div class="widget-header">
+                <div class="widget-title"><i class="fa-solid fa-list-check"></i> سجل تحليلاتي</div>
+                <button class="icon-btn" onclick="loadDashHistory()"><i class="fa-solid fa-rotate-right"></i></button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>الزوج</th>
+                            <th>الإشارة</th>
+                            <th>الدخول</th>
+                            <th>الهدف</th>
+                            <th>الوقف</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dash-history-body">
+                        <tr><td colspan="6" style="text-align:center; padding:20px;">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- الصف الثاني: الأجندة الاقتصادية + الأخبار -->
+
+        <!-- الأجندة الاقتصادية (TradingView) -->
+        <div class="glass-card col-6" style="height: 500px; padding:0; overflow:hidden;">
+            <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
+                {
+                    "colorTheme": "dark",
+                    "isTransparent": true,
+                    "width": "100%",
+                    "height": "100%",
+                    "locale": "ar_AE",
+                    "importanceFilter": "0,1",
+                    "currencyFilter": "USD,EUR,GBP,JPY,XAU"
+                }
+                </script>
+            </div>
+        </div>
+
+        <!-- أخبار الأسواق (Timeline) -->
+        <div class="glass-card col-6" style="height: 500px; padding:0; overflow:hidden;">
+            <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
+                {
+                    "feedMode": "market",
+                    "market": "forex",
+                    "colorTheme": "dark",
+                    "isTransparent": true,
+                    "displayMode": "regular",
+                    "width": "100%",
+                    "height": "100%",
+                    "locale": "ar_AE"
+                }
+                </script>
+            </div>
+        </div>
+        
+        <!-- الصف الثالث: التحليل التقني + جلسات السوق -->
+        <div class="glass-card col-12" style="height: 400px; padding:0; overflow:hidden;">
+             <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+                {
+                "colorTheme": "dark",
+                "dateRange": "12M",
+                "showChart": true,
+                "locale": "ar_AE",
+                "largeChartUrl": "",
+                "isTransparent": true,
+                "showSymbolLogo": true,
+                "showFloatingTooltip": false,
+                "width": "100%",
+                "height": "100%",
+                "tabs": [
+                    {
+                    "title": "الفوركس",
+                    "symbols": [
+                        { "s": "FX:EURUSD", "d": "EUR/USD" },
+                        { "s": "FX:GBPUSD", "d": "GBP/USD" },
+                        { "s": "FX:USDJPY", "d": "USD/JPY" },
+                        { "s": "FX:USDCHF", "d": "USD/CHF" },
+                        { "s": "FX:AUDUSD", "d": "AUD/USD" },
+                        { "s": "FX:USDCAD", "d": "USD/CAD" }
+                    ]
+                    },
+                    {
+                    "title": "السلع",
+                    "symbols": [
+                        { "s": "OANDA:XAUUSD", "d": "الذهب" },
+                        { "s": "OANDA:XAGUSD", "d": "الفضة" },
+                        { "s": "TVC:USOIL", "d": "النفط الخام" }
+                    ]
+                    }
+                ]
+                }
+                </script>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- سكريبت خاص بالداشبورد فقط -->
+    <script>
+        const token = localStorage.getItem("token");
+
+        // التحقق من الدخول عند الفتح
+        window.addEventListener('load', () => {
+            if(!token) {
+                window.location.href = "/";
+                return;
+            }
+            loadUserInfo();
+            loadDashHistory();
+        });
+
+        // جلب بيانات المستخدم
+        async function loadUserInfo() {
+            try {
+                const res = await fetch("/api/me", { headers: { "Authorization": "Bearer " + token } });
+                const data = await res.json();
+                if(res.ok) {
+                    document.getElementById("dash-credits").innerText = data.credits;
+                    document.getElementById("dash-username").innerText = data.email.split("@")[0];
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // جلب السجل (History)
+        async function loadDashHistory() {
+            const tbody = document.getElementById("dash-history-body");
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">جاري التحديث...</td></tr>';
+            
+            try {
+                const res = await fetch("/api/history", { headers: { "Authorization": "Bearer " + token } });
+                const data = await res.json();
+
+                if(!Array.isArray(data) || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">لا توجد تحليلات سابقة</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = "";
+                data.forEach(item => {
+                    const badgeClass = item.signal === "BUY" ? "bg-green" : (item.signal === "SELL" ? "bg-red" : "bg-gray");
+                    const date = new Date(item.created_at).toLocaleDateString('en-GB');
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="direction:ltr">${date}</td>
+                            <td>---</td> <!-- اسم الزوج غير محفوظ في الداتابيس الحالية -->
+                            <td><span class="status-badge ${badgeClass}">${item.signal}</span></td>
+                            <td style="direction:ltr">${item.entry}</td>
+                            <td style="direction:ltr">${item.tp}</td>
+                            <td style="direction:ltr">${item.sl}</td>
+                        </tr>
+                    `;
+                });
+            } catch(e) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">خطأ في الاتصال</td></tr>';
+            }
+        }
+
+        // تبديل الحاسبة
+        function switchCalc(type) {
+            document.querySelectorAll('.auth-tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if(type === 'risk') {
+                document.getElementById('calc-risk-box').classList.remove('hidden');
+                document.getElementById('calc-pip-box').classList.add('hidden');
+            } else {
+                document.getElementById('calc-risk-box').classList.add('hidden');
+                document.getElementById('calc-pip-box').classList.remove('hidden');
+            }
+        }
+
+        // منطق الحاسبة
+        function calcRiskDash() {
+            const bal = parseFloat(document.getElementById('d-balance').value);
+            const risk = parseFloat(document.getElementById('d-risk').value);
+            const sl = parseFloat(document.getElementById('d-sl').value);
+            const resBox = document.getElementById('res-risk-dash');
+            
+            if(bal && risk && sl) {
+                const riskAmount = bal * (risk / 100);
+                const lot = riskAmount / (sl * 10);
+                resBox.style.display = 'block';
+                resBox.innerHTML = `المخاطرة: $${riskAmount.toFixed(1)} <br> اللوت المقترح: ${lot.toFixed(2)}`;
+            }
+        }
+
+        function calcPipDash() {
+            const lot = parseFloat(document.getElementById('d-lot').value);
+            const pips = parseFloat(document.getElementById('d-pips').value);
+            const resBox = document.getElementById('res-pip-dash');
+
+            if(lot && pips) {
+                const val = lot * pips * 10;
+                resBox.style.display = 'block';
+                resBox.innerText = `الربح المتوقع: $${val.toFixed(2)}`;
+            }
+        }
+    </script>
+</body>
+</html>

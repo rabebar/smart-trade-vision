@@ -1,77 +1,48 @@
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, text
-from sqlalchemy.orm import sessionmaker, declarative_base
-import os
-from dotenv import load_dotenv
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, Float, ForeignKey, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship
+from datetime import datetime
 
-# ===========================
-# Load ENV
-# ===========================
-load_dotenv()
+# اسم ملف قاعدة البيانات
+SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL is not set")
-
-# ===========================
-# Normalize DATABASE URL
-# ===========================
-
-# Fix old postgres://
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-
-# Force SQLAlchemy to use psycopg v3 explicitly
-if DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace(
-        "postgresql://", "postgresql+psycopg://", 1
-    )
-
-# ===========================
-# Engine
-# ===========================
-# 🔴 إجبار psycopg v3 بدون الاعتماد على scheme من البيئة
 engine = create_engine(
-    "postgresql+psycopg://" + DATABASE_URL.split("://", 1)[1],
-    pool_pre_ping=True,
-    future=True,
-    connect_args={"sslmode": "require"}
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
-
-
-SessionLocal = sessionmaker(
-    bind=engine,
-    autocommit=False,
-    autoflush=False,
-    future=True
-)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
-# ===========================
-# User Model
-# ===========================
+# جدول المستخدمين
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True, nullable=False)
-    password_hash = Column(String, nullable=False)
-
+    email = Column(String, unique=True, index=True)
+    password_hash = Column(String)
     credits = Column(Integer, default=3)
     is_premium = Column(Boolean, default=False)
     is_admin = Column(Boolean, default=False)
+    is_whale = Column(Boolean, default=False) # باقة الحيتان
 
-# ===========================
-# Create tables
-# ===========================
+    # علاقة: المستخدم يملك تحليلات كثيرة
+    analyses = relationship("Analysis", back_populates="owner")
+
+# ✅ الجدول الجديد: سجل التحليلات (المحفظة)
+class Analysis(Base):
+    __tablename__ = "analyses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    symbol = Column(String, default="Unknown") 
+    signal = Column(String) 
+    entry = Column(String)
+    tp = Column(String)
+    sl = Column(String)
+    result = Column(String, default="Pending")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    user_id = Column(Integer, ForeignKey("users.id"))
+    owner = relationship("User", back_populates="analyses")
+
+# إنشاء الجداول
 Base.metadata.create_all(bind=engine)
-
-# ===========================
-# DB Health Check
-# ===========================
-def test_db_connection():
-    with engine.connect() as conn:
-        conn.execute(text("SELECT 1"))
-        conn.commit()
-    return True
