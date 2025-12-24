@@ -348,26 +348,38 @@
 <body>
 
 <!-- =========================================================
-     1. واجهة الاستقبال (Intro Overlay)
+     1. واجهة الاستقبال ثنائية اللغة (Fixed & Bilingual)
      ========================================================= -->
 <div 
     id="kaia-intro-overlay" 
     class="modal-overlay" 
     style="z-index: 9999; background-color: #000000; position: fixed; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; flex-direction: column;"
 >
-    <div 
-        id="intro-content" 
-        style="max-width: 800px; padding: 20px;"
-    >
+    <div id="intro-content" style="max-width: 850px; padding: 20px;">
+        <!-- قسم التحميل -->
         <div id="intro-loader">
             <div style="width: 60px; height: 60px; background-color: #3b82f6; border-radius: 50%; margin-left: auto; margin-right: auto; margin-bottom: 20px; box-shadow: 0px 0px 20px rgba(59, 130, 246, 0.6); animation: pulse 1.5s infinite;"></div>
-            <p data-i18n="intro_loading" style="color: #3b82f6; font-weight: 800; letter-spacing: 2px;">جاري تشغيل محرك KAIA AI...</p>
+            <p style="color: #3b82f6; font-weight: 800; letter-spacing: 2px;">
+                جاري تشغيل محرك KAIA AI...<br>
+                <span style="font-size: 14px; opacity: 0.8; display: block; margin-top: 5px;">Starting KAIA AI Engine...</span>
+            </p>
         </div>
 
+        <!-- قسم الدخول -->
         <div id="intro-reveal" style="display:none;">
-            <h1 data-i18n="intro_title" style="font-size: 70px; font-weight: 900; color: #3b82f6; margin-bottom: 20px; text-shadow: 0px 0px 30px rgba(59, 130, 246, 0.4);">KAIA AI</h1>
-            <p data-i18n="intro_desc" style="font-size: 24px; line-height: 1.8; color: #ffffff; margin-bottom: 30px;">أنت لا تتداول وحدك بعد الآن..</p>
-            <button id="ignite-system-btn" data-i18n="intro_btn" class="core-analyze-btn" style="height: 70px; padding-left: 40px; padding-right: 40px; font-size: 22px;">الدخول إلى غرفة العمليات المؤسسية</button>
+            <h1 style="font-size: 70px; font-weight: 900; color: #3b82f6; margin-bottom: 20px; text-shadow: 0px 0px 30px rgba(59, 130, 246, 0.4);">KAIA AI</h1>
+            <p style="font-size: 22px; line-height: 1.6; color: #ffffff; margin-bottom: 35px; font-weight: 600;">
+                أنت لا تتداول وحدك بعد الآن.. محرك KAIA AI يقرأ لك ما تخفيه البنوك، ويحسب لك ما يخشاه البشر.<br>
+                <span style="font-size: 17px; opacity: 0.8; display: block; margin-top: 10px; font-weight: 400;">
+                    You don't trade alone anymore.. KAIA AI reads what banks hide and calculates what humans fear.
+                </span>
+            </p>
+            <button id="ignite-system-btn" class="core-analyze-btn" style="height: auto; padding: 20px 45px; font-size: 20px; line-height: 1.4; font-weight: 900;">
+                الدخول إلى غرفة العمليات المؤسسية<br>
+                <span style="font-size: 14px; display: block; margin-top: 5px; opacity: 0.8; font-weight: 600;">
+                    Enter Institutional Operations Room
+                </span>
+            </button>
         </div>
     </div>
 </div>
