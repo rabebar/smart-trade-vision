@@ -317,15 +317,3 @@ def history(): return FileResponse("frontend/history.html")
 
 @app.get("/admin")
 def admin(): return FileResponse("frontend/admin.html")
-@app.get("/api/make-me-king")
-def make_me_king(email: str, db: Session = Depends(get_db)):
-    # هذا الكود يبحث عن إيميلك ويمنحك كل الصلاحيات فوراً
-    user = db.query(User).filter(User.email == email).first()
-    if user:
-        user.is_admin = True
-        user.is_whale = True
-        user.tier = "Platinum"
-        user.credits = 9999
-        db.commit()
-        return {"message": f"Success! Welcome King {user.full_name}, your powers are active!"}
-    return {"error": "User not found"}
