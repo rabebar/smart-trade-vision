@@ -128,6 +128,44 @@ def me(current_user: User = Depends(get_current_user)):
     return current_user
 
 # =========================================================
+# Admin Operations (NEW)
+# =========================================================
+@app.get("/api/admin/users")
+def admin_get_users(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="صلاحيات غير كافية")
+    return db.query(User).all()
+
+@app.post("/api/admin/update_user")
+def admin_update_user(data: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="صلاحيات غير كافية")
+    
+    user = db.query(User).filter(User.id == data.get("user_id")).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="المستخدم غير موجود")
+    
+    user.credits = data.get("credits", user.credits)
+    user.tier = data.get("tier", user.tier)
+    user.is_premium = data.get("is_premium", user.is_premium)
+    
+    db.commit()
+    return {"status": "success"}
+
+@app.delete("/api/admin/delete_user/{user_id}")
+def admin_delete_user(user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="صلاحيات غير كافية")
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    if user:
+        # حذف التحليلات المرتبطة أولاً
+        db.query(Analysis).filter(Analysis.user_id == user_id).delete()
+        db.delete(user)
+        db.commit()
+    return {"status": "success"}
+
+# =========================================================
 # KAIA Descriptive Analysis Engine (FIXED & CLEANED)
 # =========================================================
 @app.post("/api/analyze-chart")
@@ -135,6 +173,7 @@ async def analyze_chart(
     filename: str = Form(...),
     timeframe: str = Form(...),
     analysis_type: str = Form(...),
+    lang: str = Form("ar"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -149,8 +188,18 @@ async def analyze_chart(
         with open(path, "rb") as f:
             base64_image = base64.b64encode(f.read()).decode()
 
-        # PROMPT النهائي الصارم (التعديل الوحيد هنا)
-        system_prompt = """
+        # خريطة اللغات لضمان دقة الترجمة لكافة اللغات
+        lang_map = {
+            "ar": "Arabic (العربية)",
+            "en": "English",
+            "fr": "French (Français)",
+            "es": "Spanish (Español)",
+            "it": "Italian (Italiano)"
+        }
+        target_lang = lang_map.get(lang, "Arabic")
+
+        # PROMPT النهائي الصارم (كما أرسلته أنت تماماً دون نقص سطر واحد)
+        system_prompt = f"""
 أنت محلل أسواق مؤسسي محترف.
 
 مهمتك هي قراءة الشارت بصريًا وبدقة عالية، ثم اتخاذ قرارات تحليلية واضحة
@@ -191,6 +240,10 @@ opportunity_context,
 analysis_text,
 risk_note,
 confidence
+
+لغة التقرير (IMPORTANT):
+يجب كتابة جميع النصوص داخل قيم الـ JSON بلغة المتداول المختارة وهي: {target_lang}.
+تأكد من صياغة التحليل (analysis_text) وملاحظة المخاطر (risk_note) بهذه اللغة حصراً وبشكل احترافي.
 """
 
         response = client.chat.completions.create(
@@ -211,6 +264,7 @@ confidence
 
         result = json.loads(response.choices[0].message.content)
 
+        # إنشاء سجل التحليل في الذاكرة أولاً
         record = Analysis(
             user_id=current_user.id,
             symbol=analysis_type,
@@ -220,6 +274,7 @@ confidence
         )
         db.add(record)
 
+        # الخصم من الرصيد يتم فقط إذا وصلنا لهذه المرحلة بنجاح بعد استلام النتيجة
         if not current_user.is_whale:
             current_user.credits -= 1
 
@@ -259,3 +314,6 @@ def dashboard(): return FileResponse("frontend/dashboard.html")
 
 @app.get("/history")
 def history(): return FileResponse("frontend/history.html")
+
+@app.get("/admin")
+def admin(): return FileResponse("frontend/admin.html")

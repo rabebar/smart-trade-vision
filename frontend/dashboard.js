@@ -27,9 +27,10 @@ async function checkAccessAndInit() {
 
         currentUserData = await res.json();
 
-        // حجب الدخول عن مستخدمي باقة Trial (إلا لو كان أدمن)
+        // --- [التعديل المطلوب] حجب الدخول عن مستخدمي باقة Trial (إلا لو كان أدمن) ---
+        // الهدف: توجيههم للصفحة الرئيسية لتجربة صندوق التحليل هناك (3 محاولات)
         if (currentUserData.tier === "Trial" && !currentUserData.is_admin) {
-            alert("⚠️ يرجى الترقية للوصول إلى لوحة التحليل.");
+            alert(currentLang === 'ar' ? "⚠️ باقة التجربة (Trial) متاحة فقط في الصفحة الرئيسية. يرجى الترقية للوصول لغرفة القيادة." : "⚠️ Trial plan is only available on the Home page. Please upgrade to access the Command Center.");
             window.location.href = "/";
             return;
         }
@@ -202,6 +203,8 @@ async function runInstitutionalAnalysis() {
         analyzeFd.append("filename", uploadData.filename);
         analyzeFd.append("timeframe", timeframe);
         analyzeFd.append("analysis_type", strategy);
+        // [تحديث] إرسال اللغة الحالية المختارة لترجمة نتائج الذكاء الاصطناعي في الداشبورد
+        analyzeFd.append("lang", currentLang);
 
         const analyzeRes = await fetch("/api/analyze-chart", {
             method: "POST",
@@ -276,6 +279,17 @@ function setupWorkspaceUtilities() {
             }
         }
     });
+
+    // [إضافة] ميزة التحديث عند اختيار ملف يدوياً (Manual Upload Fix)
+    const fileInput = $("chartUpload");
+    if (fileInput) {
+        fileInput.onchange = () => {
+            if (fileInput.files[0] && $("status-text")) {
+                $("status-text").innerText = fileInput.files[0].name;
+                $("status-text").style.color = "var(--success)";
+            }
+        };
+    }
 
     // تسجيل الخروج
     if ($("logout-btn")) {

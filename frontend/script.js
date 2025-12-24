@@ -84,6 +84,9 @@ function runIntroSequence() {
 async function updateUIBasedOnAuth() {
     const authZone = $("auth-zone");
     const accessArea = $("access-control-area");
+    // [تحديث] استدعاء مساحة التجربة
+    const demoArea = $("demo-analysis-area");
+
     if (!authZone) return;
 
     const dict = (typeof translations !== 'undefined' && translations[currentLang]) ? translations[currentLang] : {};
@@ -97,6 +100,17 @@ async function updateUIBasedOnAuth() {
             if (res.ok) {
                 currentUserData = await res.json();
                 
+                // --- [تعديل المنطق المطلوب] التحكم في ظهور صندوق التحليل في الصفحة الرئيسية ---
+                if (demoArea) {
+                    // الصندوق يظهر فقط في الصفحة الرئيسية لحساب Trial فقط
+                    if (currentUserData.tier === "Trial") {
+                        demoArea.style.display = "block";
+                    } else {
+                        // يختفي للباقات المدفوعة لأن الصندوق موجود عندهم في الداشبورد
+                        demoArea.style.display = "none";
+                    }
+                }
+
                 // --- [إضافة منطق زر الإدارة المتطور] ---
                 let adminBtn = "";
                 if (currentUserData.is_admin === true) {
@@ -150,6 +164,9 @@ async function updateUIBasedOnAuth() {
     // واجهة الزائر (Guest Interface)
     authZone.innerHTML = `<button class="wallet-btn" id="open-auth-btn"><i class="fa-solid fa-user-circle"></i> ${dict.nav_login || 'Login'}</button>`;
     if (accessArea) accessArea.style.display = "none";
+    
+    // --- [تعديل المنطق المطلوب] إخفاء صندوق التحليل عن الزوار دائماً قبل الدخول ---
+    if (demoArea) demoArea.style.display = "none";
     
     if ($("open-auth-btn")) {
         $("open-auth-btn").onclick = () => { 
@@ -305,6 +322,12 @@ async function runDemoAnalysis() {
         updateAuthModalState();
         return $("auth-modal").style.display="flex"; 
     }
+
+    // --- [تحديث] منع التحليل إذا كان الرصيد صفراً لمستخدمي Trial ---
+    if (currentUserData && currentUserData.tier === "Trial" && currentUserData.credits <= 0 && !currentUserData.is_admin) {
+        alert(currentLang === 'ar' ? "لقد استنفدت جميع التحليلات المجانية المتاحة لك (3/3). يرجى ترقية باقتك للاستمرار." : "You have exhausted all free analyses (3/3). Please upgrade your plan to continue.");
+        return;
+    }
     
     const fileInput = $("chartUpload");
     if (!fileInput.files.length) return alert("Please upload chart image first");
@@ -325,6 +348,8 @@ async function runDemoAnalysis() {
         anFd.append("filename", filename);
         anFd.append("timeframe", $("timeframe").value);
         anFd.append("analysis_type", $("strategy").value);
+        // [تحديث] إرسال اللغة الحالية المختارة لترجمة النتائج
+        anFd.append("lang", currentLang);
 
         const res = await fetch("/api/analyze-chart", { 
             method: "POST", 
@@ -336,22 +361,50 @@ async function runDemoAnalysis() {
         
         if (!res.ok) throw new Error(data.detail);
 
+        // تحديث الرصيد محلياً فور النجاح
+        if (currentUserData) currentUserData.credits = data.remaining_credits;
+
         // إظهار النتائج باستخدام signal و reason لضمان التوافق
         $("result-box").style.display = "block";
-        const biasClass = data.signal.toLowerCase().includes('buy') ? 'bullish-glow' : (data.signal.toLowerCase().includes('sell') ? 'bearish-glow' : '');
+
+        // ===================== [تحديث نظام عرض النتائج المترجمة] =====================
+        const analysis = (data && typeof data.analysis === "object" && data.analysis) ? data.analysis : null;
+
+        const signalText = (analysis && typeof analysis.market_bias === "string")
+            ? analysis.market_bias
+            : ((typeof data.signal === "string") ? data.signal : "");
+
+        const structureText = (analysis && typeof analysis.market_phase === "string")
+            ? analysis.market_phase
+            : ((typeof data.structure === "string") ? data.structure : "");
+
+        const zonesText = (analysis && typeof analysis.opportunity_context === "string")
+            ? analysis.opportunity_context
+            : ((typeof data.key_zones === "string") ? data.key_zones : "");
+
+        const reasonText = (analysis && typeof analysis.analysis_text === "string")
+            ? analysis.analysis_text
+            : ((typeof data.reason === "string") ? data.reason : "");
+
+        const safeSignal = (typeof signalText === "string") ? signalText : "";
+        const biasClass = safeSignal.toLowerCase().includes('buy')
+            ? 'bullish-glow'
+            : (safeSignal.toLowerCase().includes('sell') ? 'bearish-glow' : '');
+        // =================== [نهاية تحديث العرض] ===================
+
         
         $("res-data-content").innerHTML = `
             <div class="analysis-result-card ${biasClass}">
                 <button class="close-res-btn" onclick="document.getElementById('result-box').style.display='none'">×</button>
                 <h3 style="color:var(--primary); text-align:center; font-weight:900; margin-bottom:15px; letter-spacing:1px;">KAIA AI REPORT</h3>
                 <div class="res-data-grid">
-                    <div class="res-data-item"><small>Bias/Signal</small><span>${data.signal}</span></div>
-                    <div class="res-data-item"><small>Structure</small><span>${data.structure}</span></div>
-                    <div class="res-data-item" style="grid-column: span 2;"><small>Zones</small><span>${data.key_zones}</span></div>
+                    <div class="res-data-item"><small>Bias/Signal</small><span>${signalText || 'N/A'}</span></div>
+                    <div class="res-data-item"><small>Structure</small><span>${structureText || 'N/A'}</span></div>
+                    <div class="res-data-item" style="grid-column: span 2;"><small>Zones</small><span>${zonesText || 'N/A'}</span></div>
                 </div>
                 <div style="background:rgba(2,6,23,0.7); padding:20px; border-radius:15px; margin-top:15px; border:1px solid var(--border);">
                     <strong style="color:var(--primary); display:block; margin-bottom:5px;">Institutional Narrative:</strong>
-                    <p style="font-size:15px; line-height:1.7;">${data.reason}</p>
+                    <p style="font-size:15px; line-height:1.7;">${reasonText || ''}</p>
                 </div>
             </div>
         `;
@@ -362,6 +415,8 @@ async function runDemoAnalysis() {
     } finally { 
         btn.disabled = false; 
         btn.innerText = "Analyze Now"; 
+        // تحديث واجهة الرصيد فوراً
+        updateUIBasedOnAuth();
     }
 }
 
@@ -419,5 +474,5 @@ window.onload = async () => {
 };
 
 /* ============================================================
-   END OF MASTER SCRIPT ENGINE V7.2
+   END OF MASTER SCRIPT ENGINE V7.3
    ============================================================ */
