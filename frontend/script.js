@@ -60,6 +60,9 @@ function runIntroSequence() {
     const overlay = $("kaia-intro-overlay");
     if (!overlay || sessionStorage.getItem("kaia_intro_seen")) return;
 
+    // [حقن] ضمان ترجمة واجهة الافتتاح فور تشغيلها بالإنجليزية أو العربية
+    applyTranslations(currentLang);
+
     setTimeout(() => {
         if ($("intro-loader")) $("intro-loader").style.display = "none";
         if ($("intro-reveal")) $("intro-reveal").style.display = "block";
@@ -194,6 +197,29 @@ function updateAuthModalState() {
     if ($("modal-title")) $("modal-title").innerText = isRegisterMode ? (dict.auth_toggle_reg || "Register") : (dict.auth_title || "Login");
     if ($("auth-submit-btn")) $("auth-submit-btn").innerText = isRegisterMode ? (dict.auth_submit || "Confirm") : (dict.nav_login || "Login");
     if ($("auth-toggle-text")) $("auth-toggle-text").innerText = isRegisterMode ? (dict.auth_toggle_login || "Login") : (dict.auth_toggle_reg || "Register");
+
+    // [حقن] حقن واجهة البنك والاشتراك عند اختيار باقة مدفوعة
+    const paymentSection = $("payment-info-section");
+    if (paymentSection) {
+        if (isRegisterMode && selectedPlan.name !== "Trial") {
+            paymentSection.style.display = "block";
+            let bankText = (dict.bank_desc || "You selected {plan} for ${price}")
+                           .replace("{plan}", selectedPlan.name)
+                           .replace("{price}", selectedPlan.price);
+
+            paymentSection.innerHTML = `
+                <h3 style="color:var(--primary); font-weight:900; margin-bottom:15px;">${dict.bank_title || 'Payment Info'}</h3>
+                <p style="font-size:14px; line-height:1.6; color:#fff; margin-bottom:20px;">${bankText}</p>
+                <a href="https://wa.me/970594060648?text=Hello, I want to activate ${selectedPlan.name} plan" 
+                   target="_blank" class="btn-glow-access" style="font-size:16px; padding:15px 25px; width:100%; text-align:center; display:block; text-decoration:none;">
+                   <i class="fa-brands fa-whatsapp"></i> ${dict.bank_whatsapp_btn || 'Send Receipt'}
+                </a>
+                <p style="font-size:12px; color:var(--muted); margin-top:15px;">${dict.bank_notice || 'Activation after review.'}</p>
+            `;
+        } else {
+            paymentSection.style.display = "none";
+        }
+    }
 }
 
 async function handleAuthSubmit() {
@@ -258,7 +284,8 @@ async function handleAuthSubmit() {
    ------------------------------------------------------------ */
 async function fetchMarketNews() {
     try {
-        const res = await fetch("/api/news");
+        // [حقن] إرسال اللغة الحالية للسيرفر ليجلب أخباراً متوافقة (AR أو EN)
+        const res = await fetch(`/api/news?lang=${currentLang}`);
         const data = await res.json();
         if (data.news && $("news-ticker-v2")) {
             // تكرار الأخبار لضمان ملء الشريط بالكامل
@@ -474,5 +501,5 @@ window.onload = async () => {
 };
 
 /* ============================================================
-   END OF MASTER SCRIPT ENGINE V7.3
+   END OF MASTER SCRIPT ENGINE V7.3 [FINAL FIXED INJECTED]
    ============================================================ */

@@ -100,7 +100,7 @@
     <div class="history-header">
         <div>
             <h1 data-i18n="dash_history_title" style="font-weight: 900; color: var(--primary);">سجل الدراسات الفنية</h1>
-            <p data-i18n="history_subtitle" style="color: var(--muted); font-size: 14px;">مراجعة تاريخية لتحليلات المحرك</p>
+            <p data-i18n="history_subtitle" style="color: var(--muted); font-size: 14px;">مراجعة تاريخية لتحليلات المحرك بناءً على سلوك السوق</p>
         </div>
     </div>
 
@@ -130,8 +130,7 @@
 
     // وظيفة لتنظيف نصوص المستويات المعقدة
     function formatLevels(rawText) {
-        if (!rawText) return "---";
-        // إزالة الأقواس وعلامات التنصيص والرموز التي يضيفها البايثون أحياناً
+        if (!rawText) return "Descriptive Analysis (No specific levels)";
         let clean = rawText.replace(/[{}'\[\]]/g, "")
                            .replace(/,/g, "\n")
                            .replace(/:/g, ": ");
@@ -167,7 +166,7 @@
                 <tr>
                     <td class="col-id" style="font-weight:900;">${data.length - index}</td>
                     <td class="col-time" style="font-size:11px;">${timeStr}</td>
-                    <td class="col-strategy"><span class="strategy-badge">${item.strategy} [${item.timeframe}]</span></td>
+                    <td class="col-strategy"><span class="strategy-badge">${item.symbol} [${item.timeframe}]</span></td>
                     <td class="col-signal"><span class="signal-tag ${sigClass}">${sigText}</span></td>
                     <td class="levels-data">
                         <div style="background:rgba(0,0,0,0.3); padding:8px; border-radius:8px;">
@@ -180,12 +179,11 @@
             }).join("");
 
         } catch (e) { 
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">خطأ في جلب البيانات.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">خطأ في جلب البيانات من السيرفر.</td></tr>`;
         }
     }
 
     window.onload = () => {
-        // تطبيق الترجمة
         const dict = translations[currentLang];
         if(dict) {
             document.querySelectorAll("[data-i18n]").forEach(el => {

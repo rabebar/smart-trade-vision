@@ -124,8 +124,11 @@
             cursor: pointer;
             font-weight: 800;
             display: flex;
-            align-items: center; gap: 8px;
+            flex-direction: column;
+            align-items: center; 
+            gap: 4px;
             transition: 0.3s;
+            min-width: 100px;
         }
 
         .tool-icon-btn:hover { 
@@ -271,6 +274,15 @@
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* تنسيق نصوص الشرح الصغيرة */
+        .field-helper {
+            display: block;
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 4px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body class="dashboard-root">
@@ -283,27 +295,42 @@
         <button class="nav-btn-logout" id="logout-btn" title="Exit">
             <i class="fa-solid fa-power-off"></i> 
         </button>
+
+        <!-- زر تحديث المنصة الجديد -->
+        <button class="tool-icon-btn" onclick="location.reload()" title="Refresh System">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-arrows-rotate"></i>
+                <span data-i18n="dash_refresh_btn">تحديث</span>
+            </div>
+            <small style="font-size: 9px; opacity: 0.7;">إعادة جلب البيانات</small>
+        </button>
         
         <button class="wallet-btn" onclick="window.location.href='/'" title="Home">
              <i class="fa-solid fa-house"></i>
         </button>
 
         <!-- زر فتح نافذة إدارة المخاطر -->
-        <button class="tool-icon-btn" onclick="$('risk-modal').style.display='flex'">
-            <i class="fa-solid fa-shield-halved"></i> 
-            <span data-i18n="dash_risk_title">إدارة المخاطر</span>
+        <button class="tool-icon-btn" onclick="document.getElementById('risk-modal').style.display='flex'">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-shield-halved"></i> 
+                <span data-i18n="dash_risk_title">إدارة المخاطر</span>
+            </div>
         </button>
 
         <!-- زر فتح حاسبة البيبس الجديدة -->
-        <button class="tool-icon-btn" onclick="$('pip-modal').style.display='flex'">
-            <i class="fa-solid fa-calculator"></i> 
-            <span data-i18n="dash_pip_calc_title">حاسبة النقاط</span>
+        <button class="tool-icon-btn" onclick="document.getElementById('pip-modal').style.display='flex'">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-calculator"></i> 
+                <span data-i18n="dash_pip_calc_title">حاسبة النقاط</span>
+            </div>
         </button>
 
         <!-- زر الانتقال لصفحة سجل التحليلات -->
         <button class="tool-icon-btn" onclick="window.location.href='/history'">
-            <i class="fa-solid fa-clock-rotate-left"></i>
-            <span data-i18n="dash_history_title">سجل العمليات</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span data-i18n="dash_history_title">سجل العمليات</span>
+            </div>
         </button>
 
         <div class="user-info-capsule">
@@ -391,7 +418,7 @@
                         <span data-i18n="help_step_3">تصفير الذاكرة: عند الانتهاء، اضغط على "إخفاء النتيجة" لتنظيف ذاكرة المحرك وتجهيزه لعملية تحليل جديدة كلياً.</span>
                     </li>
                 </ul>
-                <button onclick="$('help-box').style.display='none'" data-i18n="help_btn" style="width:100%; margin-top:10px; background:rgba(59,130,246,0.1); color:var(--primary); border:1px solid var(--primary); height:35px; border-radius:8px; cursor:pointer; font-weight:800; font-size:12px;">فهمت ذلك</button>
+                <button onclick="document.getElementById('help-box').style.display='none'" data-i18n="help_btn" style="width:100%; margin-top:10px; background:rgba(59,130,246,0.1); color:var(--primary); border:1px solid var(--primary); height:35px; border-radius:8px; cursor:pointer; font-weight:800; font-size:12px;">فهمت ذلك</button>
             </div>
             
             <div class="drop-zone-v2" id="drop-zone" style="padding: 35px; border-radius: 15px; background: rgba(0,0,0,0.3);">
@@ -557,30 +584,57 @@
 
 <!-- ================= 5. النوافذ المنبثقة (Modals) ================= -->
 
-<!-- نافذة إدارة المخاطر -->
+<!-- نافذة إدارة المخاطر (المنطق الجديد) -->
 <div id="risk-modal" class="floating-modal">
     <div class="modal-box">
-        <h3 data-i18n="dash_risk_title" style="margin-bottom: 25px; color: var(--primary); font-weight: 900; text-align: center;">إدارة المخاطر</h3>
-        <input type="number" id="balance" data-i18n-placeholder="dash_balance_placeholder" placeholder="$0.00" class="modal-input">
-        <div style="display: flex; gap: 15px; margin-top: 15px;">
-            <div style="flex: 1;"><input type="number" id="risk-percent" value="1" class="modal-input"></div>
-            <div style="flex: 1;"><input type="number" id="sl-pips" data-i18n-placeholder="dash_sl_pips" placeholder="Pips" class="modal-input"></div>
+        <h3 style="margin-bottom: 25px; color: var(--primary); font-weight: 900; text-align: center;">إدارة المخاطر</h3>
+        
+        <div style="margin-top: 15px;">
+            <label style="font-size: 13px; font-weight: 800; color: #fff;">رأس المال (Balance)</label>
+            <input type="number" id="balance" placeholder="مثلاً 1000" class="modal-input">
+            <span class="field-helper">إجمالي المبلغ الموجود في محفظة التداول الخاصة بك حالياً.</span>
         </div>
-        <button class="core-analyze-btn" onclick="calculateLot()" style="width: 100%; margin-top: 25px;" data-i18n="dash_calc_lot_btn">احسب اللوت</button>
-        <div id="risk-result" style="margin-top: 20px; text-align: center; font-weight: 900; font-size: 18px;"></div>
-        <button onclick="$('risk-modal').style.display='none'" style="margin-top: 30px; background: none; border: none; color: var(--danger); cursor: pointer; font-weight: 900; width: 100%;">إغلاق [X]</button>
+
+        <div style="margin-top: 15px;">
+            <label style="font-size: 13px; font-weight: 800; color: #fff;">حجم اللوت (Lot Size)</label>
+            <input type="number" id="risk-lot" placeholder="مثلاً 0.10" class="modal-input">
+            <span class="field-helper">حجم العقد الذي تنوي فتحه لهذه الصفقة (مثال: 0.01 لوت ميكرو).</span>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <label style="font-size: 13px; font-weight: 800; color: #fff;">وقف الخسارة (Stop Loss - Pips)</label>
+            <input type="number" id="sl-pips-input" placeholder="مثلاً 20" class="modal-input">
+            <span class="field-helper">عدد نقاط وقف الخسارة التي حددتها في تحليلك الفني.</span>
+        </div>
+
+        <button class="core-analyze-btn" onclick="calculateRiskPercent()" style="width: 100%; margin-top: 25px;" data-i18n="dash_calc_risk_btn">احسب نسبة المخاطرة</button>
+        <div id="risk-result" style="margin-top: 20px; text-align: center; font-weight: 900; font-size: 18px; color: var(--primary);"></div>
+        
+        <button onclick="document.getElementById('risk-modal').style.display='none'" style="margin-top: 30px; background: none; border: none; color: var(--danger); cursor: pointer; font-weight: 900; width: 100%;">إغلاق [X]</button>
     </div>
 </div>
 
-<!-- نافذة حاسبة البيبس -->
+<!-- نافذة حاسبة البيبس (النقاط) -->
 <div id="pip-modal" class="floating-modal">
-    <div class="modal-box">
-        <h3 data-i18n="dash_pip_calc_title" style="margin-bottom: 25px; color: var(--success); font-weight: 900; text-align: center;">حاسبة الربح</h3>
-        <input type="number" id="pip-lot-size" placeholder="0.10" class="modal-input">
-        <input type="number" id="pip-count" placeholder="50" class="modal-input" style="margin-top: 15px;">
-        <button class="core-analyze-btn" onclick="calculatePipProfit()" style="width: 100%; margin-top: 25px; background: var(--success);" data-i18n="dash_calc_profit_btn">حساب الربح</button>
-        <div id="pip-result" style="margin-top: 20px; text-align: center; font-weight: 900; font-size: 18px;"></div>
-        <button onclick="$('pip-modal').style.display='none'" style="margin-top: 30px; background: none; border: none; color: var(--danger); cursor: pointer; font-weight: 900; width: 100%;">إغلاق [X]</button>
+    <div class="modal-box" style="border-color: var(--success);">
+        <h3 style="margin-bottom: 25px; color: var(--success); font-weight: 900; text-align: center;">حاسبة الربح بالنقاط</h3>
+        
+        <div style="margin-top: 15px;">
+            <label style="font-size: 13px; font-weight: 800; color: #fff;">حجم اللوت (Lot Size)</label>
+            <input type="number" id="pip-lot-size" placeholder="0.10" class="modal-input">
+            <span class="field-helper">حجم العقد المستخدم في حساب هذه الصفقة.</span>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <label style="font-size: 13px; font-weight: 800; color: #fff;">عدد النقاط (Pips)</label>
+            <input type="number" id="pip-count" placeholder="50" class="modal-input">
+            <span class="field-helper">إجمالي عدد النقاط التي حققها السعر أو يستهدفها.</span>
+        </div>
+
+        <button class="core-analyze-btn" onclick="calculatePipProfit()" style="width: 100%; margin-top: 25px; background: var(--success);" data-i18n="dash_calc_profit_btn">حساب القيمة المالية ($)</button>
+        <div id="pip-result" style="margin-top: 20px; text-align: center; font-weight: 900; font-size: 18px; color: var(--success);"></div>
+        
+        <button onclick="document.getElementById('pip-modal').style.display='none'" style="margin-top: 30px; background: none; border: none; color: var(--danger); cursor: pointer; font-weight: 900; width: 100%;">إغلاق [X]</button>
     </div>
 </div>
 

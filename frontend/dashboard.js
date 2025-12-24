@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   KAIA AI × CANA - COMMAND CENTER ENGINE (Version 6.9 FINAL FIXED)
+   KAIA AI × CANA - COMMAND CENTER ENGINE (Version 7.0 UPDATED)
    ============================================================ */
 
 const $ = (id) => document.getElementById(id);
@@ -27,8 +27,6 @@ async function checkAccessAndInit() {
 
         currentUserData = await res.json();
 
-        // --- [التعديل المطلوب] حجب الدخول عن مستخدمي باقة Trial (إلا لو كان أدمن) ---
-        // الهدف: توجيههم للصفحة الرئيسية لتجربة صندوق التحليل هناك (3 محاولات)
         if (currentUserData.tier === "Trial" && !currentUserData.is_admin) {
             alert(currentLang === 'ar' ? "⚠️ باقة التجربة (Trial) متاحة فقط في الصفحة الرئيسية. يرجى الترقية للوصول لغرفة القيادة." : "⚠️ Trial plan is only available on the Home page. Please upgrade to access the Command Center.");
             window.location.href = "/";
@@ -36,9 +34,8 @@ async function checkAccessAndInit() {
         }
 
         document.body.style.visibility = "visible";
+        document.body.style.opacity = "1";
         syncUserData();
-        
-        // تشغيل محرك الترجمة عند البداية
         applyDashboardTranslations(currentLang);
 
     } catch (e) {
@@ -60,19 +57,16 @@ function applyDashboardTranslations(lang) {
     const dict = translations?.[lang];
     if (!dict) return;
 
-    // 1. ترجمة النصوص العادية التي تحمل وسم data-i18n
     document.querySelectorAll("[data-i18n]").forEach(el => {
         const key = el.getAttribute("data-i18n");
         if (dict[key]) el.innerText = dict[key];
     });
 
-    // 2. ترجمة النصوص التلميحية (Placeholders)
     document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
         const key = el.getAttribute("data-i18n-placeholder");
         if (dict[key]) el.placeholder = dict[key];
     });
 
-    // 3. ضبط اتجاه الصفحة وتفعيل كلاس LTR
     document.body.dir = lang === "ar" ? "rtl" : "ltr";
     if (lang === "ar") {
         document.body.classList.remove("ltr");
@@ -80,7 +74,6 @@ function applyDashboardTranslations(lang) {
         document.body.classList.add("ltr");
     }
 
-    // 4. تحديث القائمة المنسدلة لتطابق اللغة الحالية
     if ($("language-select")) {
         $("language-select").value = lang;
     }
@@ -88,6 +81,85 @@ function applyDashboardTranslations(lang) {
     currentLang = lang;
     localStorage.setItem("kaia_lang", lang);
 }
+
+/* =======================
+   برمجة الآلة الحاسبة الجانبية (Calculator)
+   ======================= */
+let calcExpression = "";
+
+window.inputCalc = (val) => {
+    calcExpression += val;
+    $("calc-display").innerText = calcExpression;
+};
+
+window.clearCalc = () => {
+    calcExpression = "";
+    $("calc-display").innerText = "0";
+};
+
+window.deleteCalc = () => {
+    calcExpression = calcExpression.slice(0, -1);
+    $("calc-display").innerText = calcExpression || "0";
+};
+
+window.resultCalc = () => {
+    try {
+        // حساب المعادلة وتحويل النتيجة لنص
+        calcExpression = eval(calcExpression).toString();
+        $("calc-display").innerText = calcExpression;
+    } catch (e) {
+        $("calc-display").innerText = "Error";
+        calcExpression = "";
+    }
+};
+
+/* =======================
+   برمجة إدارة المخاطر (Risk Management)
+   ======================= */
+window.calculateRiskPercent = () => {
+    const balance = parseFloat($("balance").value);
+    const lot = parseFloat($("risk-lot").value);
+    const slPips = parseFloat($("sl-pips-input").value);
+
+    if (!balance || !lot || !slPips) {
+        alert(currentLang === 'ar' ? "يرجى ملء جميع الخانات أولاً" : "Please fill all fields first");
+        return;
+    }
+
+    // المخاطرة بالدولار = حجم اللوت * عدد النقاط * 10 (لأزواج الدولار الأساسية)
+    const riskAmount = lot * slPips * 10;
+    // نسبة المخاطرة = (المبلغ المخاطر به / رأس المال) * 100
+    const riskPercent = (riskAmount / balance) * 100;
+
+    const resultDiv = $("risk-result");
+    if (currentLang === 'ar') {
+        resultDiv.innerHTML = `مبلغ المخاطرة: $${riskAmount.toFixed(2)} <br> نسبة المخاطرة: ${riskPercent.toFixed(2)}%`;
+    } else {
+        resultDiv.innerHTML = `Risk Amount: $${riskAmount.toFixed(2)} <br> Risk Percent: ${riskPercent.toFixed(2)}%`;
+    }
+};
+
+/* =======================
+   برمجة حاسبة النقاط (Pip Calculator)
+   ======================= */
+window.calculatePipProfit = () => {
+    const lot = parseFloat($("pip-lot-size").value);
+    const pips = parseFloat($("pip-count").value);
+
+    if (!lot || !pips) {
+        alert(currentLang === 'ar' ? "يرجى إدخال اللوت وعدد النقاط" : "Please enter lot and pip count");
+        return;
+    }
+
+    const profit = lot * pips * 10;
+    const resultDiv = $("pip-result");
+
+    if (currentLang === 'ar') {
+        resultDiv.innerText = `الربح المتوقع: $${profit.toFixed(2)}`;
+    } else {
+        resultDiv.innerText = `Expected Profit: $${profit.toFixed(2)}`;
+    }
+};
 
 /* =======================
    نظام المساعدة والتعليمات
@@ -103,7 +175,6 @@ function setupHelpSystem() {
             helpBox.style.display = isVisible ? "none" : "block";
         };
 
-        // إغلاق المربع عند النقر في أي مكان آخر
         document.addEventListener("click", (e) => {
             if (helpBox.style.display === "block" && !helpBox.contains(e.target) && e.target !== helpIcon) {
                 helpBox.style.display = "none";
@@ -116,21 +187,14 @@ function setupHelpSystem() {
    تصفير بيئة العمل (Cleanup Logic)
    ======================= */
 window.resetWorkspace = function() {
-    if ($("result-box")) {
-        $("result-box").style.display = "none";
-    }
-
-    if ($("chartUpload")) {
-        $("chartUpload").value = ""; 
-    }
+    if ($("result-box")) $("result-box").style.display = "none";
+    if ($("chartUpload")) $("chartUpload").value = ""; 
 
     if ($("status-text")) {
         const dict = translations?.[currentLang];
         $("status-text").innerText = dict?.drop_zone_text || "إلصق الشارت هنا 📸";
         $("status-text").style.color = ""; 
     }
-    
-    console.log("Workspace Cleared.");
 };
 
 /* =======================
@@ -186,7 +250,6 @@ async function runInstitutionalAnalysis() {
     btn.disabled = true;
 
     try {
-        /* 1. رفع الصورة للسيرفر */
         const uploadFd = new FormData();
         uploadFd.append("chart", fileInput.files[0]);
 
@@ -198,12 +261,10 @@ async function runInstitutionalAnalysis() {
         const uploadData = await uploadRes.json();
         if (!uploadData.filename) throw new Error("Upload failed");
 
-        /* 2. إجراء التحليل */
         const analyzeFd = new FormData();
         analyzeFd.append("filename", uploadData.filename);
         analyzeFd.append("timeframe", timeframe);
         analyzeFd.append("analysis_type", strategy);
-        // [تحديث] إرسال اللغة الحالية المختارة لترجمة نتائج الذكاء الاصطناعي في الداشبورد
         analyzeFd.append("lang", currentLang);
 
         const analyzeRes = await fetch("/api/analyze-chart", {
@@ -217,35 +278,17 @@ async function runInstitutionalAnalysis() {
 
         const analysis = data.analysis;
 
-        /* 3. عرض النتائج */
         resBox.style.display = "block";
         $("res-data-content").innerHTML = `
             <div class="analysis-result-card">
                 <h3 style="text-align:center;font-weight:900;">KAIA LIVE REPORT</h3>
-
                 <div class="res-data-grid">
-                    <div class="res-data-item">
-                        <small>Market Bias</small>
-                        <span>${analysis.market_bias}</span>
-                    </div>
-                    <div class="res-data-item">
-                        <small>Market Phase</small>
-                        <span>${analysis.market_phase}</span>
-                    </div>
-                    <div class="res-data-item">
-                        <small>Confidence</small>
-                        <span>${analysis.confidence}</span>
-                    </div>
+                    <div class="res-data-item"><small>Market Bias</small><span>${analysis.market_bias}</span></div>
+                    <div class="res-data-item"><small>Market Phase</small><span>${analysis.market_phase}</span></div>
+                    <div class="res-data-item"><small>Confidence</small><span>${analysis.confidence}</span></div>
                 </div>
-
-                <div class="analysis-box">
-                    <strong>Institutional Analysis</strong>
-                    <p>${analysis.analysis_text}</p>
-                </div>
-
-                <div class="risk-note">
-                    <strong>Risk Note:</strong> ${analysis.risk_note}
-                </div>
+                <div class="analysis-box"><strong>Institutional Analysis</strong><p>${analysis.analysis_text}</p></div>
+                <div class="risk-note"><strong>Risk Note:</strong> ${analysis.risk_note}</div>
             </div>
         `;
 
@@ -262,10 +305,9 @@ async function runInstitutionalAnalysis() {
 }
 
 /* =======================
-   UTILITIES
+   UTILITIES & INIT
    ======================= */
 function setupWorkspaceUtilities() {
-    // ميزة اللصق المباشر (Paste)
     document.addEventListener("paste", (e) => {
         const item = [...e.clipboardData.items].find(x => x.type.includes("image"));
         if (item) {
@@ -280,7 +322,6 @@ function setupWorkspaceUtilities() {
         }
     });
 
-    // [إضافة] ميزة التحديث عند اختيار ملف يدوياً (Manual Upload Fix)
     const fileInput = $("chartUpload");
     if (fileInput) {
         fileInput.onchange = () => {
@@ -291,7 +332,6 @@ function setupWorkspaceUtilities() {
         };
     }
 
-    // تسجيل الخروج
     if ($("logout-btn")) {
         $("logout-btn").onclick = () => {
             localStorage.removeItem("token");
@@ -300,29 +340,22 @@ function setupWorkspaceUtilities() {
     }
 }
 
-/* =======================
-   INIT (انطلاق المحرك)
-   ======================= */
 window.onload = () => {
     checkAccessAndInit();
     setupWorkspaceUtilities();
     setupHelpSystem();
     
-    // ربط حدث تغيير اللغة من القائمة المنسدلة
     if ($("language-select")) {
         $("language-select").onchange = (e) => {
             const newLang = e.target.value;
             localStorage.setItem("kaia_lang", newLang);
-            // إعادة تحميل الصفحة لضمان استجابة كافة الودجات (TradingView وغيرها) للغة الجديدة
             location.reload(); 
         };
     }
 
-    // تحديث الجلسات
     updateMarketSessions();
     setInterval(updateMarketSessions, 60000);
 
-    // ربط الأزرار
     if ($("run-btn")) $("run-btn").onclick = runInstitutionalAnalysis;
     if ($("drop-zone")) $("drop-zone").onclick = () => $("chartUpload").click();
 };

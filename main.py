@@ -74,19 +74,31 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise HTTPException(status_code=401, detail="انتهت الجلسة")
 
 # =========================================================
-# News
+# News (Bilingual Support: AR/EN) - [UPDATED]
 # =========================================================
 @app.get("/api/news")
-def get_news():
+def get_news(lang: str = "ar"):
     try:
-        rss = "https://sa.investing.com/rss/news_1.rss"
+        if lang == "en":
+            # أخبار الأسواق العالمية بالإنجليزية
+            rss = "https://www.investing.com/rss/news_285.rss" 
+        else:
+            # أخبار الأسواق باللغة العربية
+            rss = "https://sa.investing.com/rss/news_1.rss"
+            
         res = requests.get(rss, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
         soup = BeautifulSoup(res.content, "xml")
-        items = soup.find_all("item")[:12]
+        items = soup.find_all("item")[:15]
         titles = [i.title.text.strip() for i in items if i.title]
-        return {"news": " ★ ".join(titles)} if titles else {"news": "نبض السوق هادئ"}
+        
+        if titles:
+            return {"news": " ★ ".join(titles)}
+        else:
+            msg = "Market pulse is quiet" if lang == "en" else "نبض السوق هادئ"
+            return {"news": msg}
     except:
-        return {"news": "تعذر جلب الأخبار"}
+        err_msg = "Market news currently unavailable" if lang == "en" else "تعذر جلب الأخبار حالياً"
+        return {"news": err_msg}
 
 # =========================================================
 # Auth
@@ -148,6 +160,8 @@ def admin_update_user(data: dict, current_user: User = Depends(get_current_user)
     user.credits = data.get("credits", user.credits)
     user.tier = data.get("tier", user.tier)
     user.is_premium = data.get("is_premium", user.is_premium)
+    # [حقن] السماح بتعديل رتبة الكنج/الحوت من لوحة الإدارة
+    user.is_whale = data.get("is_whale", user.is_whale)
     
     db.commit()
     return {"status": "success"}
@@ -188,7 +202,6 @@ async def analyze_chart(
         with open(path, "rb") as f:
             base64_image = base64.b64encode(f.read()).decode()
 
-        # خريطة اللغات لضمان دقة الترجمة لكافة اللغات
         lang_map = {
             "ar": "Arabic (العربية)",
             "en": "English",
@@ -198,7 +211,6 @@ async def analyze_chart(
         }
         target_lang = lang_map.get(lang, "Arabic")
 
-        # PROMPT النهائي الصارم (كما أرسلته أنت تماماً دون نقص سطر واحد)
         system_prompt = f"""
 أنت محلل أسواق مؤسسي محترف.
 
@@ -264,7 +276,6 @@ confidence
 
         result = json.loads(response.choices[0].message.content)
 
-        # إنشاء سجل التحليل في الذاكرة أولاً
         record = Analysis(
             user_id=current_user.id,
             symbol=analysis_type,
@@ -274,7 +285,6 @@ confidence
         )
         db.add(record)
 
-        # الخصم من الرصيد يتم فقط إذا وصلنا لهذه المرحلة بنجاح بعد استلام النتيجة
         if not current_user.is_whale:
             current_user.credits -= 1
 
@@ -302,6 +312,15 @@ async def upload_chart(chart: UploadFile = File(...)):
     with open(f"images/{name}", "wb") as buffer:
         shutil.copyfileobj(chart.file, buffer)
     return {"filename": name}
+
+# =========================================================
+# User History Endpoint (NEW) - [INJECTED]
+# =========================================================
+@app.get("/api/history")
+def get_user_history(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # جلب كافة التحليلات الخاصة بالمستخدم الحالي مرتبة من الأحدث إلى الأقدم
+    history = db.query(Analysis).filter(Analysis.user_id == current_user.id).order_by(Analysis.id.desc()).all()
+    return history
 
 # =========================================================
 # Pages
