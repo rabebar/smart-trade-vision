@@ -167,7 +167,9 @@
             <span id="mob-ana-time">--:--</span>
         </div>
 
+        <!-- [تحديث] عرض الفريم الزمني المختار بجانب الإشارة -->
         <div id="mob-ana-sig" class="sig-val">---</div>
+        <div id="mob-ana-tf" style="text-align: center; font-size: 12px; font-weight: 900; color: var(--primary); margin-bottom: 10px;"></div>
 
         <div class="price-row">
             <div class="p-box">
@@ -251,6 +253,9 @@
                     const sigEl = document.getElementById("mob-ana-sig");
                     sigEl.innerText = last.signal;
                     sigEl.className = "sig-val " + (last.signal.toLowerCase().includes("buy") ? "buy" : "sell");
+                    
+                    // عرض الفريم الزمني
+                    document.getElementById("mob-ana-tf").innerText = "TF: " + (last.timeframe || "---");
                     
                     document.getElementById("mob-ana-ent").innerText = last.entry || "---";
                     document.getElementById("mob-ana-tp").innerText = last.tp || "---";

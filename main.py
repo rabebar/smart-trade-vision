@@ -128,7 +128,7 @@ def me(current_user: User = Depends(get_current_user)):
     return current_user
 
 # =========================================================
-# KAIA Descriptive Analysis Engine (FIXED)
+# KAIA Descriptive Analysis Engine (FIXED & CLEANED)
 # =========================================================
 @app.post("/api/analyze-chart")
 async def analyze_chart(
@@ -145,60 +145,98 @@ async def analyze_chart(
     if not os.path.exists(path):
         raise HTTPException(status_code=404, detail="الصورة غير موجودة")
 
-    with open(path, "rb") as f:
-        base64_image = base64.b64encode(f.read()).decode()
+    try:
+        with open(path, "rb") as f:
+            base64_image = base64.b64encode(f.read()).decode()
 
-    # 🔴 PROMPT النهائي الصارم
-    system_prompt = (
-        "You are an institutional market analyst. "
-        "Your task is to DESCRIBE market behavior only. "
-        "Do NOT suggest opportunities, entries, actions, or decisions. "
-        "Do NOT mention support, resistance, indicators, or trading tools. "
-        "Do NOT include numbers, prices, or levels. "
-        "Use neutral, observational language only. "
-        "Return valid JSON in Arabic with EXACTLY these keys: "
-        "market_bias, market_phase, opportunity_context, analysis_text, risk_note, confidence. "
-        "The confidence field MUST be a decimal number between 0.0 and 1.0."
-    )
+        # PROMPT النهائي الصارم (التعديل الوحيد هنا)
+        system_prompt = """
+أنت محلل أسواق مؤسسي محترف.
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": f"حلل هذا الشارت على الإطار {timeframe} باستخدام {analysis_type}."},
-                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{base64_image}"}}
-                ]
-            }
-        ],
-        response_format={"type": "json_object"},
-        temperature=0.3
-    )
+مهمتك هي قراءة الشارت بصريًا وبدقة عالية، ثم اتخاذ قرارات تحليلية واضحة
+قبل كتابة الشرح، دون تقديم أي توصيات تداول أو أرقام أو مستويات.
 
-    result = json.loads(response.choices[0].message.content)
+التزم بالخطوات التالية بالتسلسل المنطقي:
 
-    record = Analysis(
-        user_id=current_user.id,
-        symbol=analysis_type,
-        signal=result.get("market_bias"),
-        reason=result.get("analysis_text"),
-        timeframe=timeframe
-    )
-    db.add(record)
+1) حدد التحيّز العام للسوق (market_bias):
+- صاعد
+- هابط
+- محايد
 
-    if not current_user.is_whale:
-        current_user.credits -= 1
+2) حدد مرحلة السوق (market_phase):
+- اتجاه
+- تذبذب
+- انتقال
 
-    db.commit()
-    os.remove(path)
+3) قيّم سياق الفرصة (opportunity_context):
+- بيئة واضحة
+- بيئة مختلطة
+- بيئة ضعيفة
 
-    return {
-        "status": "success",
-        "analysis": result,
-        "remaining_credits": current_user.credits
-    }
+4) اكتب التحليل النصي (analysis_text) بما يبرر القرارات أعلاه فقط.
+
+5) أضف ملاحظة مخاطر (risk_note).
+
+6) حدّد مستوى الثقة (confidence) بين 0.0 و 1.0.
+
+قواعد صارمة:
+- لا توصيات
+- لا أرقام
+- لا مستويات
+- JSON فقط وبالمفاتيح التالية:
+
+market_bias,
+market_phase,
+opportunity_context,
+analysis_text,
+risk_note,
+confidence
+"""
+
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": f"حلل هذا الشارت على الإطار {timeframe} باستخدام {analysis_type}."},
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{base64_image}"}}
+                    ]
+                }
+            ],
+            response_format={"type": "json_object"},
+            temperature=0.3
+        )
+
+        result = json.loads(response.choices[0].message.content)
+
+        record = Analysis(
+            user_id=current_user.id,
+            symbol=analysis_type,
+            signal=result.get("market_bias"),
+            reason=result.get("analysis_text"),
+            timeframe=timeframe
+        )
+        db.add(record)
+
+        if not current_user.is_whale:
+            current_user.credits -= 1
+
+        db.commit()
+
+        return {
+            "status": "success",
+            "analysis": result,
+            "remaining_credits": current_user.credits
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        if os.path.exists(path):
+            os.remove(path)
 
 # =========================================================
 # Upload

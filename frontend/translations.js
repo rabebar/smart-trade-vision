@@ -100,7 +100,12 @@ const translations = {
         "dash_lot_size": "حجم اللوت المفتوح",
         "dash_pips_number": "عدد نقاط الربح أو الخسارة",
         "dash_calc_profit_btn": "حساب النتيجة المالية",
-        "dash_profit_loss_output": "الربح/الخسارة المتوقع: --"
+        "dash_profit_loss_output": "الربح/الخسارة المتوقع: --",
+        "help_title": "دليل استخدام المحرك",
+        "help_step_1": "التقاط الشارت: قم بلصق صورة الشارت مباشرة (Paste) أو رفعها يدوياً من ملفات جهازك.",
+        "help_step_2": "تطابق الفريم: تأكد دائماً من مطابقة الفريم الزمني المختار في المحرك مع الفريم الظاهر داخل صورة الشارت لضمان أدق التحليلات.",
+        "help_step_3": "تصفير الذاكرة: عند الانتهاء، اضغط على 'إخفاء النتيجة' لتنظيف ذاكرة المحرك وتجهيزه لعملية تحليل جديدة كلياً.",
+        "help_btn": "فهمت ذلك"
     },
     "en": {
         "intro_loading": "Starting KAIA AI Engine...",
@@ -203,7 +208,12 @@ const translations = {
         "dash_lot_size": "Lot Size",
         "dash_pips_number": "Pips",
         "dash_calc_profit_btn": "Calculate Result",
-        "dash_profit_loss_output": "Result: --"
+        "dash_profit_loss_output": "Result: --",
+        "help_title": "Engine Usage Guide",
+        "help_step_1": "Capture Chart: Paste chart image directly (Paste) or upload it manually from your device.",
+        "help_step_2": "Timeframe Matching: Always ensure the timeframe selected in the engine matches the one shown inside the chart image for the most accurate analysis.",
+        "help_step_3": "Reset Memory: When finished, click 'Hide Result' to clear the engine memory and prepare it for a brand new analysis.",
+        "help_btn": "I Understand"
     },
     "fr": {
         "intro_loading": "Démarrage du moteur KAIA AI...",
@@ -300,7 +310,12 @@ const translations = {
         "dash_lot_size": "Lot",
         "dash_pips_number": "Pips",
         "dash_calc_profit_btn": "Calculer",
-        "dash_profit_loss_output": "Résultat: --"
+        "dash_profit_loss_output": "Résultat: --",
+        "help_title": "Guide d'utilisation du moteur",
+        "help_step_1": "Capture du graphique: Collez l'image du graphique (Paste) ou téléchargez-la manuellement.",
+        "help_step_2": "Correspondance de l'unité de temps: Assurez-vous que l'unité de temps sélectionnée correspond à celle de l'image pour une analyse précise.",
+        "help_step_3": "Réinitialisation de la mémoire: Une fois terminé, cliquez sur 'Masquer le résultat' pour vider la mémoire du moteur.",
+        "help_btn": "Je comprends"
     },
     "es": {
         "intro_loading": "Iniciando motor KAIA AI...",
@@ -341,7 +356,7 @@ const translations = {
         "plan_platinum": "PLATINO",
         "plan_btn_free": "Gratis",
         "plan_btn_sub": "Suscribirse",
-        "plan_btn_upgrade": "Mejorar",
+        "plan_btn_upgrade": "Mejorار",
         "plan_feature_smc": "Solo SMC",
         "plan_feature_all": "Todas las estrategias",
         "plan_feature_credits_3": "3 análisis gratis",
@@ -397,7 +412,12 @@ const translations = {
         "dash_lot_size": "Lot",
         "dash_pips_number": "Pips",
         "dash_calc_profit_btn": "Calcular",
-        "dash_profit_loss_output": "Resultado: --"
+        "dash_profit_loss_output": "Resultado: --",
+        "help_title": "Guía de uso del motor",
+        "help_step_1": "Captura de gráfico: Pega la imagen del gráfico (Paste) o súbela manualmente.",
+        "help_step_2": "Coincidencia de temporalidad: Asegúrate de que la temporalidad seleccionada coincida con la de la imagen para un análisis preciso.",
+        "help_step_3": "Reiniciar memoria: Al terminar, haz clic en 'Ocultar resultado' para limpiar la memoria del motor.",
+        "help_btn": "Entiendo"
     },
     "it": {
         "intro_loading": "Avvio motore KAIA AI...",
@@ -494,6 +514,11 @@ const translations = {
         "dash_lot_size": "Lot",
         "dash_pips_number": "Pips",
         "dash_calc_profit_btn": "Calcola",
-        "dash_profit_loss_output": "Risultato: --"
+        "dash_profit_loss_output": "Risultato: --",
+        "help_title": "Guida all'uso del motore",
+        "help_step_1": "Cattura grafico: Incolla l'immagine del grafico (Paste) o caricala manualmente.",
+        "help_step_2": "Corrispondenza timeframe: Assicurati che il timeframe selezionato corrisponda a quello dell'immagine per un'analisi accurata.",
+        "help_step_3": "Reset memoria: Al termine, clicca su 'Nascondi risultato' per pulire la memoria del motore.",
+        "help_btn": "Ho capito"
     }
 };

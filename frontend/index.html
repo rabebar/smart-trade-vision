@@ -552,9 +552,18 @@
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <label data-i18n="timeframe_label" style="font-weight: 800; color: var(--muted);">الفريم</label>
+                <!-- [تحديث] إضافة كافة فريمات الوقت المطلوبة في قسم التجربة -->
                 <select id="timeframe" style="height: 55px; background-color: #000; color: #fff; border: 1px solid var(--border); border-radius: 12px; padding-left: 15px; padding-right: 15px; font-weight: 700; outline: none;">
+                    <option value="1m">1m</option>
+                    <option value="3m">3m</option>
+                    <option value="5m">5m</option>
                     <option value="15m" selected>15m</option>
+                    <option value="30m">30m</option>
                     <option value="1H">1H</option>
+                    <option value="4H">4H</option>
+                    <option value="D">Daily</option>
+                    <option value="W">Weekly</option>
+                    <option value="M">Monthly</option>
                 </select>
             </div>
         </div>

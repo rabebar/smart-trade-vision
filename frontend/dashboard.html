@@ -77,6 +77,7 @@
             border-radius: 20px;
             border: 2px solid var(--primary);
             padding: 25px;
+            position: relative;
         }
 
         /* تنسيق الالة الحاسبة الجانبية */
@@ -171,6 +172,106 @@
             border-color: var(--primary);
             box-shadow: 0 0 15px var(--primary-glow);
         }
+
+        /* تنسيق شريط جلسات التداول */
+        .market-sessions-bar {
+            background: #050b14;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            padding: 8px 0;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .session-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            transition: 0.3s;
+        }
+
+        .session-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #334155; /* لون الجلسة المغلقة */
+        }
+
+        .session-active {
+            color: #fff;
+        }
+
+        .session-active .session-dot {
+            background: var(--success);
+            box-shadow: 0 0 10px var(--success);
+        }
+
+        /* أيقونة ونافذة التعليمات */
+        .help-trigger {
+            cursor: pointer;
+            color: var(--muted);
+            font-size: 18px;
+            transition: 0.3s;
+        }
+
+        .help-trigger:hover {
+            color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .instruction-box {
+            display: none; /* مخفي افتراضياً */
+            position: absolute;
+            top: 60px;
+            right: 25px;
+            left: 25px;
+            background: #0f172a;
+            border: 1px solid var(--primary);
+            border-radius: 15px;
+            padding: 20px;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .instruction-box h4 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-weight: 900;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instruction-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .instruction-list li {
+            font-size: 13px;
+            color: #d1d5db;
+            margin-bottom: 12px;
+            line-height: 1.6;
+            display: flex;
+            gap: 10px;
+        }
+
+        .instruction-list li i {
+            color: var(--primary);
+            margin-top: 3px;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="dashboard-root">
@@ -200,7 +301,7 @@
             <span data-i18n="dash_pip_calc_title">حاسبة النقاط</span>
         </button>
 
-        <!-- [هنا الزر الجديد] زر الانتقال لصفحة سجل التحليلات -->
+        <!-- زر الانتقال لصفحة سجل التحليلات -->
         <button class="tool-icon-btn" onclick="window.location.href='/history'">
             <i class="fa-solid fa-clock-rotate-left"></i>
             <span data-i18n="dash_history_title">سجل العمليات</span>
@@ -237,6 +338,26 @@
     </div>
 </header>
 
+<!-- ================= شريط الجلسات أسفل الهيدر مباشرةً ================= -->
+<div class="market-sessions-bar">
+    <div class="session-item" id="session-sydney">
+        <div class="session-dot"></div>
+        <span>SYDNEY</span>
+    </div>
+    <div class="session-item" id="session-tokyo">
+        <div class="session-dot"></div>
+        <span>TOKYO</span>
+    </div>
+    <div class="session-item" id="session-london">
+        <div class="session-dot"></div>
+        <span>LONDON</span>
+    </div>
+    <div class="session-item" id="session-newyork">
+        <div class="session-dot"></div>
+        <span>NEW YORK</span>
+    </div>
+</div>
+
 <!-- ================= 2. محطة العمل الرئيسية (الشارت والتحليل) ================= -->
 <main class="workspace-container">
     
@@ -247,8 +368,31 @@
         <div class="analysis-mini-core">
             
             <div style="margin-bottom: 20px; font-weight: 900; color: var(--primary); display: flex; justify-content: space-between; align-items: center;">
-                <span data-i18n="analysis_header">محرك KAIA AI</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span data-i18n="analysis_header">محرك KAIA AI</span>
+                    <i class="fa-solid fa-circle-question help-trigger" id="help-icon" title="تعليمات الاستخدام"></i>
+                </div>
                 <i class="fa-solid fa-brain" style="font-size: 22px;"></i>
+            </div>
+
+            <!-- [تحديث] نافذة التعليمات المنبثقة مع أوسمة الترجمة -->
+            <div class="instruction-box" id="help-box">
+                <h4 data-i18n="help_title"><i class="fa-solid fa-lightbulb"></i> دليل استخدام المحرك</h4>
+                <ul class="instruction-list">
+                    <li>
+                        <i class="fa-solid fa-1"></i>
+                        <span data-i18n="help_step_1">التقاط الشارت: قم بلصق صورة الشارت مباشرة (Paste) أو رفعها يدوياً من ملفات جهازك.</span>
+                    </li>
+                    <li>
+                        <i class="fa-solid fa-2"></i>
+                        <span data-i18n="help_step_2">تطابق الفريم: تأكد دائماً من مطابقة الفريم الزمني المختار في المحرك مع الفريم الظاهر داخل صورة الشارت لضمان أدق التحليلات.</span>
+                    </li>
+                    <li>
+                        <i class="fa-solid fa-3"></i>
+                        <span data-i18n="help_step_3">تصفير الذاكرة: عند الانتهاء، اضغط على "إخفاء النتيجة" لتنظيف ذاكرة المحرك وتجهيزه لعملية تحليل جديدة كلياً.</span>
+                    </li>
+                </ul>
+                <button onclick="$('help-box').style.display='none'" data-i18n="help_btn" style="width:100%; margin-top:10px; background:rgba(59,130,246,0.1); color:var(--primary); border:1px solid var(--primary); height:35px; border-radius:8px; cursor:pointer; font-weight:800; font-size:12px;">فهمت ذلك</button>
             </div>
             
             <div class="drop-zone-v2" id="drop-zone" style="padding: 35px; border-radius: 15px; background: rgba(0,0,0,0.3);">
@@ -270,10 +414,16 @@
                 <div style="display: flex; flex-direction: column; gap: 5px;">
                     <label data-i18n="timeframe_label" style="font-size: 12px; color: var(--muted); font-weight: 800;">الفريم</label>
                     <select id="timeframe" style="height: 50px; background: #000; color: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 0 15px; font-weight: 700;">
+                        <option value="1m">1 Minute</option>
+                        <option value="3m">3 Minutes</option>
+                        <option value="5m">5 Minutes</option>
                         <option value="15m" selected>15 Minutes</option>
+                        <option value="30m">30 Minutes</option>
                         <option value="1H">1 Hour</option>
                         <option value="4H">4 Hours</option>
                         <option value="D">Daily Chart</option>
+                        <option value="W">Weekly Chart</option>
+                        <option value="M">Monthly Chart</option>
                     </select>
                 </div>
 
@@ -284,7 +434,7 @@
             <!-- صندوق النتائج الديناميكي -->
             <div id="result-box" style="display: none; margin-top: 25px; border-top: 2px solid var(--border); padding-top: 20px;">
                 <div id="res-data-content"></div>
-                <button onclick="$('result-box').style.display='none'" style="width:100%; margin-top:15px; background:#1e293b; color:#fff; border:none; height:45px; border-radius:10px; cursor:pointer; font-weight: 800;">
+                <button onclick="resetWorkspace()" style="width:100%; margin-top:15px; background:#1e293b; color:#fff; border:none; height:45px; border-radius:10px; cursor:pointer; font-weight: 800;">
                     إخفاء النتيجة
                 </button>
             </div>

@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   KAIA AI × CANA - COMMAND CENTER ENGINE (Version 6.3 FIXED)
+   KAIA AI × CANA - COMMAND CENTER ENGINE (Version 6.9 FINAL FIXED)
    ============================================================ */
 
 const $ = (id) => document.getElementById(id);
@@ -27,6 +27,7 @@ async function checkAccessAndInit() {
 
         currentUserData = await res.json();
 
+        // حجب الدخول عن مستخدمي باقة Trial (إلا لو كان أدمن)
         if (currentUserData.tier === "Trial" && !currentUserData.is_admin) {
             alert("⚠️ يرجى الترقية للوصول إلى لوحة التحليل.");
             window.location.href = "/";
@@ -35,6 +36,8 @@ async function checkAccessAndInit() {
 
         document.body.style.visibility = "visible";
         syncUserData();
+        
+        // تشغيل محرك الترجمة عند البداية
         applyDashboardTranslations(currentLang);
 
     } catch (e) {
@@ -50,20 +53,116 @@ function syncUserData() {
 }
 
 /* =======================
-   I18N
+   محرك اللغات والترجمة الشامل
    ======================= */
 function applyDashboardTranslations(lang) {
     const dict = translations?.[lang];
     if (!dict) return;
 
+    // 1. ترجمة النصوص العادية التي تحمل وسم data-i18n
     document.querySelectorAll("[data-i18n]").forEach(el => {
         const key = el.getAttribute("data-i18n");
         if (dict[key]) el.innerText = dict[key];
     });
 
+    // 2. ترجمة النصوص التلميحية (Placeholders)
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+        const key = el.getAttribute("data-i18n-placeholder");
+        if (dict[key]) el.placeholder = dict[key];
+    });
+
+    // 3. ضبط اتجاه الصفحة وتفعيل كلاس LTR
     document.body.dir = lang === "ar" ? "rtl" : "ltr";
+    if (lang === "ar") {
+        document.body.classList.remove("ltr");
+    } else {
+        document.body.classList.add("ltr");
+    }
+
+    // 4. تحديث القائمة المنسدلة لتطابق اللغة الحالية
+    if ($("language-select")) {
+        $("language-select").value = lang;
+    }
+
     currentLang = lang;
     localStorage.setItem("kaia_lang", lang);
+}
+
+/* =======================
+   نظام المساعدة والتعليمات
+   ======================= */
+function setupHelpSystem() {
+    const helpIcon = $("help-icon");
+    const helpBox = $("help-box");
+
+    if (helpIcon && helpBox) {
+        helpIcon.onclick = (e) => {
+            e.stopPropagation();
+            const isVisible = helpBox.style.display === "block";
+            helpBox.style.display = isVisible ? "none" : "block";
+        };
+
+        // إغلاق المربع عند النقر في أي مكان آخر
+        document.addEventListener("click", (e) => {
+            if (helpBox.style.display === "block" && !helpBox.contains(e.target) && e.target !== helpIcon) {
+                helpBox.style.display = "none";
+            }
+        });
+    }
+}
+
+/* =======================
+   تصفير بيئة العمل (Cleanup Logic)
+   ======================= */
+window.resetWorkspace = function() {
+    if ($("result-box")) {
+        $("result-box").style.display = "none";
+    }
+
+    if ($("chartUpload")) {
+        $("chartUpload").value = ""; 
+    }
+
+    if ($("status-text")) {
+        const dict = translations?.[currentLang];
+        $("status-text").innerText = dict?.drop_zone_text || "إلصق الشارت هنا 📸";
+        $("status-text").style.color = ""; 
+    }
+    
+    console.log("Workspace Cleared.");
+};
+
+/* =======================
+   منطق جلسات التداول
+   ======================= */
+function updateMarketSessions() {
+    const now = new Date();
+    const utcHour = now.getUTCHours();
+
+    const sessions = [
+        { id: "session-sydney", start: 22, end: 7 },
+        { id: "session-tokyo", start: 0, end: 9 },
+        { id: "session-london", start: 8, end: 17 },
+        { id: "session-newyork", start: 13, end: 22 }
+    ];
+
+    sessions.forEach(s => {
+        const el = $(s.id);
+        if (!el) return;
+
+        let isOpen = false;
+        if (s.start < s.end) {
+            isOpen = utcHour >= s.start && utcHour < s.end;
+        } else {
+            isOpen = utcHour >= s.start || utcHour < s.end;
+        }
+
+        if (isOpen) {
+            el.classList.add("session-active");
+        } else {
+            el.classList.remove("session-active");
+        }
+    });
 }
 
 /* =======================
@@ -75,7 +174,7 @@ async function runInstitutionalAnalysis() {
     const fileInput = $("chartUpload");
 
     if (!fileInput || !fileInput.files.length) {
-        alert("الرجاء اختيار أو لصق صورة الشارت أولاً");
+        alert(currentLang === 'ar' ? "الرجاء اختيار أو لصق صورة الشارت أولاً" : "Please upload or paste chart first");
         return;
     }
 
@@ -86,7 +185,7 @@ async function runInstitutionalAnalysis() {
     btn.disabled = true;
 
     try {
-        /* Upload image */
+        /* 1. رفع الصورة للسيرفر */
         const uploadFd = new FormData();
         uploadFd.append("chart", fileInput.files[0]);
 
@@ -98,7 +197,7 @@ async function runInstitutionalAnalysis() {
         const uploadData = await uploadRes.json();
         if (!uploadData.filename) throw new Error("Upload failed");
 
-        /* Analyze */
+        /* 2. إجراء التحليل */
         const analyzeFd = new FormData();
         analyzeFd.append("filename", uploadData.filename);
         analyzeFd.append("timeframe", timeframe);
@@ -115,6 +214,7 @@ async function runInstitutionalAnalysis() {
 
         const analysis = data.analysis;
 
+        /* 3. عرض النتائج */
         resBox.style.display = "block";
         $("res-data-content").innerHTML = `
             <div class="analysis-result-card">
@@ -151,9 +251,9 @@ async function runInstitutionalAnalysis() {
 
     } catch (e) {
         console.error("Analysis Core Error:", e);
-        alert("Engine Connection Timeout");
+        alert("Engine Connection Error");
     } finally {
-        btn.innerText = "Analyze";
+        btn.innerText = currentLang === 'ar' ? "بدء التحليل" : "Analyze";
         btn.disabled = false;
     }
 }
@@ -162,6 +262,7 @@ async function runInstitutionalAnalysis() {
    UTILITIES
    ======================= */
 function setupWorkspaceUtilities() {
+    // ميزة اللصق المباشر (Paste)
     document.addEventListener("paste", (e) => {
         const item = [...e.clipboardData.items].find(x => x.type.includes("image"));
         if (item) {
@@ -171,10 +272,12 @@ function setupWorkspaceUtilities() {
             $("chartUpload").files = dt.files;
             if ($("status-text")) {
                 $("status-text").innerText = "Image pasted ✅";
+                $("status-text").style.color = "var(--success)";
             }
         }
     });
 
+    // تسجيل الخروج
     if ($("logout-btn")) {
         $("logout-btn").onclick = () => {
             localStorage.removeItem("token");
@@ -184,12 +287,28 @@ function setupWorkspaceUtilities() {
 }
 
 /* =======================
-   INIT
+   INIT (انطلاق المحرك)
    ======================= */
 window.onload = () => {
     checkAccessAndInit();
     setupWorkspaceUtilities();
+    setupHelpSystem();
+    
+    // ربط حدث تغيير اللغة من القائمة المنسدلة
+    if ($("language-select")) {
+        $("language-select").onchange = (e) => {
+            const newLang = e.target.value;
+            localStorage.setItem("kaia_lang", newLang);
+            // إعادة تحميل الصفحة لضمان استجابة كافة الودجات (TradingView وغيرها) للغة الجديدة
+            location.reload(); 
+        };
+    }
 
+    // تحديث الجلسات
+    updateMarketSessions();
+    setInterval(updateMarketSessions, 60000);
+
+    // ربط الأزرار
     if ($("run-btn")) $("run-btn").onclick = runInstitutionalAnalysis;
     if ($("drop-zone")) $("drop-zone").onclick = () => $("chartUpload").click();
 };
