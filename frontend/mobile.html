@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KAIA Mobile | تطبيق التداول المؤسسي</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    
+    <style>
+        :root {
+            --bg-deep: #020617;
+            --bg-panel: #0b1222;
+            --primary: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gold: #ffd700;
+            --text: #ffffff;
+            --muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        body { 
+            margin: 0; padding: 0;
+            font-family: 'Cairo', sans-serif; 
+            background: var(--bg-deep); 
+            color: var(--text); 
+            padding-bottom: 90px; /* مساحة للشريط السفلي */
+            overflow-x: hidden;
+        }
+
+        body.ltr { direction: ltr; text-align: left; }
+
+        /* هيدر التطبيق */
+        .app-header {
+            height: 65px; background: #050b14;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 15px; position: sticky; top: 0; z-index: 1000;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-logo { font-size: 20px; font-weight: 900; color: var(--primary); letter-spacing: 1px; }
+        
+        .user-pill {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--primary);
+            padding: 5px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 900; color: #fff;
+        }
+
+        /* بطاقة الترحيب */
+        .app-hero-card {
+            margin: 15px; padding: 25px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-radius: 22px; border: 1px solid var(--border);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .app-hero-card h2 { margin: 0; font-size: 14px; color: var(--muted); font-weight: 600; }
+        .app-hero-card p { margin: 8px 0 0; font-size: 22px; font-weight: 900; color: #fff; }
+
+        /* شبكة الخدمات السريعة */
+        .app-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 12px; padding: 0 15px;
+        }
+
+        .app-tool-item {
+            background: var(--bg-panel); border: 1px solid var(--border);
+            padding: 20px; border-radius: 20px; text-align: center;
+            text-decoration: none; color: #fff; transition: 0.3s;
+        }
+        .app-tool-item:active { transform: scale(0.95); background: #1e293b; }
+        .app-tool-item i { font-size: 24px; color: var(--primary); margin-bottom: 10px; display: block; }
+        .app-tool-item span { font-size: 13px; font-weight: 700; }
+
+        /* بطاقة آخر تحليل */
+        .app-result-card {
+            margin: 20px 15px; background: #0f172a;
+            border-radius: 25px; border: 1px solid var(--primary);
+            padding: 20px; display: none;
+            animation: slideUp 0.5s ease;
+        }
+
+        .sig-val { font-size: 32px; font-weight: 900; text-align: center; margin: 10px 0; letter-spacing: 2px; }
+        .buy { color: var(--success); text-shadow: 0 0 15px rgba(16,185,129,0.3); }
+        .sell { color: var(--danger); text-shadow: 0 0 15px rgba(239,68,68,0.3); }
+
+        .price-row {
+            display: grid; grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px; margin-top: 15px;
+        }
+
+        .p-box { background: rgba(0,0,0,0.4); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
+        .p-label { display: block; font-size: 10px; color: var(--muted); margin-bottom: 4px; font-weight: 800; }
+        .p-value { font-size: 13px; font-weight: 900; font-family: monospace; }
+
+        /* الشريط السفلي الثابت */
+        .app-bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            height: 75px; background: #050b14;
+            border-top: 1px solid var(--border);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 2000; backdrop-filter: blur(10px);
+        }
+
+        .nav-link {
+            text-decoration: none; color: var(--muted);
+            display: flex; flex-direction: column; align-items: center;
+            font-size: 10px; font-weight: 700; transition: 0.3s;
+        }
+
+        .nav-link i { font-size: 20px; margin-bottom: 5px; }
+        .nav-link.active { color: var(--primary); }
+
+        .app-upgrade-msg {
+            margin: 15px; background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger); padding: 15px;
+            border-radius: 15px; text-align: center; display: none;
+        }
+
+        @keyframes slideUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="mobile-root">
+
+    <header class="app-header">
+        <div id="mob-credits" class="user-pill">
+            <i class="fa-solid fa-coins" style="color:var(--gold)"></i> <span id="cred-val">--</span>
+        </div>
+
+        <div class="header-logo">KAIA <span style="color:#fff">AI</span></div>
+
+        <select class="lang-mini" id="language-select" style="background:#1e293b; color:#fff; border:none; border-radius:5px; padding:5px;">
+            <option value="ar">AR</option>
+            <option value="en">EN</option>
+        </select>
+    </header>
+
+    <div class="app-hero-card">
+        <h2 data-i18n="nav_welcome">أهلاً بك</h2>
+        <p id="mob-user-name">Loading...</p>
+    </div>
+
+    <div id="mob-upgrade-alert" class="app-upgrade-msg">
+        <div data-i18n="dash_lock_msg" style="color: var(--danger); font-weight: 900; font-size: 13px;">⚠️ رصيدك منخفض، يرجى الترقية للاستمرار.</div>
+    </div>
+
+    <div class="app-grid">
+        <a href="/" class="app-tool-item" style="border-color: var(--primary); background: rgba(59,130,246,0.05);">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span data-i18n="hero_btn">تحليل جديد</span>
+        </a>
+
+        <a href="/dashboard" class="app-tool-item">
+            <i class="fa-solid fa-gauge-high"></i>
+            <span data-i18n="nav_dashboard">القيادة</span>
+        </a>
+    </div>
+
+    <!-- بطاقة آخر تحليل تم إجراؤه -->
+    <div id="mob-ana-card" class="app-result-card">
+        <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); font-weight: 800; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+            <span data-i18n="dash_history_title">آخر دراسة فنية</span>
+            <span id="mob-ana-time">--:--</span>
+        </div>
+
+        <div id="mob-ana-sig" class="sig-val">---</div>
+
+        <div class="price-row">
+            <div class="p-box">
+                <span class="p-label">ENTRY</span>
+                <span id="mob-ana-ent" class="p-value">--</span>
+            </div>
+            <div class="p-box">
+                <span class="p-label" style="color:var(--success)">TARGET</span>
+                <span id="mob-ana-tp" class="p-value">--</span>
+            </div>
+            <div class="p-box">
+                <span class="p-label" style="color:var(--danger)">STOP</span>
+                <span id="mob-ana-sl" class="p-value">--</span>
+            </div>
+        </div>
+        
+        <div style="margin-top:15px; font-size:12px; line-height:1.5; color:#94a3b8; text-align:justify;" id="mob-ana-reason"></div>
+    </div>
+
+    <nav class="app-bottom-nav">
+        <a href="/" class="nav-link">
+            <i class="fa-solid fa-house"></i>
+            <span data-i18n="nav_home">الرئيسية</span>
+        </a>
+
+        <a href="/mobile" class="nav-link active">
+            <i class="fa-solid fa-robot"></i>
+            <span>KAIA AI</span>
+        </a>
+
+        <a href="/history" class="nav-link">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span data-i18n="dash_history_title">السجل</span>
+        </a>
+
+        <a href="https://wa.me/970594060648" class="nav-link">
+            <i class="fa-brands fa-whatsapp"></i>
+            <span data-i18n="footer_support">الدعم</span>
+        </a>
+    </nav>
+
+    <script src="/static/translations.js"></script>
+    <script>
+        const token = localStorage.getItem("token");
+        let currentLang = localStorage.getItem("kaia_lang") || "ar";
+
+        function applyMobileI18n(lang) {
+            const dict = translations[lang];
+            if(!dict) return;
+            document.querySelectorAll("[data-i18n]").forEach(el => {
+                const key = el.getAttribute("data-i18n");
+                if(dict[key]) el.innerText = dict[key];
+            });
+            document.body.className = lang === "ar" ? "" : "ltr";
+            document.body.dir = lang === "ar" ? "rtl" : "ltr";
+            localStorage.setItem("kaia_lang", lang);
+        }
+
+        async function syncMobileUI() {
+            if(!token) { window.location.href = "/"; return; }
+            applyMobileI18n(currentLang);
+
+            try {
+                // 1. جلب بيانات المستخدم
+                const uRes = await fetch("/api/me", { headers: { "Authorization": "Bearer " + token } });
+                const uData = await uRes.json();
+                if(uRes.ok) {
+                    document.getElementById("mob-user-name").innerText = uData.full_name;
+                    document.getElementById("cred-val").innerText = uData.credits;
+                    if(uData.credits <= 0 && !uData.is_whale) {
+                        document.getElementById("mob-upgrade-alert").style.display = "block";
+                    }
+                }
+
+                // 2. جلب آخر تحليل من السجل
+                const hRes = await fetch("/api/history", { headers: { "Authorization": "Bearer " + token } });
+                const hData = await hRes.json();
+                if(hRes.ok && hData.length > 0) {
+                    const last = hData[0];
+                    document.getElementById("mob-ana-card").style.display = "block";
+                    const sigEl = document.getElementById("mob-ana-sig");
+                    sigEl.innerText = last.signal;
+                    sigEl.className = "sig-val " + (last.signal.toLowerCase().includes("buy") ? "buy" : "sell");
+                    
+                    document.getElementById("mob-ana-ent").innerText = last.entry || "---";
+                    document.getElementById("mob-ana-tp").innerText = last.tp || "---";
+                    document.getElementById("mob-ana-sl").innerText = last.sl || "---";
+                    document.getElementById("mob-ana-reason").innerText = last.reason.substring(0, 120) + "...";
+                    
+                    const d = new Date(last.created_at);
+                    document.getElementById("mob-ana-time").innerText = d.getHours() + ":" + d.getMinutes();
+                }
+            } catch(e) { console.error("Mobile Sync Error"); }
+        }
+
+        document.getElementById("language-select").onchange = (e) => {
+            localStorage.setItem("kaia_lang", e.target.value);
+            location.reload();
+        };
+
+        window.onload = syncMobileUI;
+    </script>
+</body>
+</html>

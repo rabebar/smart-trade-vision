@@ -3,385 +3,441 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة القيادة | CANA AI</title>
-
-    <!-- Fonts & Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-
-    <!-- ربط نفس ملف الستايل الأساسي -->
-    <link rel="stylesheet" href="/static/style.css?v=fix_final_9">
-
+    <title>CANA AI | Command Center 🚀</title>
+    
+    <!-- الروابط الأساسية للخطوط والأيقونات -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- ربط ملف التنسيقات الموحد -->
+    <link rel="stylesheet" href="/static/style.css">
+    
     <style>
-        /* تنسيقات خاصة بالداشبورد (تكميلية) */
-        .dash-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 20px;
+        /* إعدادات الرؤية والأمان لغرفة القيادة */
+        body { 
+            visibility: hidden; 
+            opacity: 0; 
+            background: #020617; 
+            transition: opacity 0.5s ease;
+            padding-bottom: 50px; /* مساحة إضافية للمفكرة في الأسفل */
         }
 
-        /* توزيع الشبكة */
-        .col-12 { grid-column: span 12; }
-        .col-8  { grid-column: span 8; }
-        .col-4  { grid-column: span 4; }
-        .col-6  { grid-column: span 6; }
-
-        @media (max-width: 1024px) {
-            .col-8, .col-4 { grid-column: span 12; }
-        }
-        @media (max-width: 768px) {
-            .col-6 { grid-column: span 12; }
-        }
-
-        /* تحسين مظهر الودجت */
-        .widget-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            padding-bottom: 10px;
-        }
-        .widget-title {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 700;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        /* دعم تغيير اتجاه الواجهة برمجياً (RTL/LTR) */
+        body.ltr { 
+            direction: ltr; 
+            text-align: left; 
         }
         
-        /* جدول السجل */
-        .dash-table { width: 100%; border-collapse: collapse; }
-        .dash-table th { text-align: right; color: var(--text-muted); padding: 10px; background: rgba(0,0,0,0.2); }
-        .dash-table td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); color: #fff; }
-        .status-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
-        .bg-green { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        .bg-red { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        body.ltr .top-navbar, 
+        body.ltr .workspace-container,
+        body.ltr .card-header,
+        body.ltr .notes-section { 
+            text-align: left; 
+        }
+        
+        body.ltr .header-right { 
+            order: 1; 
+        }
+        
+        body.ltr .header-left { 
+            order: 2; 
+        }
 
-        /* الحاسبة */
-        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .calc-res { 
-            background: rgba(245, 158, 11, 0.1); 
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            color: var(--accent);
-            text-align: center;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-weight: bold;
+        /* هيكلة محطة العمل المتكاملة */
+        .workspace-container {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            height: calc(100vh - 110px);
+        }
+
+        /* العمود الجانبي (تحليل + حاسبة) */
+        .sidebar-tools {
+            flex: 3;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 340px;
+            overflow-y: auto;
+        }
+
+        /* المساحة المركزية (الشارت المتقدم) */
+        .main-chart-area {
+            flex: 7;
+            background: var(--bg-panel);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* تنسيق صندوق التحليل الجانبي */
+        .analysis-mini-core {
+            background: var(--bg-panel);
+            border-radius: 20px;
+            border: 2px solid var(--primary);
+            padding: 25px;
+        }
+
+        /* تنسيق الالة الحاسبة الجانبية */
+        .calc-mini {
+            background: var(--bg-panel);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            padding: 15px;
+        }
+
+        /* نظام النوافذ المنبثقة المطور (Modals) */
+        .floating-modal {
             display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0; 
+            top: 0;
+            width: 100%; 
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-box {
+            background: var(--bg-panel);
+            border: 2px solid var(--primary);
+            padding: 35px;
+            border-radius: 30px;
+            width: 95%;
+            max-width: 480px;
+            position: relative;
+            box-shadow: 0 0 50px var(--primary-glow);
+        }
+
+        /* أزرار الأدوات في الهيدر */
+        .tool-icon-btn {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 10px 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .tool-icon-btn:hover { 
+            background: var(--primary); 
+            color: #000; 
+            transform: translateY(-2px);
+        }
+
+        .lang-picker-dash {
+            background: #0f172a;
+            color: white;
+            border: 1px solid var(--primary);
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-family: 'Cairo', sans-serif;
+            cursor: pointer;
+            font-weight: 800;
+        }
+
+        /* تنسيق قسم الملاحظات الجديد في الأسفل */
+        .notes-section {
+            padding: 0 20px;
+            margin-top: 30px;
+            width: 100%;
+        }
+
+        .trader-journal-area {
+            width: 100%;
+            height: 250px;
+            background: #050b14;
+            color: #fff;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 20px;
+            font-family: inherit;
+            font-size: 16px;
+            outline: none;
+            resize: vertical;
+            transition: 0.3s;
+        }
+
+        .trader-journal-area:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
         }
     </style>
 </head>
-<body>
+<body class="dashboard-root">
 
-    <!-- NAVBAR (مطابق للموقع الأصلي مع تعديل بسيط) -->
-    <header class="navbar">
-        <div class="logo-container">
-            <div class="logo-icon"><i class="fa-solid fa-chart-line"></i></div>
-            <div class="brand-text">
-                <h1>DASHBOARD</h1>
-                <span>CANA TRADER</span>
-            </div>
+<!-- ================= 1. الهيدر الملكي المطور لغرفة القيادة ================= -->
+<header class="top-navbar">
+    
+    <div class="header-left" style="display: flex; align-items: center; gap: 12px;">
+        
+        <button class="nav-btn-logout" id="logout-btn" title="Exit">
+            <i class="fa-solid fa-power-off"></i> 
+        </button>
+        
+        <button class="wallet-btn" onclick="window.location.href='/'" title="Home">
+             <i class="fa-solid fa-house"></i>
+        </button>
+
+        <!-- زر فتح نافذة إدارة المخاطر -->
+        <button class="tool-icon-btn" onclick="$('risk-modal').style.display='flex'">
+            <i class="fa-solid fa-shield-halved"></i> 
+            <span data-i18n="dash_risk_title">إدارة المخاطر</span>
+        </button>
+
+        <!-- زر فتح حاسبة البيبس الجديدة -->
+        <button class="tool-icon-btn" onclick="$('pip-modal').style.display='flex'">
+            <i class="fa-solid fa-calculator"></i> 
+            <span data-i18n="dash_pip_calc_title">حاسبة النقاط</span>
+        </button>
+
+        <!-- [هنا الزر الجديد] زر الانتقال لصفحة سجل التحليلات -->
+        <button class="tool-icon-btn" onclick="window.location.href='/history'">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span data-i18n="dash_history_title">سجل العمليات</span>
+        </button>
+
+        <div class="user-info-capsule">
+            <span class="user-credits">
+                <i class="fa-solid fa-coins"></i> 
+                <span id="dash-credits">0</span>
+            </span>
+            <span class="user-name">
+                <span data-i18n="nav_welcome">أهلاً،</span> 
+                <span id="dash-user">تحميل...</span> 👑
+            </span>
         </div>
 
-        <div class="nav-controls">
-            <!-- زر العودة للرئيسية -->
-            <a href="/" class="icon-btn" title="الرئيسية">
-                <i class="fa-solid fa-home"></i> الرئيسية
-            </a>
+    </div>
+
+    <div class="header-right" style="display: flex; align-items: center; gap: 20px;">
+        
+        <select class="lang-picker-dash" id="language-select">
+            <option value="ar">العربية 🇸🇦</option>
+            <option value="en">English 🇺🇸</option>
+            <option value="fr">Français 🇫🇷</option>
+            <option value="es">Español 🇪🇸</option>
+            <option value="it">Italiano 🇮🇹</option>
+        </select>
+
+        <div class="logo-main" onclick="window.location.href='/'" style="cursor:pointer">
+            <span class="logo-text">CANA AI</span>
+            <i class="fa-solid fa-microchip logo-icon"></i>
+        </div>
+
+    </div>
+</header>
+
+<!-- ================= 2. محطة العمل الرئيسية (الشارت والتحليل) ================= -->
+<main class="workspace-container">
+    
+    <!-- العمود الجانبي: أدوات التنفيذ -->
+    <aside class="sidebar-tools">
+        
+        <!-- صندوق التحليل المؤسسي -->
+        <div class="analysis-mini-core">
             
-            <div class="credits-pill">
-                <i class="fa-solid fa-coins"></i>
-                <span id="dash-credits">...</span>
+            <div style="margin-bottom: 20px; font-weight: 900; color: var(--primary); display: flex; justify-content: space-between; align-items: center;">
+                <span data-i18n="analysis_header">محرك KAIA AI</span>
+                <i class="fa-solid fa-brain" style="font-size: 22px;"></i>
+            </div>
+            
+            <div class="drop-zone-v2" id="drop-zone" style="padding: 35px; border-radius: 15px; background: rgba(0,0,0,0.3);">
+                <h4 id="status-text" data-i18n="drop_zone_text" style="font-size: 17px; font-weight: 900;">إلصق الشارت هنا 📸</h4>
+                <input type="file" id="chartUpload" style="display: none;" accept="image/*">
             </div>
 
-            <div class="nav-user-badge">
-                <span id="dash-username">User</span>
+            <div class="core-inputs-grid" style="grid-template-columns: 1fr; gap: 12px; margin: 20px 0;">
+                
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label data-i18n="strategy_label" style="font-size: 12px; color: var(--muted); font-weight: 800;">الاستراتيجية</label>
+                    <select id="strategy" style="height: 50px; background: #000; color: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 0 15px; font-weight: 700;">
+                        <option value="SMC">Smart Money Concepts (SMC) 💎</option>
+                        <option value="Elliott Wave">Elliott Wave Theory 🌊</option>
+                        <option value="CANA Master">KAIA Master Confluence 🔥</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label data-i18n="timeframe_label" style="font-size: 12px; color: var(--muted); font-weight: 800;">الفريم</label>
+                    <select id="timeframe" style="height: 50px; background: #000; color: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 0 15px; font-weight: 700;">
+                        <option value="15m" selected>15 Minutes</option>
+                        <option value="1H">1 Hour</option>
+                        <option value="4H">4 Hours</option>
+                        <option value="D">Daily Chart</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <button class="core-analyze-btn" id="run-btn" data-i18n="analyze_btn" style="height: 65px; width: 100%; font-size: 18px; font-weight: 900;">بدء التحليل</button>
+            
+            <!-- صندوق النتائج الديناميكي -->
+            <div id="result-box" style="display: none; margin-top: 25px; border-top: 2px solid var(--border); padding-top: 20px;">
+                <div id="res-data-content"></div>
+                <button onclick="$('result-box').style.display='none'" style="width:100%; margin-top:15px; background:#1e293b; color:#fff; border:none; height:45px; border-radius:10px; cursor:pointer; font-weight: 800;">
+                    إخفاء النتيجة
+                </button>
+            </div>
+
+        </div>
+
+        <!-- الالة الحاسبة الجانبية -->
+        <div class="calc-mini">
+            <div class="calc-box">
+                <div class="calc-screen" id="calc-display" style="height: 55px; font-size: 26px; border-radius: 10px; background: #000; border: 1px solid var(--border); display: flex; align-items: center; justify-content: flex-end; padding: 0 15px; color: var(--primary); font-family: monospace;">0</div>
+                <div class="calc-btns" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px;">
+                    <button onclick="clearCalc()" class="c-red" style="background: var(--danger); color: #fff;">C</button>
+                    <button onclick="inputCalc('/')">÷</button>
+                    <button onclick="inputCalc('*')">×</button>
+                    <button onclick="deleteCalc()">←</button>
+                    <button onclick="inputCalc('7')">7</button>
+                    <button onclick="inputCalc('8')">8</button>
+                    <button onclick="inputCalc('9')">9</button>
+                    <button onclick="inputCalc('-')">-</button>
+                    <button onclick="inputCalc('4')">4</button>
+                    <button onclick="inputCalc('5')">5</button>
+                    <button onclick="inputCalc('6')">6</button>
+                    <button onclick="inputCalc('+')">+</button>
+                    <button onclick="inputCalc('1')">1</button>
+                    <button onclick="inputCalc('2')">2</button>
+                    <button onclick="inputCalc('3')">3</button>
+                    <button onclick="resultCalc()" class="c-equal" style="background: var(--primary); color: #000; grid-row: span 2; height: auto;">=</button>
+                    <button onclick="inputCalc('0')" style="grid-column: span 2;">0</button>
+                    <button onclick="inputCalc('.')">.</button>
+                </div>
             </div>
         </div>
-    </header>
 
-    <!-- 1. شريط الأسعار المتحرك -->
-    <div style="height: 50px; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.1);">
-        <div class="tradingview-widget-container">
-            <div class="tradingview-widget-container__widget"></div>
-            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-            {
-                "symbols": [
-                    {"proName": "FOREXCOM:SPXUSD", "title": "S&P 500"},
-                    {"proName": "FOREXCOM:NSXUSD", "title": "Nasdaq"},
-                    {"proName": "FX_IDC:EURUSD", "title": "EUR/USD"},
-                    {"proName": "FX_IDC:GBPUSD", "title": "GBP/USD"},
-                    {"proName": "OANDA:XAUUSD", "title": "Gold"},
-                    {"proName": "BITSTAMP:BTCUSD", "title": "Bitcoin"}
-                ],
-                "showSymbolLogo": true,
-                "isTransparent": false,
-                "displayMode": "adaptive",
-                "colorTheme": "dark",
-                "locale": "ar_AE"
-            }
+    </aside>
+
+    <!-- الجانب الأيمن: منصة الشارت الكبرى -->
+    <section class="main-chart-area">
+        
+        <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
+            <div id="tradingview_advanced_core" style="height: 100%; width: 100%;"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+            <script type="text/javascript">
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": "FX:EURUSD",
+                "interval": "15",
+                "timezone": "Etc/UTC",
+                "theme": "dark",
+                "style": "1",
+                "locale": "ar",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "withdateranges": true,
+                "hide_side_toolbar": false,
+                "allow_symbol_change": true,
+                "details": true,
+                "hotlist": true,
+                "calendar": true,
+                "container_id": "tradingview_advanced_core"
+            });
             </script>
         </div>
+
+    </section>
+
+</main>
+
+<!-- ================= 3. البيانات المباشرة (Heatmap & Calendar) ================= -->
+<section class="dash-row market-section" style="display: flex; gap: 20px; padding: 0 20px; margin-top: 20px;">
+    
+    <div class="dash-card" style="flex:1; background: var(--bg-panel); border-radius: 20px;">
+        <div class="card-header" data-i18n="dash_heatmap_title" style="padding: 15px; font-weight: 800; border-bottom: 1px solid var(--border);">خريطة قوة العملات</div>
+        <div style="height: 350px;">
+            <div class="tradingview-widget-container">
+                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-forex-heat-map.js" async>
+                { 
+                    "width": "100%", 
+                    "height": "350", 
+                    "currencies": ["EUR","USD","GBP","JPY","AUD","CAD","CHF"], 
+                    "isTransparent": true, 
+                    "colorTheme": "dark", 
+                    "locale": "ar" 
+                }
+                </script>
+            </div>
+        </div>
     </div>
 
-    <!-- المحتوى الرئيسي -->
-    <div class="dash-container">
-
-        <!-- الصف الأول: الأدوات والحاسبة + جدول التحليلات -->
-        
-        <!-- حاسبة المخاطرة والبيب (يسار) -->
-        <div class="glass-card col-4">
-            <div class="widget-header">
-                <div class="widget-title"><i class="fa-solid fa-calculator"></i> أدوات إدارة المخاطر</div>
-            </div>
-
-            <!-- تبويبات بسيطة -->
-            <div class="auth-tabs" style="margin-bottom: 15px;">
-                <button class="auth-tab-btn active" onclick="switchCalc('risk')">المخاطرة</button>
-                <button class="auth-tab-btn" onclick="switchCalc('pip')">قيمة النقطة</button>
-            </div>
-
-            <!-- حاسبة المخاطرة -->
-            <div id="calc-risk-box">
-                <div class="input-field">
-                    <input id="d-balance" type="number" placeholder="رصيد المحفظة ($)">
-                </div>
-                <div class="calc-grid">
-                    <div class="input-field"><input id="d-risk" type="number" placeholder="المخاطرة %"></div>
-                    <div class="input-field"><input id="d-sl" type="number" placeholder="الوقف (Pips)"></div>
-                </div>
-                <button class="btn-gradient full-width small" onclick="calcRiskDash()">احسب اللوت</button>
-                <div id="res-risk-dash" class="calc-res"></div>
-            </div>
-
-            <!-- حاسبة البيب -->
-            <div id="calc-pip-box" class="hidden">
-                <div class="calc-grid">
-                    <div class="input-field"><input id="d-lot" type="number" placeholder="حجم اللوت"></div>
-                    <div class="input-field"><input id="d-pips" type="number" placeholder="عدد النقاط"></div>
-                </div>
-                <button class="btn-gradient full-width small" onclick="calcPipDash()">احسب الربح المتوقع</button>
-                <div id="res-pip-dash" class="calc-res"></div>
-            </div>
-        </div>
-
-        <!-- جدول سجل التحليلات (يمين) -->
-        <div class="glass-card col-8">
-            <div class="widget-header">
-                <div class="widget-title"><i class="fa-solid fa-list-check"></i> سجل تحليلاتي</div>
-                <button class="icon-btn" onclick="loadDashHistory()"><i class="fa-solid fa-rotate-right"></i></button>
-            </div>
-            <div style="overflow-x: auto;">
-                <table class="dash-table">
-                    <thead>
-                        <tr>
-                            <th>التاريخ</th>
-                            <th>الزوج</th>
-                            <th>الإشارة</th>
-                            <th>الدخول</th>
-                            <th>الهدف</th>
-                            <th>الوقف</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dash-history-body">
-                        <tr><td colspan="6" style="text-align:center; padding:20px;">جاري التحميل...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- الصف الثاني: الأجندة الاقتصادية + الأخبار -->
-
-        <!-- الأجندة الاقتصادية (TradingView) -->
-        <div class="glass-card col-6" style="height: 500px; padding:0; overflow:hidden;">
-            <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
-                <div class="tradingview-widget-container__widget"></div>
+    <div class="dash-card" style="flex:1; background: var(--bg-panel); border-radius: 20px;">
+        <div class="card-header" data-i18n="dash_calendar_title" style="padding: 15px; font-weight: 800; border-bottom: 1px solid var(--border);">الأجندة الاقتصادية</div>
+        <div style="height: 350px;">
+            <div class="tradingview-widget-container">
                 <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
-                {
-                    "colorTheme": "dark",
-                    "isTransparent": true,
-                    "width": "100%",
-                    "height": "100%",
-                    "locale": "ar_AE",
-                    "importanceFilter": "0,1",
-                    "currencyFilter": "USD,EUR,GBP,JPY,XAU"
+                { 
+                    "width": "100%", 
+                    "height": "350", 
+                    "colorTheme": "dark", 
+                    "isTransparent": true, 
+                    "locale": "ar", 
+                    "importanceFilter": "-1,0,1" 
                 }
                 </script>
             </div>
         </div>
-
-        <!-- أخبار الأسواق (Timeline) -->
-        <div class="glass-card col-6" style="height: 500px; padding:0; overflow:hidden;">
-            <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
-                <div class="tradingview-widget-container__widget"></div>
-                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-timeline.js" async>
-                {
-                    "feedMode": "market",
-                    "market": "forex",
-                    "colorTheme": "dark",
-                    "isTransparent": true,
-                    "displayMode": "regular",
-                    "width": "100%",
-                    "height": "100%",
-                    "locale": "ar_AE"
-                }
-                </script>
-            </div>
-        </div>
-        
-        <!-- الصف الثالث: التحليل التقني + جلسات السوق -->
-        <div class="glass-card col-12" style="height: 400px; padding:0; overflow:hidden;">
-             <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
-                <div class="tradingview-widget-container__widget"></div>
-                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
-                {
-                "colorTheme": "dark",
-                "dateRange": "12M",
-                "showChart": true,
-                "locale": "ar_AE",
-                "largeChartUrl": "",
-                "isTransparent": true,
-                "showSymbolLogo": true,
-                "showFloatingTooltip": false,
-                "width": "100%",
-                "height": "100%",
-                "tabs": [
-                    {
-                    "title": "الفوركس",
-                    "symbols": [
-                        { "s": "FX:EURUSD", "d": "EUR/USD" },
-                        { "s": "FX:GBPUSD", "d": "GBP/USD" },
-                        { "s": "FX:USDJPY", "d": "USD/JPY" },
-                        { "s": "FX:USDCHF", "d": "USD/CHF" },
-                        { "s": "FX:AUDUSD", "d": "AUD/USD" },
-                        { "s": "FX:USDCAD", "d": "USD/CAD" }
-                    ]
-                    },
-                    {
-                    "title": "السلع",
-                    "symbols": [
-                        { "s": "OANDA:XAUUSD", "d": "الذهب" },
-                        { "s": "OANDA:XAGUSD", "d": "الفضة" },
-                        { "s": "TVC:USOIL", "d": "النفط الخام" }
-                    ]
-                    }
-                ]
-                }
-                </script>
-            </div>
-        </div>
-
     </div>
 
-    <!-- سكريبت خاص بالداشبورد فقط -->
-    <script>
-        const token = localStorage.getItem("token");
+</section>
 
-        // التحقق من الدخول عند الفتح
-        window.addEventListener('load', () => {
-            if(!token) {
-                window.location.href = "/";
-                return;
-            }
-            loadUserInfo();
-            loadDashHistory();
-        });
+<!-- ================= 4. المفكرة الذكية (Smart Trader Journal) ================= -->
+<section class="notes-section">
+    <div class="dash-card" style="background: var(--bg-panel); border-radius: 20px; border: 1px solid var(--border); overflow: hidden;">
+        <div class="card-header" style="padding: 15px; font-weight: 800; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; color: var(--primary);">
+            <i class="fa-solid fa-pen-fancy"></i> 
+            <span data-i18n="dash_notes_title">مفكرة المتداول الذكية (حفظ تلقائي)</span>
+        </div>
+        <div style="padding: 20px; background: #0b1222;">
+            <textarea id="trader-notes" class="trader-journal-area" data-i18n-placeholder="dash_notes_placeholder" placeholder="سجل هنا تحليلاتك، خطط تداولك، وملاحظاتك الهامة لتبقى محفوظة في حسابك..."></textarea>
+        </div>
+    </div>
+</section>
 
-        // جلب بيانات المستخدم
-        async function loadUserInfo() {
-            try {
-                const res = await fetch("/api/me", { headers: { "Authorization": "Bearer " + token } });
-                const data = await res.json();
-                if(res.ok) {
-                    document.getElementById("dash-credits").innerText = data.credits;
-                    document.getElementById("dash-username").innerText = data.email.split("@")[0];
-                }
-            } catch(e) { console.error(e); }
-        }
+<!-- ================= 5. النوافذ المنبثقة (Modals) ================= -->
 
-        // جلب السجل (History)
-        async function loadDashHistory() {
-            const tbody = document.getElementById("dash-history-body");
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">جاري التحديث...</td></tr>';
-            
-            try {
-                const res = await fetch("/api/history", { headers: { "Authorization": "Bearer " + token } });
-                const data = await res.json();
+<!-- نافذة إدارة المخاطر -->
+<div id="risk-modal" class="floating-modal">
+    <div class="modal-box">
+        <h3 data-i18n="dash_risk_title" style="margin-bottom: 25px; color: var(--primary); font-weight: 900; text-align: center;">إدارة المخاطر</h3>
+        <input type="number" id="balance" data-i18n-placeholder="dash_balance_placeholder" placeholder="$0.00" class="modal-input">
+        <div style="display: flex; gap: 15px; margin-top: 15px;">
+            <div style="flex: 1;"><input type="number" id="risk-percent" value="1" class="modal-input"></div>
+            <div style="flex: 1;"><input type="number" id="sl-pips" data-i18n-placeholder="dash_sl_pips" placeholder="Pips" class="modal-input"></div>
+        </div>
+        <button class="core-analyze-btn" onclick="calculateLot()" style="width: 100%; margin-top: 25px;" data-i18n="dash_calc_lot_btn">احسب اللوت</button>
+        <div id="risk-result" style="margin-top: 20px; text-align: center; font-weight: 900; font-size: 18px;"></div>
+        <button onclick="$('risk-modal').style.display='none'" style="margin-top: 30px; background: none; border: none; color: var(--danger); cursor: pointer; font-weight: 900; width: 100%;">إغلاق [X]</button>
+    </div>
+</div>
 
-                if(!Array.isArray(data) || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">لا توجد تحليلات سابقة</td></tr>';
-                    return;
-                }
+<!-- نافذة حاسبة البيبس -->
+<div id="pip-modal" class="floating-modal">
+    <div class="modal-box">
+        <h3 data-i18n="dash_pip_calc_title" style="margin-bottom: 25px; color: var(--success); font-weight: 900; text-align: center;">حاسبة الربح</h3>
+        <input type="number" id="pip-lot-size" placeholder="0.10" class="modal-input">
+        <input type="number" id="pip-count" placeholder="50" class="modal-input" style="margin-top: 15px;">
+        <button class="core-analyze-btn" onclick="calculatePipProfit()" style="width: 100%; margin-top: 25px; background: var(--success);" data-i18n="dash_calc_profit_btn">حساب الربح</button>
+        <div id="pip-result" style="margin-top: 20px; text-align: center; font-weight: 900; font-size: 18px;"></div>
+        <button onclick="$('pip-modal').style.display='none'" style="margin-top: 30px; background: none; border: none; color: var(--danger); cursor: pointer; font-weight: 900; width: 100%;">إغلاق [X]</button>
+    </div>
+</div>
 
-                tbody.innerHTML = "";
-                data.forEach(item => {
-                    const badgeClass = item.signal === "BUY" ? "bg-green" : (item.signal === "SELL" ? "bg-red" : "bg-gray");
-                    const date = new Date(item.created_at).toLocaleDateString('en-GB');
-                    
-                    tbody.innerHTML += `
-                        <tr>
-                            <td style="direction:ltr">${date}</td>
-                            <td>---</td> <!-- اسم الزوج غير محفوظ في الداتابيس الحالية -->
-                            <td><span class="status-badge ${badgeClass}">${item.signal}</span></td>
-                            <td style="direction:ltr">${item.entry}</td>
-                            <td style="direction:ltr">${item.tp}</td>
-                            <td style="direction:ltr">${item.sl}</td>
-                        </tr>
-                    `;
-                });
-            } catch(e) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">خطأ في الاتصال</td></tr>';
-            }
-        }
+<!-- استدعاء ملفات البرمجة والترجمة -->
+<script src="/static/translations.js"></script>
+<script src="/static/dashboard.js"></script>
 
-        // تبديل الحاسبة
-        function switchCalc(type) {
-            document.querySelectorAll('.auth-tab-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            if(type === 'risk') {
-                document.getElementById('calc-risk-box').classList.remove('hidden');
-                document.getElementById('calc-pip-box').classList.add('hidden');
-            } else {
-                document.getElementById('calc-risk-box').classList.add('hidden');
-                document.getElementById('calc-pip-box').classList.remove('hidden');
-            }
-        }
-
-        // منطق الحاسبة
-        function calcRiskDash() {
-            const bal = parseFloat(document.getElementById('d-balance').value);
-            const risk = parseFloat(document.getElementById('d-risk').value);
-            const sl = parseFloat(document.getElementById('d-sl').value);
-            const resBox = document.getElementById('res-risk-dash');
-            
-            if(bal && risk && sl) {
-                const riskAmount = bal * (risk / 100);
-                const lot = riskAmount / (sl * 10);
-                resBox.style.display = 'block';
-                resBox.innerHTML = `المخاطرة: $${riskAmount.toFixed(1)} <br> اللوت المقترح: ${lot.toFixed(2)}`;
-            }
-        }
-
-        function calcPipDash() {
-            const lot = parseFloat(document.getElementById('d-lot').value);
-            const pips = parseFloat(document.getElementById('d-pips').value);
-            const resBox = document.getElementById('res-pip-dash');
-
-            if(lot && pips) {
-                const val = lot * pips * 10;
-                resBox.style.display = 'block';
-                resBox.innerText = `الربح المتوقع: $${val.toFixed(2)}`;
-            }
-        }
-    </script>
 </body>
 </html>

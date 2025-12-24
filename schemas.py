@@ -1,46 +1,82 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
+from typing import Optional, List
+from datetime import datetime
 
-class UserCreate(BaseModel):
-    email: str
-    password: str
-
+# ==========================================
+# 1. بيانات تسجيل الدخول (Login)
+# ==========================================
 class UserLogin(BaseModel):
     email: str
     password: str
 
+# ==========================================
+# 2. إنشاء مستخدم جديد (Registration)
+# ==========================================
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    full_name: str
+    phone: str
+    whatsapp: Optional[str] = ""
+    country: Optional[str] = "Global"
+    trader_level: Optional[str] = "Beginner"
+    markets: Optional[str] = "Forex"
+    tier: Optional[str] = "Trial"
+
+# ==========================================
+# 3. البيانات العائدة للمتصفح (User Profile Response)
+# هذا النموذج هو المحرك الأساسي لإظهار أزرار الإدارة في الواجهة
+# ==========================================
 class UserOut(BaseModel):
-    email: str
-    credits: int
-    is_premium: bool
-
-    class Config:
-        from_attributes = True
-
-# ✅ للـ Admin فقط (بدون password_hash)
-class AdminUserOut(BaseModel):
     id: int
     email: str
+    full_name: str
+    phone: str
+    whatsapp: Optional[str] = ""
+    country: str
+    trader_level: str
+    markets: str
+    tier: str
+    status: str
     credits: int
-    is_premium: bool
     is_admin: bool
+    is_premium: bool
+    is_whale: bool
 
     class Config:
         from_attributes = True
 
+# ==========================================
+# 4. نموذج تحديث بيانات المستخدم من قبل الإدارة
+# يستخدم في لوحة التحكم (Admin Panel)
+# ==========================================
+class AdminUpdateUser(BaseModel):
+    user_id: int
+    credits: Optional[int] = None
+    tier: Optional[str] = None
+    is_premium: Optional[bool] = None
+    is_admin: Optional[bool] = None
 
-# ✅ Analyze Response (AR + EN) without extra credit charges
-class AnalyzeResponse(BaseModel):
+# ==========================================
+# 5. هيكل سجل التحليلات (Analysis History Response)
+# ==========================================
+class AnalysisOut(BaseModel):
+    id: int
+    symbol: str
     signal: str
-    entry: str
-    tp: str
-    sl: str
-    timeframe: str
-    session: str
-    validity: str
+    entry_data: Optional[str] = "N/A"
+    tp_data: Optional[str] = "N/A"
+    sl_data: Optional[str] = "N/A"
+    timeframe: Optional[str] = "---"
+    reason: Optional[str] = ""
+    created_at: datetime
 
-    notes_ar: str
-    notes_en: str
-    reason_ar: str
-    reason_en: str
+    class Config:
+        from_attributes = True
 
-    remaining_credits: int
+# ==========================================
+# 6. نموذج ردود الفعل السريعة (Status/Messages)
+# ==========================================
+class StatusMessage(BaseModel):
+    status: str
+    message: str

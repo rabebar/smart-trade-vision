@@ -1,437 +1,269 @@
-/* =========================================
-   1. CORE & VARIABLES
-   ========================================= */
+/* ============================================================
+   CANA AI × KAIA - MASTER CONSOLIDATED STYLESHEET
+   Version: 5.1 (Full Stable & Geometric Centering)
+   النسخة الكاملة النهائية: الحفاظ على كافة التفاصيل + توسيط الأيقونات
+   ============================================================ */
+
 :root {
-    --bg-dark: #050b14;
-    --card-bg: rgba(22, 27, 34, 0.7);
-    --glass-border: 1px solid rgba(255, 255, 255, 0.1);
-    --primary: #3b82f6;
-    --primary-glow: rgba(59, 130, 246, 0.5);
-    --accent: #f59e0b;
-    --success: #10b981;
-    --danger: #ef4444;
-    --text-main: #ffffff;
-    --text-muted: #94a3b8;
-    --font-cairo: 'Cairo', sans-serif;
-    --font-outfit: 'Outfit', sans-serif;
+  --bg-deep: #020617;
+  --bg-panel: #0b1222;
+  --bg-card: #0f172a;
+  --primary: #3b82f6;
+  --primary-glow: rgba(59, 130, 246, 0.4);
+  --success: #10b981;
+  --danger: #ef4444;
+  --gold: #ffd700;
+  --text: #ffffff;
+  --muted: #94a3b8;
+  --border: rgba(255, 255, 255, 0.08);
+
+  /* ألوان الباقات الرسمية المعتمدة */
+  --trial-color: #10b981;
+  --basic-color: #94a3b8;
+  --pro-color: #3b82f6;
+  --platinum-color: #ffd700;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
-
-body {
-    font-family: var(--font-cairo);
-    background-color: var(--bg-dark);
-    color: var(--text-main);
-    direction: rtl;
-    overflow-x: hidden;
-    min-height: 100vh;
-    background-image:
-        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 20%),
-        radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 20%);
+/* --- 1. الإعدادات العامة (Global Reset) --- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { 
+    background: var(--bg-deep); 
+    font-family: 'Cairo', sans-serif; 
+    color: var(--text); 
+    direction: rtl; 
+    overflow-x: hidden; 
+    line-height: 1.6;
+    font-size: 18px;
 }
 
-/* Scrollbar Customization */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: var(--bg-dark); }
-::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+/* --- 2. واجهة الاستقبال (KAIA INTRO STYLES) --- */
+.intro-screen {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center;
+    transition: opacity 1s ease-out, visibility 1s;
+}
 
-.hidden { display: none !important; }
+.intro-content { text-align: center; width: 90%; max-width: 800px; }
 
-/* =========================================
-   2. NAVBAR
-   ========================================= */
-.navbar {
+@keyframes heartbeat {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.pulse-node {
+    width: 60px; height: 60px; background: var(--primary); border-radius: 50%; margin: 0 auto 20px;
+    box-shadow: 0 0 20px var(--primary-glow); animation: heartbeat 1.5s infinite;
+}
+
+.kaia-brand-title { font-size: 80px; font-weight: 900; color: var(--primary); text-shadow: 0 0 30px var(--primary-glow); margin-bottom: 20px; }
+
+.btn-ignite {
+    background: var(--primary); color: #000; border: none; padding: 20px 40px;
+    border-radius: 50px; font-weight: 900; font-size: 20px; cursor: pointer;
+    box-shadow: 0 0 30px var(--primary-glow); transition: 0.3s;
+}
+.btn-ignite:hover { transform: scale(1.05); box-shadow: 0 0 50px var(--primary-glow); }
+
+/* --- 3. الهيدر الملكي (Navbar) --- */
+.top-navbar {
+    height: 85px; padding: 0 40px;
+    background: #050b14; border-bottom: 2px solid var(--primary);
     display: flex; justify-content: space-between; align-items: center;
-    padding: 15px 5%; background: rgba(5, 11, 20, 0.95);
-    backdrop-filter: blur(10px); border-bottom: var(--glass-border);
-    position: sticky; top: 0; z-index: 100;
+    position: sticky; top: 0; z-index: 2000; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
-.logo-container { display: flex; align-items: center; gap: 12px; }
-.logo-icon { font-size: 2rem; color: var(--primary); filter: drop-shadow(0 0 10px var(--primary-glow)); }
-.brand-text h1 {
-    font-family: var(--font-outfit); font-size: 2rem; font-weight: 900;
-    line-height: 1; letter-spacing: 3px; color: #fff;
+.header-left { display: flex; align-items: center; gap: 15px; }
+.nav-btn-logout, .wallet-btn, .plan-btn, .core-analyze-btn {
+    background: #1e293b; border: 1px solid var(--border); color: #fff;
+    padding: 10px 20px; border-radius: 10px; font-weight: 800; cursor: pointer;
+    font-family: inherit; transition: 0.3s;
 }
-.brand-text span {
-    font-family: var(--font-outfit); font-size: 0.75rem; color: var(--primary);
-    letter-spacing: 4px; font-weight: 700; display: block; margin-top: 2px;
-}
-.nav-controls { display: flex; gap: 15px; align-items: center; }
+.wallet-btn, .core-analyze-btn { background: var(--primary); color: #000; }
+.logo-main { display: flex; align-items: center; gap: 15px; cursor: pointer; }
+.logo-text { font-size: 32px; font-weight: 900; }
+.logo-icon { font-size: 35px; color: var(--primary); filter: drop-shadow(0 0 8px var(--primary)); }
 
-/* ✅ User Info Container */
-.user-info { display: flex; align-items: center; gap: 12px; }
+/* --- 4. أشرطة الأسعار والأخبار --- */
+.ticker-box { background: #000; height: 45px; border-bottom: 1px solid var(--border); overflow: hidden; }
 
-/* User Info Badge */
-.nav-user-badge {
-    color: var(--text-muted); font-size: 0.9rem; font-weight: bold;
-    border-left: 1px solid #334155; padding-left: 15px;
-    font-family: var(--font-outfit);
-}
-
-.credits-pill {
-    background: rgba(245, 158, 11, 0.15); color: var(--accent); padding: 5px 15px;
-    border-radius: 20px; border: 1px solid rgba(245, 158, 11, 0.3);
-    font-weight: bold; display: flex; align-items: center; gap: 8px;
-}
-.btn-gradient {
-    background: linear-gradient(135deg, var(--primary), #2563eb); color: white; border: none;
-    padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer;
-    box-shadow: 0 4px 15px var(--primary-glow); transition: 0.3s; font-family: var(--font-cairo);
-}
-.btn-gradient:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--primary-glow); }
-.btn-gradient.small { padding: 6px 15px; font-size: 0.85rem; }
-.btn-gradient.tiny { padding: 8px 12px; font-size: 0.85rem; border-radius: 10px; }
-.icon-btn, .lang-switcher {
-    background: rgba(255,255,255,0.05); border: var(--glass-border); color: var(--text-muted);
-    padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.3s;
-}
-.icon-btn:hover, .lang-switcher:hover { background: rgba(255,255,255,0.1); color: #fff; }
-
-/* =========================================
-   3. HERO SECTION (3 COLUMNS DASHBOARD)
-   ========================================= */
-.hero-section {
-    padding: 40px 20px; position: relative; overflow: hidden;
-    min-height: 600px; display: flex; align-items: center; justify-content: center;
-}
-.hero-grid-layout {
-    display: grid;
-    grid-template-columns: 320px 1fr 320px;
-    gap: 30px; width: 100%; max-width: 1400px; margin: 0 auto; align-items: start;
-}
-.hero-content-center { text-align: center; padding-top: 40px; position: relative; z-index: 2; }
-.hero-side-widget {
-    height: 500px; border-radius: 16px; overflow: hidden; position: relative;
-    transition: transform 0.3s ease; border: 1px solid rgba(255,255,255,0.05);
-}
-.hero-side-widget:hover { transform: translateY(-5px); }
-
-.side-box { height: calc(100% - 42px) !important; width: 100% !important; overflow: hidden; }
-.glass-panel {
-    background: rgba(15, 23, 42, 0.4);
-    backdrop-filter: blur(5px); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-}
-.widget-title {
-    background: rgba(59, 130, 246, 0.1); color: var(--primary); padding: 10px;
-    text-align: center; font-weight: bold; font-size: 0.9rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-.main-title {
-    font-size: 3rem; font-weight: 900; line-height: 1.3; margin-bottom: 20px;
-    background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.highlight-text { color: var(--primary); -webkit-text-fill-color: var(--primary); text-shadow: 0 0 20px rgba(59, 130, 246, 0.4); }
-.hero-sub { font-size: 1.1rem; color: var(--text-muted); max-width: 600px; margin: 0 auto; line-height: 1.6; }
-.glow-circle {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 300px; height: 300px; background: var(--primary); filter: blur(150px); opacity: 0.2; z-index: -1;
-}
-.scroll-indicator { margin-top: 40px; color: var(--text-muted); font-size: 0.9rem; animation: bounce 2s infinite; }
-@keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-10px);} 60% {transform: translateY(-5px);} }
-
-/* =========================================
-   4. TICKERS
-   ========================================= */
-.tickers-wrapper { display: flex; flex-direction: column; }
-.top-tape { height: 46px !important; overflow: hidden; }
-
-/* News ticker */
-.news-ticker-container {
-    display: flex; background: #fff; height: 40px; border-bottom: 2px solid #e2e8f0;
-    overflow: hidden; color: #1e293b; direction: ltr; position: relative;
-}
-.ticker-label {
-    background: #dc2626; color: white; padding: 0 20px; font-weight: 800;
-    display: flex; align-items: center; justify-content: center; z-index: 10; font-size: 0.9rem; min-width: 140px;
-}
-.ticker-wrap { flex: 1; overflow: hidden; position: relative; }
-.ticker-move {
-    display: inline-block; white-space: nowrap; position: absolute; top: 0; left: 0;
-    line-height: 40px; animation: ticker-rev 120s linear infinite;
-}
-.ticker-move:hover { animation-play-state: paused; }
-.ticker-item { display: inline-block; padding: 0 40px; font-weight: 700; font-size: 0.95rem; }
-.ticker-item a { color: #1e293b; text-decoration: none; }
-.ticker-item a:hover { color: #dc2626; }
-@keyframes ticker-rev { 0% { transform: translate3d(-100%, 0, 0); } 100% { transform: translate3d(100%, 0, 0); } }
-
-/* =========================================
-   5. STEPS SECTION
-   ========================================= */
-.steps-section {
-    padding: 60px 20px;
-    margin-top: 20px;
-    position: relative;
-    z-index: 10;
-}
-.steps-container {
+.news-bar-v2 {
+    background-color: #131722;
+    height: 46px;
     display: flex;
-    flex-wrap: wrap;
-    gap: 30px;
-    align-items: flex-start;
-    justify-content: center;
-    background: rgba(255,255,255,0.02);
-    padding: 40px;
-    border-radius: 20px;
-    border: var(--glass-border);
-    max-width: 1100px;
-    margin: 0 auto;
-}
-.step-card {
-    flex: 1;
-    min-width: 250px;
-    max-width: 300px;
-    text-align: center;
-    background: rgba(0,0,0,0.3);
-    padding: 30px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.05);
-}
-.step-icon {
-    font-size: 2rem; color: var(--primary); background: rgba(59, 130, 246, 0.1);
-    width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 15px; border: 1px solid rgba(59, 130, 246, 0.3);
-}
-.step-card h3 { font-size: 1.2rem; margin-bottom: 10px; color: #fff; }
-.step-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
-.step-arrow { color: #334155; font-size: 1.5rem; align-self: center; }
-
-/* =========================================
-   6. MAIN APP AREA
-   ========================================= */
-.app-container { max-width: 900px; margin: 0 auto; padding: 20px; position: relative; }
-.glass-card {
-    background: var(--card-bg); border: var(--glass-border); backdrop-filter: blur(12px);
-    border-radius: 16px; padding: 30px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-bottom: 30px;
-}
-.card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; }
-.card-header i { color: var(--primary); font-size: 1.5rem; }
-.card-header h2 { font-size: 1.5rem; font-weight: 700; }
-
-.drop-zone {
-    border: 2px dashed rgba(255,255,255,0.15); border-radius: 12px; background: rgba(0,0,0,0.2);
-    padding: 40px; text-align: center; cursor: pointer; transition: 0.3s; margin-bottom: 25px;
-    position: relative; z-index: 50;
-}
-.drop-zone:hover { border-color: var(--primary); background: rgba(59, 130, 246, 0.05); }
-.drop-zone.drag{
-    border-color: var(--accent);
-    background: rgba(245, 158, 11, 0.08);
-    transform: translateY(-1px);
-}
-
-.icon-large { font-size: 3.5rem; color: var(--text-muted); margin-bottom: 15px; transition: 0.3s; }
-.drop-zone:hover .icon-large { color: var(--primary); transform: scale(1.1); }
-
-.controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
-.control-group label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; }
-.custom-select-wrapper { position: relative; }
-select {
-    width: 100%; background: #0f131a; border: 1px solid #2d3748; color: #fff;
-    padding: 12px 15px; border-radius: 8px; appearance: none; font-family: inherit; cursor: pointer;
-}
-.custom-select-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
-.full-width { width: 100%; }
-.pulse-animation { animation: pulse-glow 2s infinite; }
-@keyframes pulse-glow {
-    0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-}
-
-/* ✅ Loading Overlay + Spinner */
-.loading-overlay{
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.55);
-    backdrop-filter: blur(6px);
-    z-index: 999999;
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 14px;
-}
-.cyber-spinner{
-    width: 74px;
-    height: 74px;
-    border-radius: 50%;
-    border: 6px solid rgba(255,255,255,0.12);
-    border-top-color: var(--accent);
-    border-right-color: var(--primary);
-    animation: spin 0.9s linear infinite;
-    box-shadow: 0 0 0 10px rgba(245,158,11,0.05), 0 0 40px rgba(59,130,246,0.12);
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.loading-overlay p{
-    color: #e2e8f0;
-    font-weight: 800;
-    letter-spacing: 0.3px;
-    font-size: 0.95rem;
+    border-bottom: 1px solid #2a2e39;
+    overflow: hidden;
+    position: relative;
 }
 
-/* Results */
-.result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.signal-badge { background: #334155; padding: 5px 15px; border-radius: 8px; font-weight: 900; letter-spacing: 1px; color: #fff; }
-.dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
-.dash-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center; }
-.dash-card .lbl { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
-.dash-card .val { font-size: 1.1rem; font-weight: 800; direction: ltr; display: block; }
-.main-sig { background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3); }
-
-.info-grid { display: flex; justify-content: space-around; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.info-item { color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
-
-.notes-container { background: #0f131a; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 3px solid var(--primary); }
-.notes-container h4 { color: var(--primary); margin-bottom: 10px; font-size: 0.9rem; }
-.notes-container p { font-size: 0.95rem; line-height: 1.6; color: #cbd5e1; }
-
-.chart-preview img { width: 100%; border-radius: 10px; border: 1px solid #334155; margin-top: 10px; }
-
-.btn-outline {
-    background: transparent; border: 1px solid #334155; color: var(--text-muted);
-    padding: 10px; width: 100%; border-radius: 8px; cursor: pointer; transition: 0.3s;
+.news-label-v2 {
+    background-color: #ff3131;
+    color: #ffffff;
+    padding: 0 15px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    font-weight: 900;
+    font-size: 14px;
+    z-index: 10;
+    box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+    white-space: nowrap;
 }
-.btn-outline:hover { border-color: var(--danger); color: var(--danger); }
-.btn-outline.small { padding: 8px 10px; width: auto; border-radius: 10px; }
 
-/* =========================================
-   7. MODALS & BANK
-   ========================================= */
+.news-marquee-v2 {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    direction: ltr !important; 
+}
+
+#news-ticker-v2 {
+    display: inline-block;
+    white-space: nowrap;
+    animation: scroll-news-ltr 120s linear infinite;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+@keyframes scroll-news-ltr {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100vw); }
+}
+
+/* --- 5. نافذة الدخول (MODAL SYSTEM) --- */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.95); backdrop-filter: blur(15px);
-    z-index: 99999; display: flex; justify-content: center; align-items: center;
+    background: rgba(2, 6, 23, 0.96); display: flex; align-items: center;
+    justify-content: center; z-index: 5000; padding: 20px;
+    backdrop-filter: blur(10px);
 }
-.modal-glass {
-    background: #111827; border: 1px solid #374151; padding: 40px;
-    border-radius: 24px; width: 95%; max-width: 420px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; position: relative;
-}
-.modal-glass.large { max-width: 900px; padding-bottom: 60px; }
-.modal-glass.extra-large { width: 95%; max-width: 1100px; height: 90vh; overflow-y: auto; padding: 30px; }
-
-.close-icon {
-    position: absolute; top: 15px; right: 20px;
-    font-size: 2rem; cursor: pointer; color: #8b949e;
-    z-index: 100;
+.modal-content {
+    background: var(--bg-panel); border: 2px solid var(--primary);
+    border-radius: 30px; padding: 40px; position: relative;
+    width: 100%; max-width: 480px;
+    box-shadow: 0 0 50px var(--primary-glow);
+    max-height: 90vh; overflow-y: auto;
 }
 
-/* Auth */
-.auth-tabs { display: flex; background: #0f172a; padding: 5px; border-radius: 12px; margin-bottom: 25px; gap: 5px; }
-.auth-tab-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; background: transparent; color: #94a3b8; cursor: pointer; font-weight: bold; transition: 0.3s; font-family: inherit; }
-.auth-tab-btn.active { background: #1e293b; color: #3b82f6; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+.modal-input {
+    width: 100%; height: 55px; background: #020617 !important;
+    border: 1px solid var(--border) !important; border-radius: 12px !important;
+    color: white !important; padding: 0 20px; margin-bottom: 15px;
+}
 
-.input-field { position: relative; margin-bottom: 20px; text-align: left; }
-.input-field i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #4b5563; font-size: 1.1rem; }
-.input-field input { width: 100%; background: #0f172a !important; border: 1px solid #374151; padding: 14px 45px 14px 15px; border-radius: 10px; color: #fff !important; font-size: 1rem; }
-.input-field input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
-.error-msg { color: #f59e0b; margin-top: 15px; font-size: 0.9rem; font-weight: bold; }
+/* --- 6. قسم الـ Hero والعدادات التقنية --- */
+.hero-full-layout { padding: 40px 20px; width: 100%; }
+.hero-grid-container {
+    max-width: 1750px; margin: 0 auto;
+    display: grid; grid-template-columns: 350px 1fr 350px; gap: 30px; align-items: center;
+}
+.main-glow_title { font-size: 50px; font-weight: 900; text-shadow: 0 0 20px var(--primary-glow); text-align: center; margin-bottom: 30px; }
+.gauge-card-mini { background: var(--bg-panel); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; height: 400px; }
+.gauge-header { background: rgba(255,255,255,0.03); padding: 10px; text-align: center; font-weight: 800; color: var(--primary); }
 
-/* Pricing */
-.pricing-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 30px 0; }
-.plan-card { background: #1f2937; padding: 20px; border-radius: 12px; border: 1px solid #374151; position: relative; }
-.plan-card.featured { border-color: var(--primary); box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
-.plan-card.vip-card { border-color: #d946ef; box-shadow: 0 0 20px rgba(217, 70, 239, 0.15); }
-.vip-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #d946ef; color: #fff; padding: 2px 10px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; }
-.plan-card .price { font-size: 2rem; font-weight: 900; margin: 10px 0; color: #fff; }
-.badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--primary); padding: 2px 10px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; }
-.plan-card.active-plan { border: 2px solid var(--accent); background: rgba(245, 158, 11, 0.1); transform: scale(1.05); transition: all 0.3s ease; }
-.plan-card.active-plan button { background: var(--accent); color: #000; border-color: var(--accent); }
+/* --- 7. محرك التحليل (Analysis Core) --- */
+.analysis-core-wrapper {
+    max-width: 850px; margin: 50px auto; background: var(--bg-panel); 
+    border-radius: 25px; border: 2px solid var(--primary); overflow: hidden;
+}
+.analysis-header { background: rgba(59, 130, 246, 0.1); padding: 20px; font-weight: 900; border-bottom: 1px solid var(--border); }
+.core-body { padding: 40px; }
+.drop-zone-v2 { border: 2px dashed #334155; border-radius: 20px; padding: 60px; background: rgba(0,0,0,0.2); text-align: center; cursor: pointer; margin-bottom: 30px; }
+.core-inputs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+.input-item { display: flex; flex-direction: column; gap: 10px; }
+.input-item label { font-weight: 800; color: var(--muted); }
+.input-item select { height: 50px; background: #020617; color: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 0 10px; }
 
-/* Bank */
-.payment-section-styled { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; }
-.pay-title { color: var(--text-muted); margin-bottom: 15px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
-.bank-details-box { background: linear-gradient(145deg, #1e293b, #0f172a); border: 1px solid #334155; border-radius: 12px; padding: 20px; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-.bank-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
-.bank-logo-text { font-size: 1.1rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; }
-.bank-logo-text i { color: var(--primary); }
-.branch-name { font-size: 0.8rem; color: var(--text-muted); }
-.details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; text-align: left; }
-.detail-item { display: flex; flex-direction: column; }
-.detail-item .label { font-size: 0.75rem; color: #64748b; margin-bottom: 3px; }
-.detail-item .value { font-size: 0.95rem; color: #e2e8f0; font-weight: 600; }
-.highlight-buraq { color: var(--accent); }
-.iban-wrapper { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; border: 1px dashed #334155; }
-.iban-label { display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 5px; text-align: left; }
-.iban-code-box { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-.iban-code-box code { font-family: 'Courier New', monospace; color: #fff; font-size: 0.95rem; letter-spacing: 1px; word-break: break-all; }
-.copy-btn { background: var(--primary); border: none; color: #fff; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
-.copy-btn:hover { background: #2563eb; }
-.copy-btn:active { transform: scale(0.95); }
-.whatsapp-link { display: inline-block; background: #25D366; color: #fff; padding: 10px 20px; border-radius: 6px; font-weight: bold; margin-top: 20px; width: 100%; margin-bottom: 20px; text-decoration: none; text-align: center; }
+/* --- 8. صناديق النتائج المؤسسية الملونة --- */
+.analysis-result-card {
+    background: #0f172a; border-radius: 20px; padding: 30px; position: relative; margin-top: 20px;
+    animation: slideUp 0.5s ease-out;
+}
+.bullish-glow { border: 2px solid var(--success); box-shadow: 0 0 30px rgba(16,185,129,0.2); }
+.bearish-glow { border: 2px solid var(--danger); box-shadow: 0 0 30px rgba(239,68,68,0.2); }
+.close-res-btn { position: absolute; top: 15px; left: 15px; background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; }
 
-/* Portfolio */
-.portfolio-header-strip { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.1); }
-.user-identity { display: flex; align-items: center; gap: 15px; }
-.avatar-circle { width: 45px; height: 45px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 0 10px var(--primary-glow); }
-.user-text h3 { margin: 0; font-size: 1rem; color: #fff; }
-.plan-badge { font-size: 0.75rem; background: var(--accent); color: #000; padding: 2px 8px; border-radius: 6px; font-weight: bold; }
-.user-finance { display: flex; align-items: center; gap: 20px; }
-.finance-item { display: flex; flex-direction: column; align-items: flex-end; }
-.f-label { font-size: 0.75rem; color: var(--text-muted); }
-.f-value { font-size: 1.2rem; font-weight: 900; color: var(--success); }
-.portfolio-grid { display: grid; grid-template-columns: 2.5fr 1fr; gap: 25px; text-align: right; }
-.panel-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; height: auto; }
-.panel-title { color: var(--primary); font-size: 1.1rem; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-.history-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-.history-table th { color: var(--text-muted); padding: 10px; border-bottom: 1px solid #334155; text-align: right; }
-.history-table td { color: #fff; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.tool-mini { padding: 15px; background: rgba(0,0,0,0.3); border: 1px solid #334155; }
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.full-span { grid-column: span 2; }
-.mini-form input { width: 100%; background: #0f172a; border: 1px solid #334155; padding: 10px; border-radius: 8px; color: #fff; font-size: 0.85rem; text-align: center; }
-.mini-res { margin-top: 10px; font-size: 0.9rem; color: var(--accent); font-weight: bold; text-align: center; }
+.res-data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+.res-data-item { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border-right: 4px solid var(--primary); }
+.res-data-item small { display: block; color: var(--muted); font-size: 13px; margin-bottom: 5px; font-weight: 800; }
+.res-data-item span { color: #fff; font-weight: 900; font-size: 18px; }
 
-/* Footer */
-.cana-footer { background: #020617; border-top: 1px solid #1e293b; padding: 60px 20px 20px; margin-top: 50px; font-family: var(--font-cairo); position: relative; z-index: 10; }
-.footer-content { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1.5fr; gap: 40px; margin-bottom: 40px; }
-.footer-col h4 { color: #fff; font-size: 1.2rem; margin-bottom: 20px; border-bottom: 2px solid var(--primary); display: inline-block; padding-bottom: 5px; }
-.footer-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; color: #fff; font-size: 1.5rem; font-weight: 900; }
-.footer-logo i { color: var(--primary); }
-.footer-text { color: var(--text-muted); line-height: 1.8; font-size: 0.95rem; text-align: justify; }
-.footer-links li { margin-bottom: 10px; }
-.footer-links a { color: var(--text-muted); transition: 0.3s; font-size: 0.95rem; text-decoration: none; }
-.footer-links a:hover { color: var(--primary); padding-right: 5px; }
-.social-icons { display: flex; gap: 15px; margin-top: 20px; }
-.social-icons a { width: 40px; height: 40px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; border-radius: 50%; color: #fff; transition: 0.3s; border: 1px solid rgba(255,255,255,0.1); }
-.social-icons a:hover { background: var(--primary); transform: translateY(-3px); }
-.footer-bottom { text-align: center; padding-top: 20px; border-top: 1px solid #1e293b; color: #64748b; font-size: 0.8rem; font-family: var(--font-outfit); }
+/* --- 9. باقات الاشتراك والخدمات (تم تعديل التوسيط هنا) --- */
+.horizontal-grid { 
+    display: grid; 
+    grid-template-columns: repeat(4, 1fr); /* الحفاظ على الـ 4 أعمدة */
+    gap: 30px; 
+    max-width: 1300px; 
+    margin: 0 auto; 
+}
 
-/* Share Card */
-.share-card-hidden { position: absolute; left: -9999px; top: 0; width: 400px; padding: 30px; background: #0f172a; border: 2px solid #3b82f6; border-radius: 20px; font-family: 'Outfit', sans-serif; color: #fff; text-align: center; }
-.sc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
-.sc-logo { font-size: 1.5rem; font-weight: 900; }
-.sc-body { display: flex; flex-direction: column; gap: 15px; }
-.sc-row { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 600; }
-.sc-row.main { font-size: 2.5rem; color: #f59e0b; justify-content: center; margin-bottom: 10px; }
-.sc-footer { margin-top: 20px; color: #64748b; font-size: 0.8rem; letter-spacing: 2px; }
+.price-card { 
+    background: var(--bg-card); 
+    border: 1px solid var(--border); 
+    padding: 40px 25px; 
+    border-radius: 25px; 
+    transition: 0.3s; 
+    position: relative; 
+    overflow: hidden;
+    
+    /* التعديل الجديد للتوسيط الهندسي */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* يوسط الأيقونة وكل المحتوى في المنتصف */
+    text-align: center;  /* يوسط النصوص */
+}
 
-/* Responsive */
+/* ضمان توسيط الأيقونة أو الصورة داخل الكرت */
+.price-card img, .price-card svg, .price-card i {
+    display: block;
+    margin: 0 auto 20px auto; /* توسيط أفقي + مسافة تحتها */
+    max-width: 80px;
+    height: auto;
+}
+
+.price-card .price { font-size: 40px; font-weight: 900; margin-bottom: 20px; color: #fff; }
+
+/* --- 10. غرفة القيادة والحاسبة --- */
+.dashboard-root { visibility: visible !important; opacity: 1 !important; }
+.dashboard-wrapper { padding: 30px; max-width: 1700px; margin: 0 auto; }
+.dash-card { background: var(--bg-panel); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; height: 100%; }
+.cana-table { width: 100%; border-collapse: collapse; }
+.cana-table th { background: #050b14; color: var(--primary); font-weight: 900; padding: 15px; border-bottom: 2px solid var(--primary); }
+.cana-table td { border-bottom: 1px solid var(--border); padding: 15px; text-align: center; }
+
+.calc-box { background: #050b14; padding: 20px; border-radius: 15px; }
+.calc-screen { 
+    background: #000; height: 60px; display: flex; align-items: center; 
+    justify-content: flex-end; padding: 0 20px; font-size: 32px; 
+    color: var(--primary); border-radius: 10px; margin-bottom: 15px; border: 1px solid var(--border);
+}
+.calc-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.calc-btns button { 
+    height: 50px; border-radius: 8px; border: none; background: #1e293b; 
+    color: #fff; font-size: 18px; font-weight: 800; cursor: pointer; transition: 0.2s;
+}
+.calc-btns button:hover { background: var(--primary); color: #000; }
+.calc-btns .c-red { background: var(--danger); }
+.calc-btns .c-equal { background: var(--primary); color: #000; grid-row: span 2; height: auto; }
+
+/* --- 11. الفوتر وإصلاح الواتساب --- */
+.main-footer { background: #050b14; padding: 60px 40px; border-top: 1px solid var(--border); margin-top: 80px; }
+.footer-container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 50px; }
+
+.footer-col p[dir="ltr"] {
+    display: flex; align-items: center; gap: 12px; justify-content: flex-start;
+    background: rgba(255,255,255,0.03); padding: 10px 20px;
+    border-radius: 12px; border: 1px solid var(--border); width: fit-content; margin-top: 15px;
+}
+.footer-col p[dir="ltr"] i { font-size: 25px; color: #25d366; }
+
+/* التوافق للهواتف */
 @media (max-width: 1100px) {
-    .hero-grid-layout { grid-template-columns: 1fr; gap: 40px; }
-    .hero-side-widget { display: none; }
+    .footer-container, .hero-grid-container, .horizontal-grid { grid-template-columns: 1fr !important; }
+    .hero-side-gauge, .intro-screen { display: none; }
+    .top-navbar { padding: 0 15px; }
 }
-@media (max-width: 900px) {
-    .pricing-container { grid-template-columns: repeat(2, 1fr); }
-    .footer-content { grid-template-columns: 1fr; gap: 30px; }
-    .portfolio-grid { grid-template-columns: 1fr; }
-    .portfolio-header-strip { flex-direction: column; text-align: center; }
-    .user-finance { width: 100%; justify-content: space-between; }
-    .user-identity { flex-direction: column; }
-}
-@media (max-width: 768px) {
-    .main-title { font-size: 2rem; }
-    .controls-grid, .dashboard-grid { grid-template-columns: 1fr; }
-    .dashboard-grid { grid-template-columns: 1fr 1fr; }
-    .steps-container { flex-direction: column; }
-    .step-arrow { transform: rotate(90deg); }
-}
-@media (max-width: 600px) {
-    .pricing-container { grid-template-columns: 1fr; }
-    .bank-header, .iban-code-box { flex-direction: column; align-items: flex-start; gap: 10px; }
-    .copy-btn { width: 100%; justify-content: center; }
-    .modal-glass { padding: 20px; }
-}
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
