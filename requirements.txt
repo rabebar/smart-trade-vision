@@ -21,3 +21,4 @@ python-dotenv
 beautifulsoup4
 lxml
 gunicorn
+psycopg2-binary
