@@ -362,3 +362,15 @@ def verify_email(token: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="User not found")
     except Exception as e:
         return {"error": f"Invalid or expired link: {str(e)}"}
+    # [أداة طوارئ] لمسح إيميل عالق نهائياً من قاعدة البيانات
+@app.get("/api/nuclear-wipe")
+def nuclear_wipe(email: str, db: Session = Depends(get_db)):
+    # نبحث عن الإيميل مهما كانت حالة الحروف (كبيرة أو صغيرة)
+    user = db.query(User).filter(User.email.ilike(email.strip())).first()
+    if user:
+        # حذف التحليلات أولاً ثم المستخدم
+        db.query(Analysis).filter(Analysis.user_id == user.id).delete()
+        db.delete(user)
+        db.commit()
+        return {"message": f"SUCCESS: {email} has been totally wiped out!"}
+    return {"message": "Email not found in database."}
