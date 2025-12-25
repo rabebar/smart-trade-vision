@@ -116,7 +116,7 @@ const translations = {
         "bank_title": "إجراءات التفعيل والاشتراك",
         "bank_desc": "لقد اخترت باقة {plan}. لإتمام التفعيل، يرجى تحويل مبلغ {price}$ عبر البيانات التالية:<br><br><b>اسم البنك:</b> بنك فلسطين (Bank of Palestine)<br><b>رقم الحساب (IBAN):</b> PS72PALS045802050490013100000<br><b>سويفت كود (SWIFT):</b> PALSPS22<br><br>ثم إرسال الإيصال عبر واتساب.",
         "bank_whatsapp_btn": "إرسال إيصال التحويل عبر واتساب",
-        "bank_notice": "سيتم تفعيل حسابك فور مراجعة التحويل من قبل فريق الإدارة."
+        "bank_notice": "سيتم تفعيل حسابك فور مراجعة التحويل من قبل فريق الإدارة.",
         "auth_pass_confirm": "تأكيد كلمة المرور",
     },
     "en": {
@@ -237,7 +237,7 @@ const translations = {
         "bank_title": "Activation & Subscription Procedures",
         "bank_desc": "You selected the {plan} plan. To complete activation, please transfer ${price} via the following details:<br><br><b>Bank Name:</b> Bank of Palestine<br><b>IBAN:</b> PS72PALS045802050490013100000<br><b>SWIFT Code:</b> PALSPS22<br><br>Then send the receipt via WhatsApp.",
         "bank_whatsapp_btn": "Send Receipt via WhatsApp",
-        "bank_notice": "Your account will be activated immediately after the management team reviews the transfer."
+        "bank_notice": "Your account will be activated immediately after the management team reviews the transfer.",
         "auth_pass_confirm": "Confirm Password",
     },
     "fr": {
