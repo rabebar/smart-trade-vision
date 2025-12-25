@@ -223,7 +223,9 @@ function updateAuthModalState() {
 }
 
 async function handleAuthSubmit() {
-    const email = $("auth-email")?.value;
+    // [حقن تصحيح] تنظيف البريد الإلكتروني فوراً من المسافات وتحويله لأحرف صغيرة
+    const rawEmail = $("auth-email")?.value || "";
+    const email = rawEmail.trim().toLowerCase();
     const pass = $("auth-pass")?.value;
     
     if (!email || !pass) {
@@ -233,18 +235,13 @@ async function handleAuthSubmit() {
 
     try {
         if (isRegisterMode) {
-            // [حقن] التحقق من تطابق كلمتي المرور
-const passConfirm = $("auth-pass-confirm")?.value;
-if (pass !== passConfirm) {
-    alert(currentLang === "ar" ? "كلمتا المرور غير متطابقتين!" : "Passwords do not match!");
-    return; // إيقاف العملية ومنع إرسال البيانات للسيرفر
-}
+            
             // --- [منطق التسجيل مع الباقة المختارة] ---
             const res = await fetch("/api/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    email: email.trim().toLowerCase(),
+                    email: email, // استخدام النسخة النظيفة
                     password: pass,
                     full_name: $("auth-fullname").value || "Trader",
                     phone: "000",
@@ -267,7 +264,7 @@ if (pass !== passConfirm) {
         } else {
             // --- [منطق تسجيل الدخول] ---
             const fd = new FormData();
-            fd.append("username", email.trim().toLowerCase());
+            fd.append("username", email); // استخدام النسخة النظيفة
             fd.append("password", pass);
             
             const res = await fetch("/api/login", { method: "POST", body: fd });

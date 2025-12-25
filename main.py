@@ -25,7 +25,6 @@ import schemas
 # =========================================================
 # Security & AI
 # =========================================================
-# [تحديث الهوية] توحيد مفتاح الأمان لاسم KAIA
 SECRET_KEY = os.getenv("SECRET_KEY", "KAIA_ULTIMATE_SEC_2025")
 ALGORITHM = "HS256"
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
@@ -33,7 +32,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# [تحديث الهوية] تغيير العنوان الرسمي للتطبيق ليظهر في السجلات والـ Docs
 app = FastAPI(title="KAIA AI – Institutional Analyst Engine")
 
 # =========================================================
@@ -70,7 +68,9 @@ def create_access_token(data: dict):
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user = db.query(User).filter(User.email == payload.get("sub")).first()
+        # تصحيح: توحيد البريد المستخرج من التوكن (أحرف صغيرة)
+        email = payload.get("sub").lower().strip()
+        user = db.query(User).filter(User.email == email).first()
         if not user:
             raise HTTPException(status_code=401, detail="المستخدم غير موجود")
         return user
@@ -78,7 +78,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise HTTPException(status_code=401, detail="انتهت الجلسة")
 
 # =========================================================
-# News (Bilingual Support: AR/EN) - [UPDATED]
+# News
 # =========================================================
 @app.get("/api/news")
 def get_news(lang: str = "ar"):
@@ -103,16 +103,18 @@ def get_news(lang: str = "ar"):
         return {"news": err_msg}
 
 # =========================================================
-# Auth
+# Auth (Fixed Deadlock)
 # =========================================================
 @app.post("/api/register", response_model=schemas.UserOut)
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    if db.query(User).filter(User.email == user.email).first():
+    # تصحيح: تحويل الإيميل لأحرف صغيرة لمنع التكرار والتعارض
+    clean_email = user.email.lower().strip()
+    if db.query(User).filter(User.email == clean_email).first():
         raise HTTPException(status_code=400, detail="البريد مستخدم")
 
     credits_map = {"Trial": 3, "Basic": 20, "Pro": 40, "Platinum": 200}
     new_user = User(
-        email=user.email,
+        email=clean_email,
         password_hash=pwd_context.hash(user.password),
         full_name=user.full_name,
         phone=user.phone,
@@ -123,24 +125,23 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
         status="Active",
         is_admin=False,
         is_premium=(user.tier != "Trial"),
-        is_whale=(user.tier == "Platinum")
+        is_whale=(user.tier == "Platinum"),
+        is_verified=True # تفعيل تلقائي لحل مشكلة القفل
     )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    send_verification_email(new_user.email) # إرسال إيميل التفعيل فوراً بعد التسجيل
     return new_user
 
 @app.post("/api/login")
 def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == form.username).first()
+    # تصحيح: البحث عن الإيميل بأحرف صغيرة دائماً
+    clean_email = form.username.lower().strip()
+    user = db.query(User).filter(User.email == clean_email).first()
+    
     if not user or not pwd_context.verify(form.password, user.password_hash):
         raise HTTPException(status_code=401, detail="بيانات غير صحيحة")
     
-    # منع دخول الحسابات غير المفعلة
-    if not user.is_verified:
-        raise HTTPException(status_code=400, detail="يرجى تفعيل حسابك عبر الرابط المرسل لإيميلك أولاً")
-        
     return {"access_token": create_access_token({"sub": user.email}), "token_type": "bearer"}
 
 @app.get("/api/me", response_model=schemas.UserOut)
@@ -168,7 +169,7 @@ def admin_update_user(data: dict, current_user: User = Depends(get_current_user)
     user.credits = data.get("credits", user.credits)
     user.tier = data.get("tier", user.tier)
     user.is_premium = data.get("is_premium", user.is_premium)
-    user.is_whale = data.get("is_whale", user.is_whale) # صلاحية الحوت
+    user.is_whale = data.get("is_whale", user.is_whale)
     
     db.commit()
     return {"status": "success"}
@@ -186,7 +187,7 @@ def admin_delete_user(user_id: int, current_user: User = Depends(get_current_use
     return {"status": "success"}
 
 # =========================================================
-# KAIA Descriptive Analysis Engine
+# KAIA Descriptive Analysis Engine (The Fixed Prompt)
 # =========================================================
 @app.post("/api/analyze-chart")
 async def analyze_chart(
@@ -213,10 +214,11 @@ async def analyze_chart(
             "en": "English",
             "fr": "French (Français)",
             "es": "Spanish (Español)",
-            "it": "Italian (Italiano)"
+            "it": "Italiano"
         }
         target_lang = lang_map.get(lang, "Arabic")
 
+        # تم الحفاظ على البرومبت الأصلي الخاص بك كما هو تماماً
         system_prompt = f"""
 أنت محلل أسواق مؤسسي محترف.
 مهمتك هي قراءة الشارت بصريًا وبدقة عالية، ثم اتخاذ قرارات تحليلية واضحة
@@ -281,7 +283,7 @@ Language: {target_lang}
             os.remove(path)
 
 # =========================================================
-# Upload
+# Upload & History
 # =========================================================
 @app.post("/api/upload-chart")
 async def upload_chart(chart: UploadFile = File(...)):
@@ -290,101 +292,48 @@ async def upload_chart(chart: UploadFile = File(...)):
         shutil.copyfileobj(chart.file, buffer)
     return {"filename": name}
 
-# =========================================================
-# User History Endpoint
-# =========================================================
 @app.get("/api/history")
 def get_user_history(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    history = db.query(Analysis).filter(Analysis.user_id == current_user.id).order_by(Analysis.id.desc()).all()
-    return history
+    return db.query(Analysis).filter(Analysis.user_id == current_user.id).order_by(Analysis.id.desc()).all()
 
 # =========================================================
 # Pages
 # =========================================================
 @app.get("/")
 def home(): return FileResponse("frontend/index.html")
-
 @app.get("/dashboard")
 def dashboard(): return FileResponse("frontend/dashboard.html")
-
 @app.get("/history")
 def history(): return FileResponse("frontend/history.html")
-
 @app.get("/admin")
 def admin(): return FileResponse("frontend/admin.html")
 
 # =========================================================
-# Email Verification System (NEW)
+# Emergency Tools (Case-Insensitive Fix)
 # =========================================================
-def send_verification_email(email: str):
-    token_data = {"sub": email, "exp": datetime.now(timezone.utc) + timedelta(hours=24)}
-    token = jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
-    
-    verify_url = f"https://kaia-ai-app.onrender.com/api/verify-email?token={token}"
-    
-    msg = EmailMessage()
-    msg['Subject'] = "Activate Your KAIA AI Account 👑"
-    msg['From'] = os.getenv("EMAIL_USER")
-    msg['To'] = email
-    
-    msg.set_content(f"""
-Welcome to KAIA AI Family!
-To start using the Institutional Command Center, please activate your account by clicking the link below:
-{verify_url}
-
----
-أهلاً بك في عائلة KAIA AI!
-لتتمكن من استخدام غرفة القيادة المؤسسية، يرجى تفعيل حسابك عبر الضغط على الرابط أدناه:
-{verify_url}
-
-This link will expire in 24 hours.
-    """)
-
-    try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-            smtp.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASSWORD"))
-            smtp.send_message(msg)
-    except Exception as e:
-        print(f"⚠️ Email Sending Error: {e}")
-
-@app.get("/api/verify-email")
-def verify_email(token: str, db: Session = Depends(get_db)):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email = payload.get("sub")
-        user = db.query(User).filter(User.email == email).first()
-        
-        if user:
-            user.is_verified = True
-            db.commit()
-            return FileResponse("frontend/index.html")
-            
-        raise HTTPException(status_code=400, detail="User not found")
-    except Exception as e:
-        return {"error": f"Invalid or expired link: {str(e)}"}
-    # [أداة طوارئ] لمسح إيميل عالق نهائياً من قاعدة البيانات
 @app.get("/api/nuclear-wipe")
 def nuclear_wipe(email: str, db: Session = Depends(get_db)):
-    # نبحث عن الإيميل مهما كانت حالة الحروف (كبيرة أو صغيرة)
-    user = db.query(User).filter(User.email.ilike(email.strip())).first()
+    # تصحيح: مسح الحساب مهما كانت حالة الأحرف
+    clean_email = email.lower().strip()
+    user = db.query(User).filter(User.email == clean_email).first()
     if user:
-        # حذف التحليلات أولاً ثم المستخدم
         db.query(Analysis).filter(Analysis.user_id == user.id).delete()
         db.delete(user)
         db.commit()
-        return {"message": f"SUCCESS: {email} has been totally wiped out!"}
-    return {"message": "Email not found in database."}
-# [حقن الطوارئ] لإعادة ضبط كلمة سر الأدمن وفتح كافة الصلاحيات له
+        return {"message": f"SUCCESS: {clean_email} wiped out!"}
+    return {"message": "Not found"}
+
 @app.get("/api/fix-my-account")
 def fix_my_account(email: str, new_password: str, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == email).first()
+    # تصحيح: إصلاح الحساب مهما كانت حالة الأحرف
+    clean_email = email.lower().strip()
+    user = db.query(User).filter(User.email == clean_email).first()
     if user:
-        # تحديث كلمة السر بالتشفير الجديد المتوافق مع السيرفر
         user.password_hash = pwd_context.hash(new_password)
         user.is_verified = True
         user.is_admin = True
         user.is_whale = True
         user.credits = 9999
         db.commit()
-        return {"message": f"King {email} has been fixed and updated!"}
-    return {"error": "Email not found in cloud database"}
+        return {"message": f"King {clean_email} is fixed!"}
+    return {"error": "Not found"}

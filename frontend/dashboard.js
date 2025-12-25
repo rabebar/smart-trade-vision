@@ -54,7 +54,7 @@ function syncUserData() {
    محرك اللغات والترجمة الشامل
    ======================= */
 function applyDashboardTranslations(lang) {
-    const dict = translations?.[lang];
+    const dict = (typeof translations !== 'undefined') ? translations[lang] : null;
     if (!dict) return;
 
     document.querySelectorAll("[data-i18n]").forEach(el => {
@@ -104,7 +104,6 @@ window.deleteCalc = () => {
 
 window.resultCalc = () => {
     try {
-        // حساب المعادلة وتحويل النتيجة لنص
         calcExpression = eval(calcExpression).toString();
         $("calc-display").innerText = calcExpression;
     } catch (e) {
@@ -126,9 +125,7 @@ window.calculateRiskPercent = () => {
         return;
     }
 
-    // المخاطرة بالدولار = حجم اللوت * عدد النقاط * 10 (لأزواج الدولار الأساسية)
     const riskAmount = lot * slPips * 10;
-    // نسبة المخاطرة = (المبلغ المخاطر به / رأس المال) * 100
     const riskPercent = (riskAmount / balance) * 100;
 
     const resultDiv = $("risk-result");
@@ -191,7 +188,7 @@ window.resetWorkspace = function() {
     if ($("chartUpload")) $("chartUpload").value = ""; 
 
     if ($("status-text")) {
-        const dict = translations?.[currentLang];
+        const dict = (typeof translations !== 'undefined') ? translations[currentLang] : null;
         $("status-text").innerText = dict?.drop_zone_text || "إلصق الشارت هنا 📸";
         $("status-text").style.color = ""; 
     }
