@@ -54,7 +54,7 @@ class User(Base):
     tier = Column(String, default="Trial")      # (Trial, Basic, Pro, Platinum)
     status = Column(String, default="Active")   # (Active, Pending)
     credits = Column(Integer, default=3)        # رصيد التحليلات
-    
+    is_verified = Column(Boolean, default=False) # حالة تفعيل الإيميل
     # الصلاحيات المتقدمة
     is_admin = Column(Boolean, default=False)
     is_premium = Column(Boolean, default=False)
@@ -100,7 +100,8 @@ def migrate_database():
             "full_name": "VARCHAR DEFAULT 'Trader'",
             "whatsapp": "VARCHAR DEFAULT ''",
             "tier": "VARCHAR DEFAULT 'Trial'",
-            "credits": "INTEGER DEFAULT 3"
+            "credits": "INTEGER DEFAULT 3",
+            "is_verified": "BOOLEAN DEFAULT 0"
         }
 
         with engine.connect() as conn:

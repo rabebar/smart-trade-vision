@@ -233,6 +233,12 @@ async function handleAuthSubmit() {
 
     try {
         if (isRegisterMode) {
+            // [حقن] التحقق من تطابق كلمتي المرور
+const passConfirm = $("auth-pass-confirm")?.value;
+if (pass !== passConfirm) {
+    alert(currentLang === "ar" ? "كلمتا المرور غير متطابقتين!" : "Passwords do not match!");
+    return; // إيقاف العملية ومنع إرسال البيانات للسيرفر
+}
             // --- [منطق التسجيل مع الباقة المختارة] ---
             const res = await fetch("/api/register", {
                 method: "POST",
