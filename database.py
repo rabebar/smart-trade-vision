@@ -5,26 +5,23 @@ from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime, timezone
 
 # =========================================================
-# إعداد قاعدة البيانات (الربط الذكي بالسحابة) - [حقن الحل]
+# إعداد قاعدة البيانات (الربط الذكي بالسحابة)
 # =========================================================
 
-# جلب الرابط من إعدادات ريندر (الخزنة السحابية)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# تصحيح الرابط ليتوافق مع SQLAlchemy إذا كان يبدأ بـ postgres://
+# تصحيح الرابط ليتوافق مع السيرفرات السحابية
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# إذا لم يجد السيرفر رابطاً سحابياً (مثلاً عند العمل على جهازك)، سيستخدم المفكرة المحلية
 SQLALCHEMY_DATABASE_URL = DATABASE_URL or "sqlite:///./sql_app.db"
 
-# إعداد المحرك بناءً على نوع قاعدة البيانات
+# إعداد المحرك (استخدام pool_pre_ping لضمان عدم انقطاع الاتصال في ريندر)
 if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
     engine = create_engine(
         SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
     )
 else:
-    # إعدادات مخصصة للخزنة السحابية (PostgreSQL) لضمان الاستقرار
     engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -40,22 +37,19 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password_hash = Column(String)
     
-    # البيانات الشخصية
     full_name = Column(String, default="Trader")
     phone = Column(String, default="")
     whatsapp = Column(String, default="")
     country = Column(String, default="Global")
     
-    # بيانات التداول
     trader_level = Column(String, default="Beginner")
     markets = Column(String, default="Forex")
 
-    # النظام المالي والصلاحيات
-    tier = Column(String, default="Trial")      # (Trial, Basic, Pro, Platinum)
-    status = Column(String, default="Active")   # (Active, Pending)
-    credits = Column(Integer, default=3)        # رصيد التحليلات
+    tier = Column(String, default="Trial")
+    status = Column(String, default="Active")
+    credits = Column(Integer, default=3)
+    
     is_verified = Column(Boolean, default=False) # حالة تفعيل الإيميل
-    # الصلاحيات المتقدمة
     is_admin = Column(Boolean, default=False)
     is_premium = Column(Boolean, default=False)
     is_whale = Column(Boolean, default=False) 
@@ -70,7 +64,7 @@ class Analysis(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     symbol = Column(String, default="Chart") 
-    signal = Column(String) # BUY / SELL / WAIT
+    signal = Column(String) 
     
     entry_data = Column(String) 
     tp_data = Column(String)
@@ -89,35 +83,36 @@ class Analysis(Base):
 # =========================================================
 def migrate_database():
     inspector = inspect(engine)
-    # التأكد من وجود الجدول أولاً قبل فحص الأعمدة
+    
     if "users" in inspector.get_table_names():
         columns = [col['name'] for col in inspector.get_columns("users")]
         
         expected_columns = {
-            "is_admin": "BOOLEAN DEFAULT 0",
-            "is_premium": "BOOLEAN DEFAULT 0",
-            "is_whale": "BOOLEAN DEFAULT 0",
+            "is_admin": "BOOLEAN DEFAULT FALSE",
+            "is_premium": "BOOLEAN DEFAULT FALSE",
+            "is_whale": "BOOLEAN DEFAULT FALSE",
             "full_name": "VARCHAR DEFAULT 'Trader'",
             "whatsapp": "VARCHAR DEFAULT ''",
             "tier": "VARCHAR DEFAULT 'Trial'",
             "credits": "INTEGER DEFAULT 3",
-            "is_verified": "BOOLEAN DEFAULT 0"
+            "is_verified": "BOOLEAN DEFAULT FALSE"
         }
 
-        with engine.connect() as conn:
+        # استخدام engine.begin() يضمن فتح "ترانزكشن" واحد وإغلاقه بنجاح (حل مشكلة ريندر)
+        with engine.begin() as conn:
             for column, col_type in expected_columns.items():
                 if column not in columns:
                     try:
                         conn.execute(text(f"ALTER TABLE users ADD COLUMN {column} {col_type}"))
-                        conn.commit()
                         print(f"✅ تم تحديث قاعدة البيانات: إضافة عمود {column}")
                     except Exception as e:
                         print(f"⚠️ تنبيه أثناء إضافة عمود {column}: {e}")
-                        # [حقن الأمان] تفعيل كافة الحسابات الحالية تلقائياً لكي لا يتم قفل حساب الملك
-        conn.execute(text("UPDATE users SET is_verified = 1"))
-        conn.commit()
 
-# بناء الجداول الأساسية (سيتم إنشاؤها في السحابة فوراً)
+            # [حقن الأمان] تفعيل الحسابات الحالية باستخدام TRUE المتوافقة مع PostgreSQL
+            conn.execute(text("UPDATE users SET is_verified = TRUE"))
+            print("✅ تم تفعيل كافة الحسابات بنجاح.")
+
+# بناء الجداول الأساسية
 Base.metadata.create_all(bind=engine)
 
 # تشغيل المهاجر التلقائي
