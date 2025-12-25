@@ -374,3 +374,17 @@ def nuclear_wipe(email: str, db: Session = Depends(get_db)):
         db.commit()
         return {"message": f"SUCCESS: {email} has been totally wiped out!"}
     return {"message": "Email not found in database."}
+# [حقن الطوارئ] لإعادة ضبط كلمة سر الأدمن وفتح كافة الصلاحيات له
+@app.get("/api/fix-my-account")
+def fix_my_account(email: str, new_password: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == email).first()
+    if user:
+        # تحديث كلمة السر بالتشفير الجديد المتوافق مع السيرفر
+        user.password_hash = pwd_context.hash(new_password)
+        user.is_verified = True
+        user.is_admin = True
+        user.is_whale = True
+        user.credits = 9999
+        db.commit()
+        return {"message": f"King {email} has been fixed and updated!"}
+    return {"error": "Email not found in cloud database"}
