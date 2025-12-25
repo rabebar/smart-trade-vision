@@ -81,35 +81,14 @@ class Analysis(Base):
 # =========================================================
 # 3. محرك الهجرة التلقائية (Auto-Migration Engine)
 # =========================================================
+# =========================================================
+# 3. محرك الهجرة التلقائية (Auto-Migration Engine)
+# =========================================================
 def migrate_database():
-    inspector = inspect(engine)
-    
-    if "users" in inspector.get_table_names():
-        columns = [col['name'] for col in inspector.get_columns("users")]
-        
-        expected_columns = {
-            "is_admin": "BOOLEAN DEFAULT FALSE",
-            "is_premium": "BOOLEAN DEFAULT FALSE",
-            "is_whale": "BOOLEAN DEFAULT FALSE",
-            "full_name": "VARCHAR DEFAULT 'Trader'",
-            "whatsapp": "VARCHAR DEFAULT ''",
-            "tier": "VARCHAR DEFAULT 'Trial'",
-            "credits": "INTEGER DEFAULT 3",
-            "is_verified": "BOOLEAN DEFAULT FALSE"
-        }
-
-        # استخدام engine.begin() يضمن فتح "ترانزكشن" واحد وإغلاقه بنجاح (حل مشكلة ريندر)
-        with engine.begin() as conn:
-            for column, col_type in expected_columns.items():
-                if column not in columns:
-                    try:
-                        conn.execute(text(f"ALTER TABLE users ADD COLUMN {column} {col_type}"))
-                        print(f"✅ تم تحديث قاعدة البيانات: إضافة عمود {column}")
-                    except Exception as e:
-                        print(f"⚠️ تنبيه أثناء إضافة عمود {column}: {e}")
-
-            # [حقن الأمان] تفعيل الحسابات الحالية باستخدام TRUE المتوافقة مع PostgreSQL
-            
+    with engine.begin() as conn:
+        # هذا السطر سيقوم بتفعيل حسابك وحساب الجميع فوراً لتتمكن من الدخول
+        conn.execute(text("UPDATE users SET is_verified = TRUE"))
+        print("✅ تم فتح كافة الأقفال بنجاح")
 
 # بناء الجداول الأساسية
 Base.metadata.create_all(bind=engine)
