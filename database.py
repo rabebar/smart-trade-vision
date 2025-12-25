@@ -113,6 +113,9 @@ def migrate_database():
                         print(f"✅ تم تحديث قاعدة البيانات: إضافة عمود {column}")
                     except Exception as e:
                         print(f"⚠️ تنبيه أثناء إضافة عمود {column}: {e}")
+                        # [حقن الأمان] تفعيل كافة الحسابات الحالية تلقائياً لكي لا يتم قفل حساب الملك
+        conn.execute(text("UPDATE users SET is_verified = 1"))
+        conn.commit()
 
 # بناء الجداول الأساسية (سيتم إنشاؤها في السحابة فوراً)
 Base.metadata.create_all(bind=engine)

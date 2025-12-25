@@ -11,7 +11,8 @@ import shutil, os, base64, json, requests, uuid
 from bs4 import BeautifulSoup
 from openai import OpenAI
 from dotenv import load_dotenv
-
+import smtplib
+from email.message import EmailMessage
 # =========================================================
 # ENV + DB
 # =========================================================
@@ -126,6 +127,7 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    send_verification_email(new_user.email) # إرسال إيميل التفعيل فوراً بعد التسجيل
     return new_user
 
 @app.post("/api/login")
@@ -133,11 +135,14 @@ def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
     user = db.query(User).filter(User.email == form.username).first()
     if not user or not pwd_context.verify(form.password, user.password_hash):
         raise HTTPException(status_code=401, detail="بيانات غير صحيحة")
+    # [حقن] منع دخول الحسابات غير المفعلة
+    if not user.is_verified:
+        raise HTTPException(status_code=400, detail="يرجى تفعيل حسابك عبر الرابط المرسل لإيميلك أولاً")
     return {"access_token": create_access_token({"sub": user.email}), "token_type": "bearer"}
 
 @app.get("/api/me", response_model=schemas.UserOut)
 def me(current_user: User = Depends(get_current_user)):
-    return current_user
+        return current_user
 
 # =========================================================
 # Admin Operations (NEW)
@@ -336,3 +341,59 @@ def history(): return FileResponse("frontend/history.html")
 
 @app.get("/admin")
 def admin(): return FileResponse("frontend/admin.html")
+# =========================================================
+# Email Verification System (NEW)
+# =========================================================
+def send_verification_email(email: str):
+    # إنشاء شفرة تفعيل (Token) تنتهي بعد 24 ساعة
+    token_data = {"sub": email, "exp": datetime.now(timezone.utc) + timedelta(hours=24)}
+    token = jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
+    
+    # رابط التفعيل الرسمي للموقع
+    verify_url = f"https://kaia-ai-app.onrender.com/api/verify-email?token={token}"
+    
+    msg = EmailMessage()
+    msg['Subject'] = "Activate Your KAIA AI Account 👑"
+    msg['From'] = os.getenv("EMAIL_USER")
+    msg['To'] = email
+    
+    # محتوى الرسالة
+    msg.set_content(f"""
+Welcome to KAIA AI Family!
+To start using the Institutional Command Center, please activate your account by clicking the link below:
+{verify_url}
+
+---
+أهلاً بك في عائلة KAIA AI!
+لتتمكن من استخدام غرفة القيادة المؤسسية، يرجى تفعيل حسابك عبر الضغط على الرابط أدناه:
+{verify_url}
+
+This link will expire in 24 hours.
+    """)
+
+    try:
+        # الاتصال بسيرفر جوجل لإرسال الرسالة
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASSWORD"))
+            smtp.send_message(msg)
+    except Exception as e:
+        print(f"⚠️ Email Sending Error: {e}")
+
+@app.get("/api/verify-email")
+def verify_email(token: str, db: Session = Depends(get_db)):
+    try:
+        # فك شفرة الرابط والتأكد من صحته
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        user = db.query(User).filter(User.email == email).first()
+        
+        if user:
+            user.is_verified = True
+            db.commit()
+            # توجيه المستخدم للرئيسية بعد النجاح ليسجل دخول
+            return FileResponse("frontend/index.html")
+            
+        raise HTTPException(status_code=400, detail="المستخدم غير موجود")
+    except Exception as e:
+        # في حال كان الرابط منتهي الصلاحية أو تالفاً
+        return {"error": f"رابط التفعيل غير صالح أو منتهي الصلاحية: {str(e)}"}
