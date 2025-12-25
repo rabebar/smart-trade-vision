@@ -114,7 +114,7 @@ const translations = {
         "help_step_3": "تصفير الذاكرة: عند الانتهاء، اضغط على 'إخفاء النتيجة' لتنظيف ذاكرة المحرك وتجهيزه لعملية تحليل جديدة كلياً.",
         "help_btn": "فهمت ذلك",
         "bank_title": "إجراءات التفعيل والاشتراك",
-        "bank_desc": "لقد اخترت باقة {plan}. لإتمام التفعيل، يرجى تحويل مبلغ {price}$ عبر البيانات التالية:<br><br><b>اسم البنك:</b> [اكتب هنا اسم البنك]<br><b>رقم الحساب (IBAN):</b> [اكتب هنا رقم الايبان]<br><b>العنوان:</b> [اكتب هنا عنوان البنك]<br><br>ثم إرسال الإيصال عبر واتساب.",
+        "bank_desc": "لقد اخترت باقة {plan}. لإتمام التفعيل، يرجى تحويل مبلغ {price}$ عبر البيانات التالية:<br><br><b>اسم البنك:</b> بنك فلسطين (Bank of Palestine)<br><b>رقم الحساب (IBAN):</b> PS72PALS045802050490013100000<br><b>سويفت كود (SWIFT):</b> PALSPS22<br><br>ثم إرسال الإيصال عبر واتساب.",
         "bank_whatsapp_btn": "إرسال إيصال التحويل عبر واتساب",
         "bank_notice": "سيتم تفعيل حسابك فور مراجعة التحويل من قبل فريق الإدارة."
     },
@@ -234,7 +234,7 @@ const translations = {
         "help_step_3": "Reset Memory: When finished, click 'Hide Result' to clear the engine memory and prepare it for a brand new analysis.",
         "help_btn": "I Understand",
         "bank_title": "Activation & Subscription Procedures",
-        "bank_desc": "You selected the {plan} plan. To complete activation, please transfer ${price} via the following details:<br><br><b>Bank Name:</b> [Bank Name Here]<br><b>IBAN:</b> [IBAN Number Here]<br><b>Address:</b> [Bank Address Here]<br><br>Then send the receipt via WhatsApp.",
+        "bank_desc": "You selected the {plan} plan. To complete activation, please transfer ${price} via the following details:<br><br><b>Bank Name:</b> Bank of Palestine<br><b>IBAN:</b> PS72PALS045802050490013100000<br><b>SWIFT Code:</b> PALSPS22<br><br>Then send the receipt via WhatsApp.",
         "bank_whatsapp_btn": "Send Receipt via WhatsApp",
         "bank_notice": "Your account will be activated immediately after the management team reviews the transfer."
     },
@@ -455,7 +455,7 @@ const translations = {
         "help_title": "Guía de uso del motor",
         "help_step_1": "Captura de gráfico: Pega la imagen del gráfico (Paste) o súbela manualmente.",
         "help_step_2": "Coincidencia de temporalidad: Asegúrate de que la temporalidad seleccionada coincida con la de la imagen para un análisis preciso.",
-        "help_step_3": "Reiniciar memoria: Al terminar, haz clic en 'Ocultار resultado' para limpiar la memoria del motor.",
+        "help_step_3": "Reiniciar memoria: Al terminar, haz clic en 'Ocultar resultado' para limpiar la memoria del motor.",
         "help_btn": "Entiendo"
     },
     "it": {
@@ -533,7 +533,7 @@ const translations = {
         "strategy_lock_msg": "⚠️ Prova supporta solo SMC.",
         "dash_history_title": "Cronologia degli Studi Tecnici",
         "history_subtitle": "Revisione storica delle analisi del motore",
-        "dash_col_time": "Data e Ora",
+        "dash_col_time": "Date e Ora",
         "dash_col_strategy": "Strategia",
         "dash_col_report": "Studio Analitico Tecnico",
         "dash_col_timeframe": "Timeframe",
