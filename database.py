@@ -109,8 +109,7 @@ def migrate_database():
                         print(f"⚠️ تنبيه أثناء إضافة عمود {column}: {e}")
 
             # [حقن الأمان] تفعيل الحسابات الحالية باستخدام TRUE المتوافقة مع PostgreSQL
-            conn.execute(text("UPDATE users SET is_verified = TRUE"))
-            print("✅ تم تفعيل كافة الحسابات بنجاح.")
+            
 
 # بناء الجداول الأساسية
 Base.metadata.create_all(bind=engine)
