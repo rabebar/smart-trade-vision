@@ -54,7 +54,7 @@ function syncUserData() {
    محرك اللغات والترجمة الشامل
    ======================= */
 function applyDashboardTranslations(lang) {
-    const dict = (typeof translations !== 'undefined') ? translations[lang] : null;
+    const dict = translations?.[lang];
     if (!dict) return;
 
     document.querySelectorAll("[data-i18n]").forEach(el => {
@@ -104,6 +104,7 @@ window.deleteCalc = () => {
 
 window.resultCalc = () => {
     try {
+        // حساب المعادلة وتحويل النتيجة لنص
         calcExpression = eval(calcExpression).toString();
         $("calc-display").innerText = calcExpression;
     } catch (e) {
@@ -125,7 +126,9 @@ window.calculateRiskPercent = () => {
         return;
     }
 
+    // المخاطرة بالدولار = حجم اللوت * عدد النقاط * 10 (لأزواج الدولار الأساسية)
     const riskAmount = lot * slPips * 10;
+    // نسبة المخاطرة = (المبلغ المخاطر به / رأس المال) * 100
     const riskPercent = (riskAmount / balance) * 100;
 
     const resultDiv = $("risk-result");
@@ -188,7 +191,7 @@ window.resetWorkspace = function() {
     if ($("chartUpload")) $("chartUpload").value = ""; 
 
     if ($("status-text")) {
-        const dict = (typeof translations !== 'undefined') ? translations[currentLang] : null;
+        const dict = translations?.[currentLang];
         $("status-text").innerText = dict?.drop_zone_text || "إلصق الشارت هنا 📸";
         $("status-text").style.color = ""; 
     }
@@ -200,6 +203,7 @@ window.resetWorkspace = function() {
 function updateMarketSessions() {
     const now = new Date();
     const utcHour = now.getUTCHours();
+    const utcDay = now.getUTCDay(); // 0=Sunday, 6=Saturday
 
     const sessions = [
         { id: "session-sydney", start: 22, end: 7 },
@@ -213,10 +217,16 @@ function updateMarketSessions() {
         if (!el) return;
 
         let isOpen = false;
-        if (s.start < s.end) {
-            isOpen = utcHour >= s.start && utcHour < s.end;
-        } else {
-            isOpen = utcHour >= s.start || utcHour < s.end;
+        
+        // [حقن تصحيح] التحقق من العطلة الأسبوعية (السبت والأحد)
+        const isWeekend = (utcDay === 6) || (utcDay === 0 && utcHour < 22) || (utcDay === 5 && utcHour >= 22);
+
+        if (!isWeekend) {
+            if (s.start < s.end) {
+                isOpen = utcHour >= s.start && utcHour < s.end;
+            } else {
+                isOpen = utcHour >= s.start || utcHour < s.end;
+            }
         }
 
         if (isOpen) {
@@ -273,6 +283,7 @@ async function runInstitutionalAnalysis() {
         const data = await analyzeRes.json();
         if (!analyzeRes.ok) throw new Error(data.detail || "Analysis error");
 
+        // [حقن تصحيح] ضمان قراءة البيانات بشكل صحيح من السيرفر
         const analysis = data.analysis;
 
         resBox.style.display = "block";
@@ -280,12 +291,12 @@ async function runInstitutionalAnalysis() {
             <div class="analysis-result-card">
                 <h3 style="text-align:center;font-weight:900;">KAIA LIVE REPORT</h3>
                 <div class="res-data-grid">
-                    <div class="res-data-item"><small>Market Bias</small><span>${analysis.market_bias}</span></div>
-                    <div class="res-data-item"><small>Market Phase</small><span>${analysis.market_phase}</span></div>
-                    <div class="res-data-item"><small>Confidence</small><span>${analysis.confidence}</span></div>
+                    <div class="res-data-item"><small>Market Bias</small><span>${analysis.market_bias || '---'}</span></div>
+                    <div class="res-data-item"><small>Market Phase</small><span>${analysis.market_phase || '---'}</span></div>
+                    <div class="res-data-item"><small>Confidence</small><span>${analysis.confidence || '---'}</span></div>
                 </div>
-                <div class="analysis-box"><strong>Institutional Analysis</strong><p>${analysis.analysis_text}</p></div>
-                <div class="risk-note"><strong>Risk Note:</strong> ${analysis.risk_note}</div>
+                <div class="analysis-box"><strong>Institutional Analysis</strong><p>${analysis.analysis_text || ''}</p></div>
+                <div class="risk-note"><strong>Risk Note:</strong> ${analysis.risk_note || ''}</div>
             </div>
         `;
 

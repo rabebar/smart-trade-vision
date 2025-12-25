@@ -186,7 +186,7 @@ function toggleAuthMode() {
 }
 
 function updateAuthModalState() {
-    const dict = (typeof translations !== 'undefined' && translations[currentLang]) ? translations[currentLang] : {};
+    const dict = (typeof translations !== 'undefined') ? translations[currentLang] : {};
     
     // التحكم في ظهور واختفاء الحقول بناءً على الوضع (تسجيل أو دخول)
     const fields = ["name-field-wrap", "whatsapp-field-wrap", "country-field-wrap"];
@@ -200,8 +200,12 @@ function updateAuthModalState() {
 
     // [حقن] حقن واجهة البنك والاشتراك عند اختيار باقة مدفوعة
     const paymentSection = $("payment-info-section");
+    const authSide = $("auth-side-container"); // تم استعادة هذا المتغير
+
     if (paymentSection) {
-        if (isRegisterMode && selectedPlan.name !== "Trial") {
+        // [حقن تصحيح] إذا كان المستخدم مسجلاً دخولاً، نظهر له البنك مباشرة ونخفي نموذج التسجيل
+        if (authToken && selectedPlan.name !== "Trial") {
+            if (authSide) authSide.style.display = "none"; 
             paymentSection.style.display = "block";
             let bankText = (dict.bank_desc || "You selected {plan} for ${price}")
                            .replace("{plan}", selectedPlan.name)
@@ -216,14 +220,27 @@ function updateAuthModalState() {
                 </a>
                 <p style="font-size:12px; color:var(--muted); margin-top:15px;">${dict.bank_notice || 'Activation after review.'}</p>
             `;
+        } else if (isRegisterMode && selectedPlan.name !== "Trial") {
+            if (authSide) authSide.style.display = "block";
+            paymentSection.style.display = "block";
+            let bankText = (dict.bank_desc || "You selected {plan} for ${price}")
+                           .replace("{plan}", selectedPlan.name)
+                           .replace("{price}", selectedPlan.price);
+
+            paymentSection.innerHTML = `
+                <h3 style="color:var(--primary); font-weight:900; margin-bottom:15px;">${dict.bank_title || 'Payment Info'}</h3>
+                <p style="font-size:14px; line-height:1.6; color:#fff; margin-bottom:20px;">${bankText}</p>
+                <p style="font-size:12px; color:var(--muted); margin-top:15px;">${dict.bank_notice || 'Activation after review.'}</p>
+            `;
         } else {
+            if (authSide) authSide.style.display = "block";
             paymentSection.style.display = "none";
         }
     }
 }
 
 async function handleAuthSubmit() {
-    // [حقن تصحيح] تنظيف البريد الإلكتروني فوراً من المسافات وتحويله لأحرف صغيرة
+    // [حقن تصحيح] تنظيف الإيميل
     const rawEmail = $("auth-email")?.value || "";
     const email = rawEmail.trim().toLowerCase();
     const pass = $("auth-pass")?.value;
@@ -241,7 +258,7 @@ async function handleAuthSubmit() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    email: email, // استخدام النسخة النظيفة
+                    email: email,
                     password: pass,
                     full_name: $("auth-fullname").value || "Trader",
                     phone: "000",
@@ -264,7 +281,7 @@ async function handleAuthSubmit() {
         } else {
             // --- [منطق تسجيل الدخول] ---
             const fd = new FormData();
-            fd.append("username", email); // استخدام النسخة النظيفة
+            fd.append("username", email);
             fd.append("password", pass);
             
             const res = await fetch("/api/login", { method: "POST", body: fd });
@@ -482,8 +499,11 @@ window.onload = async () => {
                     name: btn.getAttribute("data-plan"), 
                     price: btn.getAttribute("data-price") 
                 };
-                isRegisterMode = true; 
-                updateAuthModalState(); 
+                
+                // [حقن تصحيح] إذا كان مسجلاً دخولاً، يظهر له البنك فوراً
+                if (authToken) { isRegisterMode = false; } else { isRegisterMode = true; }
+                
+                updateAuthModalState();
                 $("auth-modal").style.display = "flex";
             };
         });
