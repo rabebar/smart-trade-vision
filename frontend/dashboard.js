@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   KAIA AI × CANA - COMMAND CENTER ENGINE (Version 7.0 UPDATED)
+   KAIA AI × KAIA - COMMAND CENTER ENGINE (Version 7.0 UPDATED)
    ============================================================ */
 
 const $ = (id) => document.getElementById(id);
