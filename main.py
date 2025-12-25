@@ -13,6 +13,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import smtplib
 from email.message import EmailMessage
+
 # =========================================================
 # ENV + DB
 # =========================================================
@@ -24,14 +25,16 @@ import schemas
 # =========================================================
 # Security & AI
 # =========================================================
-SECRET_KEY = os.getenv("SECRET_KEY", "CAIA_ULTIMATE_SEC_2025")
+# [تحديث الهوية] توحيد مفتاح الأمان لاسم KAIA
+SECRET_KEY = os.getenv("SECRET_KEY", "KAIA_ULTIMATE_SEC_2025")
 ALGORITHM = "HS256"
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-app = FastAPI(title="CAIA AI – KAIA Core (Descriptive Analyst Engine)")
+# [تحديث الهوية] تغيير العنوان الرسمي للتطبيق ليظهر في السجلات والـ Docs
+app = FastAPI(title="KAIA AI – Institutional Analyst Engine")
 
 # =========================================================
 # CORS + Static
@@ -81,10 +84,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 def get_news(lang: str = "ar"):
     try:
         if lang == "en":
-            # أخبار الأسواق العالمية بالإنجليزية
             rss = "https://www.investing.com/rss/news_285.rss" 
         else:
-            # أخبار الأسواق باللغة العربية
             rss = "https://sa.investing.com/rss/news_1.rss"
             
         res = requests.get(rss, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
@@ -135,9 +136,11 @@ def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
     user = db.query(User).filter(User.email == form.username).first()
     if not user or not pwd_context.verify(form.password, user.password_hash):
         raise HTTPException(status_code=401, detail="بيانات غير صحيحة")
-    # [حقن] منع دخول الحسابات غير المفعلة
+    
+    # منع دخول الحسابات غير المفعلة
     if not user.is_verified:
         raise HTTPException(status_code=400, detail="يرجى تفعيل حسابك عبر الرابط المرسل لإيميلك أولاً")
+        
     return {"access_token": create_access_token({"sub": user.email}), "token_type": "bearer"}
 
 @app.get("/api/me", response_model=schemas.UserOut)
@@ -145,7 +148,7 @@ def me(current_user: User = Depends(get_current_user)):
         return current_user
 
 # =========================================================
-# Admin Operations (NEW)
+# Admin Operations
 # =========================================================
 @app.get("/api/admin/users")
 def admin_get_users(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -165,8 +168,7 @@ def admin_update_user(data: dict, current_user: User = Depends(get_current_user)
     user.credits = data.get("credits", user.credits)
     user.tier = data.get("tier", user.tier)
     user.is_premium = data.get("is_premium", user.is_premium)
-    # [حقن] السماح بتعديل رتبة الكنج/الحوت من لوحة الإدارة
-    user.is_whale = data.get("is_whale", user.is_whale)
+    user.is_whale = data.get("is_whale", user.is_whale) # صلاحية الحوت
     
     db.commit()
     return {"status": "success"}
@@ -178,14 +180,13 @@ def admin_delete_user(user_id: int, current_user: User = Depends(get_current_use
     
     user = db.query(User).filter(User.id == user_id).first()
     if user:
-        # حذف التحليلات المرتبطة أولاً
         db.query(Analysis).filter(Analysis.user_id == user_id).delete()
         db.delete(user)
         db.commit()
     return {"status": "success"}
 
 # =========================================================
-# KAIA Descriptive Analysis Engine (FIXED & CLEANED)
+# KAIA Descriptive Analysis Engine
 # =========================================================
 @app.post("/api/analyze-chart")
 async def analyze_chart(
@@ -218,49 +219,20 @@ async def analyze_chart(
 
         system_prompt = f"""
 أنت محلل أسواق مؤسسي محترف.
-
 مهمتك هي قراءة الشارت بصريًا وبدقة عالية، ثم اتخاذ قرارات تحليلية واضحة
 قبل كتابة الشرح، دون تقديم أي توصيات تداول أو أرقام أو مستويات.
 
-التزم بالخطوات التالية بالتسلسل المنطقي:
+التزم بالخطوات التالية بالتسلسل المنطقه:
+1) حدد التحيّز العام للسوق (market_bias)
+2) حدد مرحلة السوق (market_phase)
+3) قيّم سياق الفرصة (opportunity_context)
+4) اكتب التحليل النصي (analysis_text)
+5) أضف ملاحظة مخاطر (risk_note)
+6) حدّد مستوى الثقة (confidence)
 
-1) حدد التحيّز العام للسوق (market_bias):
-- صاعد
-- هابط
-- محايد
-
-2) حدد مرحلة السوق (market_phase):
-- اتجاه
-- تذبذب
-- انتقال
-
-3) قيّم سياق الفرصة (opportunity_context):
-- بيئة واضحة
-- بيئة مختلطة
-- بيئة ضعيفة
-
-4) اكتب التحليل النصي (analysis_text) بما يبرر القرارات أعلاه فقط.
-
-5) أضف ملاحظة مخاطر (risk_note).
-
-6) حدّد مستوى الثقة (confidence) بين 0.0 و 1.0.
-
-قواعد صارمة:
-- لا توصيات
-- لا أرقام
-- لا مستويات
-- JSON فقط وبالمفاتيح التالية:
-
-market_bias,
-market_phase,
-opportunity_context,
-analysis_text,
-risk_note,
-confidence
-
-لغة التقرير (IMPORTANT):
-يجب كتابة جميع النصوص داخل قيم الـ JSON بلغة المتداول المختارة وهي: {target_lang}.
-تأكد من صياغة التحليل (analysis_text) وملاحظة المخاطر (risk_note) بهذه اللغة حصراً وبشكل احترافي.
+JSON ONLY:
+market_bias, market_phase, opportunity_context, analysis_text, risk_note, confidence
+Language: {target_lang}
 """
 
         response = client.chat.completions.create(
@@ -319,11 +291,10 @@ async def upload_chart(chart: UploadFile = File(...)):
     return {"filename": name}
 
 # =========================================================
-# User History Endpoint (NEW) - [INJECTED]
+# User History Endpoint
 # =========================================================
 @app.get("/api/history")
 def get_user_history(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    # جلب كافة التحليلات الخاصة بالمستخدم الحالي مرتبة من الأحدث إلى الأقدم
     history = db.query(Analysis).filter(Analysis.user_id == current_user.id).order_by(Analysis.id.desc()).all()
     return history
 
@@ -341,15 +312,14 @@ def history(): return FileResponse("frontend/history.html")
 
 @app.get("/admin")
 def admin(): return FileResponse("frontend/admin.html")
+
 # =========================================================
 # Email Verification System (NEW)
 # =========================================================
 def send_verification_email(email: str):
-    # إنشاء شفرة تفعيل (Token) تنتهي بعد 24 ساعة
     token_data = {"sub": email, "exp": datetime.now(timezone.utc) + timedelta(hours=24)}
     token = jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
     
-    # رابط التفعيل الرسمي للموقع
     verify_url = f"https://kaia-ai-app.onrender.com/api/verify-email?token={token}"
     
     msg = EmailMessage()
@@ -357,7 +327,6 @@ def send_verification_email(email: str):
     msg['From'] = os.getenv("EMAIL_USER")
     msg['To'] = email
     
-    # محتوى الرسالة
     msg.set_content(f"""
 Welcome to KAIA AI Family!
 To start using the Institutional Command Center, please activate your account by clicking the link below:
@@ -372,7 +341,6 @@ This link will expire in 24 hours.
     """)
 
     try:
-        # الاتصال بسيرفر جوجل لإرسال الرسالة
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
             smtp.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASSWORD"))
             smtp.send_message(msg)
@@ -382,7 +350,6 @@ This link will expire in 24 hours.
 @app.get("/api/verify-email")
 def verify_email(token: str, db: Session = Depends(get_db)):
     try:
-        # فك شفرة الرابط والتأكد من صحته
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email = payload.get("sub")
         user = db.query(User).filter(User.email == email).first()
@@ -390,10 +357,8 @@ def verify_email(token: str, db: Session = Depends(get_db)):
         if user:
             user.is_verified = True
             db.commit()
-            # توجيه المستخدم للرئيسية بعد النجاح ليسجل دخول
             return FileResponse("frontend/index.html")
             
-        raise HTTPException(status_code=400, detail="المستخدم غير موجود")
+        raise HTTPException(status_code=400, detail="User not found")
     except Exception as e:
-        # في حال كان الرابط منتهي الصلاحية أو تالفاً
-        return {"error": f"رابط التفعيل غير صالح أو منتهي الصلاحية: {str(e)}"}
+        return {"error": f"Invalid or expired link: {str(e)}"}

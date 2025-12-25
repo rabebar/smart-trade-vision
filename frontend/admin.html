@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CANA Admin | لوحة السيطرة 🛰️</title>
+    <title>KAIA Admin | لوحة السيطرة 🛰️</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -22,7 +22,7 @@
             font-family: 'Cairo', sans-serif; 
             padding: 25px; 
             direction: rtl; 
-            visibility: hidden; /* مخفي حتى يتم التحقق من الصلاحية */
+            visibility: hidden; 
             opacity: 0;
             transition: opacity 0.5s;
         }
@@ -42,7 +42,7 @@
             overflow-x: auto; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        table { width: 100%; border-collapse: collapse; text-align: right; min-width: 900px; }
+        table { width: 100%; border-collapse: collapse; text-align: right; min-width: 1000px; }
         th, td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 14px; }
         th { color: var(--primary); font-weight: 900; background: rgba(59, 130, 246, 0.05); }
         
@@ -87,12 +87,14 @@
             border-radius: 5px;
         }
         .badge-premium { background: var(--success); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
+        .badge-verify { background: #3b82f6; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; margin-right: 5px; }
+        .badge-whale { background: #ffd700; color: #000; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; margin-right: 5px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1><i class="fa-solid fa-tower-observation"></i> مركز قيادة CANA AI</h1>
+    <h1><i class="fa-solid fa-tower-observation"></i> مركز قيادة KAIA AI</h1>
     <div style="display: flex; gap: 10px;">
         <button class="btn btn-refresh" onclick="loadUsers()"><i class="fa-solid fa-rotate"></i> تحديث</button>
         <button class="btn btn-save" onclick="window.location.href='/'" style="background: #1e293b;"><i class="fa-solid fa-house"></i> الرئيسية</button>
@@ -107,13 +109,14 @@
                 <th>الدولة</th>
                 <th>التواصل</th>
                 <th>البريد الإلكتروني</th>
+                <th>الحالة</th>
                 <th>الباقة (Tier)</th>
                 <th>الرصيد (Credits)</th>
-                <th>إجراءات التحكم</th>
+                <th>إجراءات</th>
             </tr>
         </thead>
         <tbody id="users-list">
-            <tr><td colspan="7" style="text-align:center; padding: 50px;">جاري جلب بيانات المتداولين من السيرفر...</td></tr>
+            <tr><td colspan="8" style="text-align:center; padding: 50px;">جاري جلب بيانات المتداولين من السيرفر...</td></tr>
         </tbody>
     </table>
 </div>
@@ -121,7 +124,6 @@
 <script>
     const token = localStorage.getItem("token");
 
-    // 1. نظام الحماية: التحقق من الصلاحية قبل العرض
     async function checkAdminAuth() {
         if (!token) { window.location.href = "/"; return; }
         try {
@@ -138,7 +140,6 @@
         } catch (e) { window.location.href = "/"; }
     }
 
-    // 2. جلب قائمة المستخدمين
     async function loadUsers() {
         try {
             const res = await fetch("/api/admin/users", { 
@@ -158,6 +159,10 @@
                     <td><span style="color:#94a3b8;">${u.country}</span></td>
                     <td><a href="https://wa.me/${u.whatsapp}" target="_blank" class="whatsapp-link"><i class="fa-brands fa-whatsapp"></i> واتساب</a></td>
                     <td style="color:#64748b; font-size:12px;">${u.email}</td>
+                    <td>
+                        ${u.is_verified ? '<span class="badge-verify">مفعل ✅</span>' : '<span class="badge-verify" style="background:#4b5563;">انتظار ⏳</span>'}
+                        ${u.is_whale ? '<span class="badge-whale">KING 👑</span>' : ''}
+                    </td>
                     <td>
                         <select id="tier-${u.id}">
                             <option value="Trial" ${u.tier==='Trial'?'selected':''}>Trial</option>
@@ -180,7 +185,6 @@
         } catch (e) { console.error("Admin Fetch Error"); }
     }
 
-    // 3. حفظ تعديلات المستخدم (الرصيد والباقة)
     async function saveUser(userId) {
         const credits = document.getElementById(`cred-${userId}`).value;
         const tier = document.getElementById(`tier-${userId}`).value;
@@ -196,7 +200,8 @@
                     user_id: userId, 
                     credits: parseInt(credits), 
                     tier: tier,
-                    is_premium: (tier !== 'Trial') // تفعيل البريميوم تلقائياً إذا تغيرت الباقة
+                    is_premium: (tier !== 'Trial'),
+                    is_whale: (tier === 'Platinum') // ترقية تلقائية لرتبة الملك عند اختيار باقة بلاتينيوم
                 })
             });
             
@@ -209,9 +214,8 @@
         } catch (e) { alert("خطأ في الاتصال بالسيرفر"); }
     }
 
-    // 4. حذف مستخدم نهائياً
     async function deleteUser(userId, name) {
-        if (!confirm(`تحذير: هل أنت متأكد من حذف حساب (${name}) وكافة تحليلاته نهائياً؟`)) return;
+        if (!confirm(`تحذير: هل أنت متأكد من حذف حساب (${name}) نهائياً من السحابة؟`)) return;
         
         try {
             const res = await fetch(`/api/admin/delete_user/${userId}`, {
@@ -219,13 +223,15 @@
                 headers: { "Authorization": "Bearer " + token }
             });
             if (res.ok) {
-                alert("🗑️ تم الحذف بنجاح");
+                alert("🗑️ تم الحذف الفعلي والنهائي من قاعدة البيانات");
                 loadUsers();
+            } else {
+                const err = await res.json();
+                alert("❌ فشل الحذف: " + (err.detail || "خطأ غير معروف"));
             }
-        } catch (e) { alert("خطأ في الحذف"); }
+        } catch (e) { alert("خطأ في الاتصال بالسيرفر"); }
     }
 
-    // انطلاق النظام
     window.onload = checkAdminAuth;
 </script>
 </body>
