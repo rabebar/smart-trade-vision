@@ -336,14 +336,3 @@ def history(): return FileResponse("frontend/history.html")
 
 @app.get("/admin")
 def admin(): return FileResponse("frontend/admin.html")
-@app.get("/api/make-me-king")
-def make_me_king(email: str, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == email).first()
-    if user:
-        user.is_admin = True
-        user.is_whale = True
-        user.tier = "Platinum"
-        user.credits = 9999
-        db.commit()
-        return {"message": f"Welcome King {user.full_name}, your powers are now PERMANENT!"}
-    return {"error": "User not found"}
