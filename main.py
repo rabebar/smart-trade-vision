@@ -23,14 +23,14 @@ import schemas
 # =========================================================
 # Security & AI
 # =========================================================
-SECRET_KEY = os.getenv("SECRET_KEY", "CANA_ULTIMATE_SEC_2025")
+SECRET_KEY = os.getenv("SECRET_KEY", "CAIA_ULTIMATE_SEC_2025")
 ALGORITHM = "HS256"
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-app = FastAPI(title="CANA AI – KAIA Core (Descriptive Analyst Engine)")
+app = FastAPI(title="CAIA AI – KAIA Core (Descriptive Analyst Engine)")
 
 # =========================================================
 # CORS + Static
