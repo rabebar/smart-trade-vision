@@ -283,6 +283,38 @@
             margin-top: 4px;
             font-weight: 600;
         }
+        /* إصلاح تداخل الشعار ومنع انقسام الاسم */
+.logo-text {
+    white-space: nowrap !important; /* يمنع انقسام الاسم لسطرين */
+    font-size: 24px !important;    /* ضبط حجم الخط ليتناسب مع الداشبورد */
+    font-weight: 900;
+}
+
+.logo-main {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    min-width: max-content; /* يضمن أخذ المساحة الكافية للاسم */
+}
+
+/* منع تداخل الأزرار مع معلومات المستخدم */
+.top-navbar {
+    padding: 0 15px !important;
+    gap: 10px !important;
+    height: auto !important;
+    min-height: 70px;
+    flex-wrap: wrap; /* يسمح للعناصر بالترتب في حال ضيق الشاشة */
+}
+
+.header-right {
+    gap: 10px !important;
+}
+
+/* تصغير كبسولة المستخدم قليلاً لمنع الزحام */
+.user-info-capsule {
+    padding: 5px 10px !important;
+    font-size: 13px !important;
+}
     </style>
 </head>
 <body class="dashboard-root">
