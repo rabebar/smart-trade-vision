@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   CANA AI × KAIA - MASTER FRONTEND ENGINE (Final Integrated)
+   KAIA AI × KAIA - MASTER FRONTEND ENGINE (Final Integrated)
    Version: 7.2 - Stable Commercial Release
    ============================================================ */
 
