@@ -11,8 +11,6 @@ import shutil, os, base64, json, requests, uuid
 from bs4 import BeautifulSoup
 from openai import OpenAI
 from dotenv import load_dotenv
-import smtplib
-from email.message import EmailMessage
 
 # =========================================================
 # ENV + DB
@@ -68,7 +66,6 @@ def create_access_token(data: dict):
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        # [حقن الإصلاح] تنظيف البريد وتوحيد الحروف
         email = payload.get("sub").lower().strip()
         user = db.query(User).filter(User.email == email).first()
         if not user:
@@ -107,7 +104,6 @@ def get_news(lang: str = "ar"):
 # =========================================================
 @app.post("/api/register", response_model=schemas.UserOut)
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    # [حقن الإصلاح] تنظيف الإيميل قبل التحقق من وجوده
     clean_email = user.email.lower().strip()
     if db.query(User).filter(User.email == clean_email).first():
         raise HTTPException(status_code=400, detail="البريد مستخدم")
@@ -123,6 +119,7 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
         tier=user.tier,
         credits=credits_map.get(user.tier, 3),
         status="Active",
+        is_verified=True,  # [تم التعديل] تفعيل تلقائي فوري للأبد
         is_admin=False,
         is_premium=(user.tier != "Trial"),
         is_whale=(user.tier == "Platinum")
@@ -130,20 +127,16 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    send_verification_email(new_user.email) 
     return new_user
 
 @app.post("/api/login")
 def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    # [حقن الإصلاح] تنظيف الإيميل عند الدخول
     clean_email = form.username.lower().strip()
     user = db.query(User).filter(User.email == clean_email).first()
     if not user or not pwd_context.verify(form.password, user.password_hash):
         raise HTTPException(status_code=401, detail="بيانات غير صحيحة")
     
-    if not user.is_verified:
-        raise HTTPException(status_code=400, detail="يرجى تفعيل حسابك عبر الرابط المرسل لإيميلك أولاً")
-        
+    # [تم حذف شرط التفعيل] - الدخول متاح فوراً للجميع
     return {"access_token": create_access_token({"sub": user.email}), "token_type": "bearer"}
 
 @app.get("/api/me", response_model=schemas.UserOut)
@@ -311,49 +304,6 @@ def history(): return FileResponse("frontend/history.html")
 
 @app.get("/admin")
 def admin(): return FileResponse("frontend/admin.html")
-
-# =========================================================
-# Email Verification System
-# =========================================================
-def send_verification_email(email: str):
-    token_data = {"sub": email, "exp": datetime.now(timezone.utc) + timedelta(hours=24)}
-    token = jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
-    
-    verify_url = f"https://kaia-ai-app.onrender.com/api/verify-email?token={token}"
-    
-    msg = EmailMessage()
-    msg['Subject'] = "Activate Your KAIA AI Account 👑"
-    msg['From'] = os.getenv("EMAIL_USER")
-    msg['To'] = email
-    
-    msg.set_content(f"""
-Welcome to KAIA AI Family!
-To start using the Institutional Command Center, please activate your account by clicking the link below:
-{verify_url}
-This link will expire in 24 hours.
-    """)
-
-    try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-            smtp.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASSWORD"))
-            smtp.send_message(msg)
-    except Exception as e:
-        print(f"⚠️ Email Sending Error: {e}")
-
-@app.get("/api/verify-email")
-def verify_email(token: str, db: Session = Depends(get_db)):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        # [حقن الإصلاح] تنظيف الإيميل عند التفعيل
-        email = payload.get("sub").lower().strip()
-        user = db.query(User).filter(User.email == email).first()
-        if user:
-            user.is_verified = True
-            db.commit()
-            return FileResponse("frontend/index.html")
-        raise HTTPException(status_code=400, detail="User not found")
-    except Exception as e:
-        return {"error": f"Invalid or expired link: {str(e)}"}
 
 # =========================================================
 # Emergency Tools
