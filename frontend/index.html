@@ -631,6 +631,16 @@
         content: '🎅'; position: absolute; top: -35px; left: -10px;
         font-size: 35px; transform: rotate(-20deg); z-index: 10;
     }
+   <!-- KAIA AI Seasonal Celebration Pack (Santa Hat & Snow) -->
+<style id="seasonal-styles">
+    /* تصميم طاقية سانتا احترافية (SVG) بدون وجه */
+    .santa-k { position: relative; display: inline-block; }
+    .santa-k::before {
+        content: ''; position: absolute;
+        top: -22px; left: -8px; width: 40px; height: 35px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M20,60 Q50,10 80,60 L80,70 Q50,80 20,70 Z' fill='%23ff0000'/%3E%3Ccircle cx='80' cy='60' r='8' fill='white'/%3E%3Cpath d='M15,65 Q50,75 85,65 Q85,80 15,80 Z' fill='white'/%3E%3C/svg%3E") no-repeat;
+        background-size: contain; transform: rotate(-15deg); z-index: 10;
+    }
     /* تأثير الثلج */
     .snowflake {
         position: fixed; top: -10px; color: #fff; font-size: 1em;
@@ -643,16 +653,19 @@
 <script id="seasonal-script">
     (function() {
         const now = new Date();
-        const expiryDate = new Date('2026-01-06'); // تنتهي في 5 يناير (بداية 6 يناير)
+        const expiryDate = new Date('2026-01-06'); 
 
         if (now < expiryDate) {
-            // 1. إضافة الطاقية لحرف K في شاشة الافتتاحية
+            // 1. تصحيح اتجاه الاسم وإلباس حرف الـ K الطاقية
             const introTitle = document.querySelector('#intro-reveal h1');
             if (introTitle) {
-                const text = introTitle.innerHTML;
-                if (text.startsWith('K')) {
-                    introTitle.innerHTML = '<span class="santa-k">K</span>' + text.substring(1);
-                }
+                // فرض اتجاه LTR لمنع ظهور الاسم معكوساً (KAIA AI)
+                introTitle.style.setProperty("direction", "ltr", "important");
+                introTitle.style.display = "block";
+                introTitle.style.textAlign = "center";
+                
+                const originalText = "KAIA AI";
+                introTitle.innerHTML = '<span class="santa-k">K</span>' + originalText.substring(1);
             }
 
             // 2. محرك هبوط الثلج خفيف الوزن
@@ -663,12 +676,11 @@
                 flake.style.left = Math.random() * 100 + 'vw';
                 flake.style.opacity = Math.random();
                 flake.style.fontSize = (Math.random() * 10 + 10) + 'px';
-                flake.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                flake.style.animationDuration = (Math.random() * 4 + 3) + 's';
                 document.body.appendChild(flake);
-                setTimeout(() => flake.remove(), 5000);
-            }, 300);
+                setTimeout(() => flake.remove(), 6000);
+            }, 400);
         } else {
-            // إزالة الأكواد تلقائياً بعد التاريخ المحدد لتوفير الأداء
             document.getElementById('seasonal-styles')?.remove();
             document.getElementById('seasonal-script')?.remove();
         }
