@@ -348,7 +348,11 @@ const translations = {
         "help_step_1": "Capture du graphique: Collez l'image du graphique (Paste) ou téléchargez-la manuellement.",
         "help_step_2": "Correspondance de l'unité de temps: Assurez-vous que l'unité de temps sélectionnée correspond à celle de l'image pour une analyse précise.",
         "help_step_3": "Réinitialisation de la mémoire: Une fois terminé, cliquez sur 'Masquer le résultat' pour vider la mémoire du moteur.",
-        "help_btn": "Je comprends"
+        "help_btn": "Je comprends",
+        "bank_title": "Procédures d'activation et d'abonnement",
+        "bank_desc": "Vous avez choisi le plan {plan}. Pour terminer l'activation, veuillez transférer {price} $ via les coordonnées suivantes :<br><br><b>Nom de la banque :</b> Bank of Palestine<br><b>IBAN :</b> PS72PALS045802050490013100000<br><b>SWIFT :</b> PALSPS22<br><br>Ensuite, envoyez le reçu via WhatsApp.",
+        "bank_whatsapp_btn": "Envoyer le reçu via WhatsApp",
+        "bank_notice": "Votre compte sera activé immédiatement après examen du transfert.",
     },
     "es": {
         "intro_loading": "Iniciando motor KAIA AI...",
@@ -458,7 +462,11 @@ const translations = {
         "help_step_1": "Captura de gráfico: Pega la imagen del gráfico (Paste) o súbela manualmente.",
         "help_step_2": "Coincidencia de temporalidad: Asegúrate de que la temporalidad seleccionada coincida con la de la imagen para un análisis preciso.",
         "help_step_3": "Reiniciar memoria: Al terminar, haz clic en 'Ocultar resultado' para limpiar la memoria del motor.",
-        "help_btn": "Entiendo"
+        "help_btn": "Entiendo",
+        "bank_title": "Procedimientos de activación y suscripción",
+        "bank_desc": "Has elegido el plan {plan}. Para completar la activación, transfiere {price} $ a través de los siguientes datos:<br><br><b>Banco:</b> Bank of Palestine<br><b>IBAN:</b> PS72PALS045802050490013100000<br><b>SWIFT:</b> PALSPS22<br><br>Luego, envía el comprobante por WhatsApp.",
+        "bank_whatsapp_btn": "Enviar comprobante por WhatsApp",
+        "bank_notice": "Tu cuenta se activará inmediatamente después de la revisión.",
     },
     "it": {
         "intro_loading": "Avvio motore KAIA AI...",
@@ -564,10 +572,14 @@ const translations = {
         "dash_pips_number": "Pips",
         "dash_calc_profit_btn": "Calcola",
         "dash_profit_loss_output": "Risultato: --",
-        "help_title": "Guida all'uso del motore",
+        "help_title": "Guia all'uso del motore",
         "help_step_1": "Cattura grafico: Incolla l'immagine del grafico (Paste) o caricala manualmente.",
         "help_step_2": "Corrispondenza timeframe: Assicurati che il timeframe selezionato corrisponda a quello dell'immagine per un'analisi accurata.",
         "help_step_3": "Reset memoria: Al termine, clicca su 'Nascondi risultato' per pulire la memoria del motore.",
-        "help_btn": "Ho capito"
+        "help_btn": "Ho capito",
+        "bank_title": "Procedure di attivazione e abbonamento",
+        "bank_desc": "Hai scelto il piano {plan}. Per completare l'attivazione, trasferisci {price} $ tramite i seguenti dettagli:<br><br><b>Banca:</b> Bank of Palestine<br><b>IBAN:</b> PS72PALS045802050490013100000<br><b>SWIFT Code:</b> PALSPS22<br><br>Quindi, invia la ricevuta via WhatsApp.",
+        "bank_whatsapp_btn": "Invia ricevuta via WhatsApp",
+        "bank_notice": "Il tuo account verrà attivato immediatamente dopo la revisione del trasferimento.",
     }
 };

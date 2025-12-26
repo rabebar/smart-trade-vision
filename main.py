@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -278,7 +278,7 @@ def get_user_history(current_user: User = Depends(get_current_user), db: Session
     return db.query(Analysis).filter(Analysis.user_id == current_user.id).order_by(Analysis.id.desc()).all()
 
 # =========================================================
-# PWA & Service Worker Support (الحقن المطلوب للويب آب)
+# PWA & Service Worker Support
 # =========================================================
 @app.get("/manifest.json")
 def get_manifest(): return FileResponse("frontend/manifest.json")
@@ -287,10 +287,17 @@ def get_manifest(): return FileResponse("frontend/manifest.json")
 def get_sw(): return FileResponse("frontend/sw.js")
 
 # =========================================================
-# Pages
+# Pages & Logic Control
 # =========================================================
 @app.get("/")
-def home(): return FileResponse("frontend/index.html")
+def home(request: Request): 
+    # فحص بصمة الجهاز
+    user_agent = request.headers.get("user-agent", "").lower()
+    # إذا كان موبايل، أعطه واجهة العمل فوراً
+    if "iphone" in user_agent or "android" in user_agent:
+        return FileResponse("frontend/mobile.html")
+    # إذا كان كمبيوتر، أعطه الصفحة الرئيسية
+    return FileResponse("frontend/index.html")
 
 @app.get("/dashboard")
 def dashboard(): return FileResponse("frontend/dashboard.html")
