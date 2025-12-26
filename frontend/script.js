@@ -483,3 +483,9 @@ window.onload = async () => {
         setTimeout(hidePreloader, 800); 
     }
 };
+// تفعيل ميزة التطبيق PWA
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+    .then(() => console.log("KAIA AI App Ready"))
+    .catch((err) => console.log("PWA Error", err));
+}

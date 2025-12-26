@@ -1,0 +1,22 @@
+{
+  "name": "KAIA AI Institutional",
+  "short_name": "KAIA AI",
+  "description": "The Future of Institutional Trading Analysis",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#050b14",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/192/192431.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/512/512341.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

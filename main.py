@@ -119,7 +119,7 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
         tier=user.tier,
         credits=credits_map.get(user.tier, 3),
         status="Active",
-        is_verified=True,  # [تم التعديل] تفعيل تلقائي فوري للأبد
+        is_verified=True,  
         is_admin=False,
         is_premium=(user.tier != "Trial"),
         is_whale=(user.tier == "Platinum")
@@ -136,7 +136,6 @@ def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
     if not user or not pwd_context.verify(form.password, user.password_hash):
         raise HTTPException(status_code=401, detail="بيانات غير صحيحة")
     
-    # [تم حذف شرط التفعيل] - الدخول متاح فوراً للجميع
     return {"access_token": create_access_token({"sub": user.email}), "token_type": "bearer"}
 
 @app.get("/api/me", response_model=schemas.UserOut)
@@ -182,7 +181,7 @@ def admin_delete_user(user_id: int, current_user: User = Depends(get_current_use
     return {"status": "success"}
 
 # =========================================================
-# KAIA Descriptive Analysis Engine (Original Prompt Restored)
+# KAIA Descriptive Analysis Engine
 # =========================================================
 @app.post("/api/analyze-chart")
 async def analyze_chart(
@@ -214,20 +213,8 @@ async def analyze_chart(
         target_lang = lang_map.get(lang, "Arabic")
 
         system_prompt = f"""
-أنت محلل أسواق مؤسسي محترف.
-مهمتك هي قراءة الشارت بصريًا وبدقة عالية، ثم اتخاذ قرارات تحليلية واضحة
-قبل كتابة الشرح، دون تقديم أي توصيات تداول أو أرقام أو مستويات.
-
-التزم بالخطوات التالية بالتسلسل المنطقه:
-1) حدد التحيّز العام للسوق (market_bias)
-2) حدد مرحلة السوق (market_phase)
-3) قيّم سياق الفرصة (opportunity_context)
-4) اكتب التحليل النصي (analysis_text)
-5) أضف ملاحظة مخاطر (risk_note)
-6) حدّد مستوى الثقة (confidence)
-
-JSON ONLY:
-market_bias, market_phase, opportunity_context, analysis_text, risk_note, confidence
+أنت محلل أسواق مؤسسي محترف. مهمتك هي قراءة الشارت بصريًا وبدقة عالية، ثم اتخاذ قرارات تحليلية واضحة.
+JSON ONLY: market_bias, market_phase, opportunity_context, analysis_text, risk_note, confidence
 Language: {target_lang}
 """
 
@@ -289,6 +276,15 @@ async def upload_chart(chart: UploadFile = File(...)):
 @app.get("/api/history")
 def get_user_history(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     return db.query(Analysis).filter(Analysis.user_id == current_user.id).order_by(Analysis.id.desc()).all()
+
+# =========================================================
+# PWA & Service Worker Support (الحقن المطلوب للويب آب)
+# =========================================================
+@app.get("/manifest.json")
+def get_manifest(): return FileResponse("frontend/manifest.json")
+
+@app.get("/sw.js")
+def get_sw(): return FileResponse("frontend/sw.js")
 
 # =========================================================
 # Pages
