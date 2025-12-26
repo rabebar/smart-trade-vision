@@ -307,3 +307,33 @@ body {
     overflow: hidden;
     height: 100%;
 }
+/* --- إصلاح ازدحام أيقونات هيدر الداشبورد --- */
+.top-navbar {
+    height: auto !important;
+    min-height: 85px;
+    gap: 15px !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto; /* يسمح بالتمرير الجانبي في الشاشات الصغيرة بدل التداخل */
+    padding: 10px 20px !important;
+}
+
+.header-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    flex-shrink: 0 !important; /* يمنع انكماش الأزرار عند ضيق الشاشة */
+}
+
+.user-info-capsule {
+    white-space: nowrap !important;
+    padding: 5px 12px !important;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 10px;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* تحسين شكل أزرار الأدوات لمنع الزحام */
+.tool-icon-btn {
+    min-width: fit-content !important;
+    padding: 8px 12px !important;
+}
