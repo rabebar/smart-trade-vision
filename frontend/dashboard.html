@@ -671,8 +671,11 @@
 </div>
 
 <!-- استدعاء ملفات البرمجة والترجمة -->
+
+<script>
+    if (window.innerWidth <= 768) { window.location.href = "/mobile"; }
+</script>
 <script src="/static/translations.js"></script>
 <script src="/static/dashboard.js"></script>
-
 </body>
 </html>

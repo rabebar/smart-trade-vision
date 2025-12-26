@@ -299,6 +299,9 @@ def home(): return FileResponse("frontend/index.html")
 @app.get("/dashboard")
 def dashboard(): return FileResponse("frontend/dashboard.html")
 
+@app.get("/mobile")
+def mobile(): return FileResponse("frontend/mobile.html")
+
 @app.get("/history")
 def history(): return FileResponse("frontend/history.html")
 
