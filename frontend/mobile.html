@@ -279,7 +279,21 @@
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             el.classList.add('active');
             if(tab === 'analysis' && !window.tvWidget) {
-                window.tvWidget = new TradingView.widget({"autosize": true, "symbol": "FX:EURUSD", "interval": "15", "theme": "dark", "container_id": "tradingview_mobile_wrap", "locale": "ar"});
+                window.tvWidget = new TradingView.widget({
+  autosize: true,
+  symbol: "FX:EURUSD",
+  interval: "15",
+  theme: "dark",
+  locale: "ar",
+  container_id: "tradingview_mobile_wrap",
+
+  // ✅ هاد اللي بطلع لك شريط/تبديل الرمز
+  allow_symbol_change: true,
+  hide_top_toolbar: false,
+  hide_side_toolbar: false,
+  withdateranges: true,
+  details: true
+});
             }
         }
 
