@@ -11,7 +11,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="KAIA AI">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/192/192431.png">
+    
+    <!-- تحديث أيقونة التطبيق الرسمية -->
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2092/2092565.png">
     
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -20,12 +22,10 @@
     <style>
         body { background: #020617; color: white; padding-bottom: 90px; overflow-x: hidden; font-family: 'Cairo', sans-serif; }
         
-        /* شاشة الدخول الاحترافية - App Style */
+        /* شاشة الدخول */
         #auth-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:#020617; z-index:9999; display:none; flex-direction:column; padding:30px; justify-content:center; }
         .auth-logo { font-size: 50px; font-weight: 900; color: var(--primary); text-align: center; margin-bottom: 40px; }
-        .auth-card { background: #0b1222; padding: 25px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.05); }
         
-        /* واجهة التطبيق الرئيسية */
         #app-main { display: none; }
         .app-header { height: 65px; background: #050b14; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .header-logo { font-size: 20px; font-weight: 900; color: var(--primary); }
@@ -34,7 +34,6 @@
         .tab-content { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* شريط التنقل السفلي */
         .app-bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 75px; background: #050b14; border-top: 2px solid var(--primary); display: flex; justify-content: space-around; align-items: center; z-index: 2000; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); }
         .nav-link { text-decoration: none; color: var(--muted); display: flex; flex-direction: column; align-items: center; font-size: 10px; font-weight: 700; transition: 0.3s; gap: 5px; }
         .nav-link i { font-size: 22px; }
@@ -43,57 +42,56 @@
         .mobile-card { background: #0b1222; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); padding: 20px; margin-bottom: 15px; }
         .mobile-card h3 { font-size: 14px; font-weight: 900; margin-bottom: 15px; color: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
         
-        /* دليل رفع الصور */
-        .upload-guide { background: rgba(59, 130, 246, 0.05); border: 1px dashed var(--primary); padding: 15px; border-radius: 12px; margin-top: 15px; font-size: 11px; line-height: 1.6; }
+        .mobile-input { width: 100%; height: 50px; background: #000; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; padding: 0 15px; font-family: inherit; font-weight: 700; margin-bottom: 10px; }
+        .calc-btn-small { background: #1e293b; color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: 800; cursor: pointer; }
         
-        /* الملف الشخصي (قسم الملك) */
-        .profile-hero { text-align: center; padding: 20px 0; }
-        .tier-badge { display: inline-block; padding: 5px 15px; border-radius: 50px; font-size: 10px; font-weight: 900; margin-top: 10px; text-transform: uppercase; }
-        .tier-trial { background: #1e293b; color: #94a3b8; }
-        .tier-king { background: rgba(255, 215, 0, 0.1); color: var(--gold); border: 1px solid var(--gold); }
+        /* الالة الحاسبة */
+        .simple-calc { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 10px; }
+        .simple-calc button { height: 45px; border-radius: 8px; border: none; background: #1e293b; color: #fff; font-weight: 900; }
+        .simple-calc .op { background: var(--primary); color: #000; }
+
+        .trader-notes { width: 100%; height: 120px; background: #000; color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; font-family: inherit; resize: none; }
     </style>
 </head>
 <body class="mobile-root">
 
-    <!-- شاشة الدخول (تظهر فقط إذا لم يسجل الدخول) -->
     <div id="auth-screen">
         <div class="auth-logo">KAIA AI</div>
-        <div class="auth-card" id="login-form-ui">
-            <h2 id="auth-title" style="margin-bottom:20px; font-weight:900;">تسجيل الدخول</h2>
+        <div class="mobile-card" id="login-form-ui">
+            <h2 id="auth-title" style="margin-bottom:20px; font-weight:900;">دخول آمن</h2>
             <div id="register-fields" style="display:none;">
-                <input type="text" id="reg-name" placeholder="الاسم الكامل" class="mobile-input" style="margin-bottom:15px;">
-                <input type="text" id="reg-whatsapp" placeholder="رقم الواتساب" class="mobile-input" style="margin-bottom:15px;">
+                <input type="text" id="reg-name" placeholder="الاسم الكامل" class="mobile-input">
+                <input type="text" id="reg-whatsapp" placeholder="رقم الواتساب" class="mobile-input">
             </div>
-            <input type="email" id="auth-email-ui" placeholder="البريد الإلكتروني" class="mobile-input" style="margin-bottom:15px;">
-            <input type="password" id="auth-pass-ui" placeholder="كلمة المرور" class="mobile-input" style="margin-bottom:20px;">
-            <button class="core-analyze-btn" id="auth-btn-ui" style="width:100%; height:55px; font-weight:900;" onclick="handleMobileAuth()">دخول آمن</button>
-            <p onclick="toggleAuthUI()" id="auth-toggle-ui" style="text-align:center; margin-top:20px; font-size:12px; color:var(--muted); font-weight:700; cursor:pointer;">ليس لديك حساب؟ سجل الآن مجاناً</p>
+            <input type="email" id="auth-email-ui" placeholder="البريد الإلكتروني" class="mobile-input">
+            <input type="password" id="auth-pass-ui" placeholder="كلمة المرور" class="mobile-input">
+            <button class="core-analyze-btn" id="auth-btn-ui" style="width:100%; height:55px;" onclick="handleMobileAuth()">دخول</button>
+            <p onclick="toggleAuthUI()" id="auth-toggle-ui" style="text-align:center; margin-top:20px; font-size:12px; color:var(--muted); font-weight:700;">ليس لديك حساب؟ سجل الآن</p>
         </div>
     </div>
 
-    <!-- واجهة التطبيق الرئيسية -->
     <div id="app-main">
         <header class="app-header">
             <div class="user-pill"><i class="fa-solid fa-coins"></i> <span id="cred-val">--</span></div>
             <div class="header-logo">KAIA <span style="color:#fff">AI</span></div>
-            <select id="language-select" class="lang-mini" style="background:#1e293b; color:#fff; border:none; border-radius:5px; padding:5px; font-weight: 800;">
-                <option value="ar">AR</option><option value="en">EN</option>
-            </select>
         </header>
 
-        <!-- 1. Radar -->
+        <!-- 1. Radar (Forex, Gold, Silver) -->
         <section id="tab-radar" class="tab-content" style="display: block;">
             <div class="mobile-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: none;">
                 <h2 id="mob-user-welcome" style="margin:0; font-size: 20px; font-weight: 900;">تحميل...</h2>
-                <p style="margin:5px 0 0; color: var(--muted); font-size: 12px;">مراقبة حية للأسواق العالمية</p>
             </div>
             <div class="mobile-card">
-                <h3><i class="fa-solid fa-dollar-sign"></i> LIVE WATCHLIST</h3>
-                <div style="height: 400px;">
-                    <div class="tradingview-widget-container" style="height:100%">
+                <h3><i class="fa-solid fa-chart-line"></i> MARKET RADAR (ALL PAIRS)</h3>
+                <div style="height: 500px;">
+                    <div class="tradingview-widget-container">
                         <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
                         { "colorTheme": "dark", "showChart": false, "locale": "en", "width": "100%", "height": "100%", "isTransparent": true,
-                          "symbolsGroups": [{ "name": "Markets", "symbols": [{ "s": "FX:EURUSD" }, { "s": "FX:GBPUSD" }, { "s": "TVC:GOLD" }, { "s": "FOREXCOM:NAS100" }]}] }
+                          "symbolsGroups": [
+                            { "name": "Precious Metals", "symbols": [{ "s": "TVC:GOLD", "d": "GOLD" }, { "s": "TVC:SILVER", "d": "SILVER" }] },
+                            { "name": "Major Forex", "symbols": [{ "s": "FX:EURUSD" }, { "s": "FX:GBPUSD" }, { "s": "FX:USDJPY" }, { "s": "FX:AUDUSD" }, { "s": "FX:USDCAD" }, { "s": "FX:USDCHF" }] },
+                            { "name": "Crosses", "symbols": [{ "s": "FX:EURJPY" }, { "s": "FX:GBPJPY" }, { "s": "FX:EURGBP" }, { "s": "FX:AUDJPY" }] }
+                          ] }
                         </script>
                     </div>
                 </div>
@@ -109,48 +107,71 @@
                 <h3><i class="fa-solid fa-robot"></i> KAIA AI ANALYZER</h3>
                 <div class="drop-zone-v2" onclick="document.getElementById('chartUpload').click()" style="padding: 30px; background: rgba(0,0,0,0.3); border-radius: 15px; text-align: center; border: 2px dashed var(--primary);">
                     <h4 id="status-text" style="font-size: 14px; font-weight: 800;">إضغط لإختيار الشارت من الاستوديو 📸</h4>
-                    <input type="file" id="chartUpload" style="display: none;" accept="image/*">
+                    <input type="file" id="chartUpload" style="display: none;" accept="image/*" onchange="confirmFileSelection()">
                 </div>
-                <div class="upload-guide">
-                    <strong>كيف تحلل؟</strong> التقط لقطة شاشة (Screenshot) للشارت الخاص بك، ثم اضغط على المربع أعلاه واختر الصورة من "الاستوديو" مباشرة.
+                <div id="file-confirm-msg" style="display:none; text-align:center; color:var(--success); font-size:12px; margin-top:10px; font-weight:900;">
+                    <i class="fa-solid fa-check-double"></i> تم استقبال ملف الشارت بنجاح
                 </div>
                 <div class="mobile-input-group" style="margin-top:15px;">
-                    <label>الاستراتيجية</label>
+                    <label style="font-size:11px; color:var(--muted)">الاستراتيجية</label>
                     <select id="strategy" class="mobile-input"><option value="SMC">SMC Concepts 💎</option><option value="Elliott Wave">Elliott Wave 🌊</option></select>
                 </div>
-                <button class="core-analyze-btn" id="run-btn" style="width:100%; height:55px;" onclick="runMobileAnalysis()">بدء التحليل الذكي</button>
+                <button class="core-analyze-btn" id="run-btn" style="width:100%; height:55px;" onclick="runMobileAnalysis()">بدء التحليل</button>
                 <div id="result-box" style="display: none; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
                     <div id="res-data-content"></div>
+                    <button onclick="clearWarRoom()" style="width:100%; height:45px; background:#1e293b; color:#fff; border:none; border-radius:10px; margin-top:10px; font-weight:800;">إغلاق وتجهيز المحلل</button>
                 </div>
             </div>
         </section>
 
-        <!-- 3. Tools -->
+        <!-- 3. Tools (Calculators & Notes) -->
         <section id="tab-tools" class="tab-content">
             <div class="mobile-card">
-                <h3><i class="fa-solid fa-shield-halved"></i> RISK CALCULATOR</h3>
-                <div class="mobile-input-group"><label>رأس المال ($)</label><input type="number" id="balance" class="mobile-input" placeholder="1000"></div>
-                <div class="mobile-input-group"><label>اللوت</label><input type="number" id="risk-lot" class="mobile-input" placeholder="0.10"></div>
-                <div class="mobile-input-group"><label>الوقف (Pips)</label><input type="number" id="sl-pips-input" class="mobile-input" placeholder="20"></div>
-                <button class="core-analyze-btn" onclick="calculateRiskPercent()" style="width:100%; height:55px;">احسب المخاطرة</button>
-                <div id="risk-result" style="margin-top:15px; text-align:center; font-weight:900; color:var(--primary);"></div>
+                <h3><i class="fa-solid fa-calculator"></i> TRADING CALCULATORS</h3>
+                <div style="display:grid; gap:10px;">
+                    <div>
+                        <small style="font-size:10px; color:var(--muted)">حاسبة اللوت والمخاطرة</small>
+                        <input type="number" id="risk-balance" placeholder="Balance $" class="mobile-input">
+                        <input type="number" id="risk-sl" placeholder="Stop Loss (Pips)" class="mobile-input">
+                        <button class="calc-btn-small" style="width:100%;" onclick="calcLotSize()">احسب اللوت (1%)</button>
+                        <p id="risk-res" style="text-align:center; margin-top:5px; font-weight:900; color:var(--primary);"></p>
+                    </div>
+                    <hr style="opacity:0.1">
+                    <div>
+                        <small style="font-size:10px; color:var(--muted)">حاسبة النقاط والربح</small>
+                        <input type="number" id="pip-lot" placeholder="Lot Size" class="mobile-input">
+                        <input type="number" id="pip-count" placeholder="Pips Count" class="mobile-input">
+                        <button class="calc-btn-small" style="width:100%; background:var(--success);" onclick="calcPipValue()">احسب القيمة $</button>
+                        <p id="pip-res" style="text-align:center; margin-top:5px; font-weight:900; color:var(--success);"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mobile-card">
+                <h3><i class="fa-solid fa-pen"></i> TRADER NOTES</h3>
+                <textarea id="trader-notes" class="trader-notes" placeholder="سجل هنا خطتك لليوم..."></textarea>
+            </div>
+
+            <div class="mobile-card">
+                <h3><i class="fa-solid fa-calculator"></i> MATH CALCULATOR</h3>
+                <input type="text" id="math-screen" class="mobile-input" style="text-align:right" readonly value="0">
+                <div class="simple-calc">
+                    <button onclick="mathInput('7')">7</button><button onclick="mathInput('8')">8</button><button onclick="mathInput('9')">9</button><button class="op" onclick="mathInput('/')">/</button>
+                    <button onclick="mathInput('4')">4</button><button onclick="mathInput('5')">5</button><button onclick="mathInput('6')">6</button><button class="op" onclick="mathInput('*')">×</button>
+                    <button onclick="mathInput('1')">1</button><button onclick="mathInput('2')">2</button><button onclick="mathInput('3')">3</button><button class="op" onclick="mathInput('-')">-</button>
+                    <button onclick="mathClear()" style="color:var(--danger)">C</button><button onclick="mathInput('0')">0</button><button onclick="mathRes()" class="op">=</button><button class="op" onclick="mathInput('+')">+</button>
+                </div>
             </div>
         </section>
 
-        <!-- 4. Profile (The King Center) -->
+        <!-- 4. Account & Upgrade -->
         <section id="tab-account" class="tab-content">
-            <div class="mobile-card profile-hero">
+            <div class="mobile-card" style="text-align: center;">
                 <i class="fa-solid fa-circle-user" id="user-avatar-icon" style="font-size: 70px; color: var(--primary);"></i>
-                <i class="fa-solid fa-crown" id="king-avatar-icon" style="font-size: 70px; color: var(--gold); display:none;"></i>
                 <h2 id="mob-user-name" style="font-weight: 900; margin-top:15px;">تحميل...</h2>
-                <div id="user-badge" class="tier-badge">Member</div>
-                
-                <div style="margin-top:30px; text-align:right;">
-                    <div class="mobile-card" style="background:rgba(255,255,255,0.02)">
-                        <small style="color:var(--muted)">حالة الحساب</small>
-                        <p id="sub-status" style="font-weight:800; color:#fff;">Active</p>
-                    </div>
-                    <button class="wallet-btn" style="width:100%; height:55px; background:var(--gold); color:#000;" onclick="window.location.href='/#pricing-section'">ترقية الحساب الآن 👑</button>
+                <div id="user-badge" style="padding:5px 15px; border-radius:50px; font-size:10px; font-weight:900; background:#1e293b; display:inline-block; margin-top:10px;">Trial Member</div>
+                <div style="margin-top:30px;">
+                    <button class="wallet-btn" style="width:100%; height:60px; background:var(--gold); color:#000; font-weight:900;" onclick="window.location.href='/#pricing-section'">ترقية الحساب الآن 👑</button>
                     <button class="nav-btn-logout" style="width:100%; height:55px; margin-top:15px;" onclick="logoutApp()">تسجيل الخروج</button>
                 </div>
             </div>
@@ -159,161 +180,135 @@
         <!-- 5. History -->
         <section id="tab-history" class="tab-content">
             <div class="mobile-card">
-                <h3><i class="fa-solid fa-clock-rotate-left"></i> RECENT ANALYSES</h3>
-                <div id="history-list-mobile"><p style="text-align:center; color:var(--muted);">جاري جلب السجل...</p></div>
+                <h3><i class="fa-solid fa-clock-rotate-left"></i> HISTORY</h3>
+                <div id="history-list-mobile"><p style="text-align:center; color:var(--muted);">جاري التحميل...</p></div>
             </div>
         </section>
 
-        <!-- Navigation Bar -->
         <nav class="app-bottom-nav">
             <div class="nav-link active" onclick="switchMobileAppTab('radar', this)"><i class="fa-solid fa-satellite-dish"></i><span>Radar</span></div>
             <div class="nav-link" onclick="switchMobileAppTab('analysis', this)"><i class="fa-solid fa-chart-line"></i><span>War Room</span></div>
             <div class="nav-link" onclick="switchMobileAppTab('tools', this)"><i class="fa-solid fa-calculator"></i><span>Tools</span></div>
-            <div class="nav-link" onclick="switchMobileAppTab('account', this)"><i class="fa-solid fa-crown"></i><span>Account</span></div>
+            <div class="nav-link" onclick="switchMobileAppTab('account', this)"><i class="fa-solid fa-crown"></i><span>Profile</span></div>
             <div class="nav-link" onclick="switchMobileAppTab('history', this)"><i class="fa-solid fa-clock-rotate-left"></i><span>History</span></div>
         </nav>
     </div>
 
-    <script src="/static/translations.js"></script>
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
         let token = localStorage.getItem("token");
         let isRegMode = false;
 
         function checkAuth() {
-            if(!token) {
-                document.getElementById("auth-screen").style.display = "flex";
-                document.getElementById("app-main").style.display = "none";
-            } else {
-                document.getElementById("auth-screen").style.display = "none";
-                document.getElementById("app-main").style.display = "block";
-                syncMobileApp();
-            }
+            if(!token) { document.getElementById("auth-screen").style.display = "flex"; }
+            else { document.getElementById("app-main").style.display = "block"; syncMobileApp(); }
         }
 
         function toggleAuthUI() {
             isRegMode = !isRegMode;
-            document.getElementById("auth-title").innerText = isRegMode ? "حساب جديد" : "تسجيل الدخول";
+            document.getElementById("auth-title").innerText = isRegMode ? "حساب جديد" : "دخول آمن";
             document.getElementById("register-fields").style.display = isRegMode ? "block" : "none";
-            document.getElementById("auth-btn-ui").innerText = isRegMode ? "إنشاء الحساب" : "دخول آمن";
-            document.getElementById("auth-toggle-ui").innerText = isRegMode ? "لديك حساب؟ سجل دخول" : "ليس لديك حساب؟ سجل الآن مجاناً";
         }
 
         async function handleMobileAuth() {
             const email = document.getElementById("auth-email-ui").value;
             const pass = document.getElementById("auth-pass-ui").value;
             if(!email || !pass) return alert("يرجى ملء البيانات");
-
-            const btn = document.getElementById("auth-btn-ui");
-            btn.disabled = true;
-
+            const fd = new FormData(); fd.append("username", email); fd.append("password", pass);
             try {
-                if(isRegMode) {
-                    const res = await fetch("/api/register", {
-                        method: "POST", headers: {"Content-Type":"application/json"},
-                        body: JSON.stringify({email, password:pass, full_name:document.getElementById("reg-name").value, whatsapp:document.getElementById("reg-whatsapp").value, tier:"Trial"})
-                    });
-                    if(res.ok) { alert("تم التسجيل! سجل دخولك الآن"); isRegMode = false; toggleAuthUI(); }
-                    else alert("خطأ في التسجيل");
-                } else {
-                    const fd = new FormData(); fd.append("username", email); fd.append("password", pass);
-                    const res = await fetch("/api/login", {method:"POST", body:fd});
-                    const data = await res.json();
-                    if(res.ok) { localStorage.setItem("token", data.access_token); location.reload(); }
-                    else alert("بيانات الدخول خاطئة");
-                }
-            } catch(e) { alert("خطأ في الاتصال"); }
-            btn.disabled = false;
+                const res = await fetch("/api/login", {method:"POST", body:fd});
+                const data = await res.json();
+                if(res.ok) { localStorage.setItem("token", data.access_token); location.reload(); }
+                else alert("خطأ في البيانات");
+            } catch(e) { alert("فشل الاتصال"); }
         }
 
         async function syncMobileApp() {
-            try {
-                const res = await fetch("/api/me", { headers: { "Authorization": "Bearer " + token } });
-                const u = await res.json();
-                if(res.ok) {
-                    document.getElementById("cred-val").innerText = u.credits;
-                    document.getElementById("mob-user-name").innerText = u.full_name;
-                    document.getElementById("mob-user-welcome").innerText = "أهلاً، " + u.full_name;
-                    
-                    const badge = document.getElementById("user-badge");
-                    badge.innerText = u.tier + " MEMBER";
-                    
-                    if(u.tier === "Platinum" || u.is_admin) {
-                        badge.className = "tier-badge tier-king";
-                        document.getElementById("king-avatar-icon").style.display = "inline-block";
-                        document.getElementById("user-avatar-icon").style.display = "none";
-                    } else {
-                        badge.className = "tier-badge tier-trial";
-                    }
-                }
-                loadMobileHistory();
-            } catch(e) { logoutApp(); }
+            const res = await fetch("/api/me", { headers: { "Authorization": "Bearer " + token } });
+            const u = await res.json();
+            if(res.ok) {
+                document.getElementById("cred-val").innerText = u.credits;
+                document.getElementById("mob-user-name").innerText = u.full_name;
+                document.getElementById("mob-user-welcome").innerText = "أهلاً، " + u.full_name;
+                const badge = document.getElementById("user-badge");
+                badge.innerText = u.tier + " MEMBER";
+                if(u.tier === "Platinum") badge.style.color = "var(--gold)";
+            }
+            loadHistory();
+        }
+
+        function confirmFileSelection() {
+            if(document.getElementById("chartUpload").files[0]) {
+                document.getElementById("file-confirm-msg").style.display = "block";
+                document.getElementById("status-text").innerText = "تم استلام الملف ✅";
+                document.getElementById("status-text").style.color = "var(--success)";
+            }
+        }
+
+        function clearWarRoom() {
+            document.getElementById("result-box").style.display = "none";
+            document.getElementById("chartUpload").value = "";
+            document.getElementById("file-confirm-msg").style.display = "none";
+            document.getElementById("status-text").innerText = "إضغط لإختيار الشارت من الاستوديو 📸";
+            document.getElementById("status-text").style.color = "white";
         }
 
         async function runMobileAnalysis() {
-            const fileInput = document.getElementById("chartUpload");
-            if(!fileInput.files[0]) return alert("يرجى اختيار صورة");
-            
+            const file = document.getElementById("chartUpload").files[0];
+            if(!file) return alert("اختر صورة أولاً");
             const btn = document.getElementById("run-btn");
             btn.innerText = "جاري التحليل..."; btn.disabled = true;
-
             try {
-                const upFd = new FormData(); upFd.append("chart", fileInput.files[0]);
+                const upFd = new FormData(); upFd.append("chart", file);
                 const upRes = await fetch("/api/upload-chart", {method:"POST", body:upFd});
                 const { filename } = await upRes.json();
-
-                const anFd = new FormData();
-                anFd.append("filename", filename);
-                anFd.append("timeframe", "15m");
-                anFd.append("analysis_type", document.getElementById("strategy").value);
-
+                const anFd = new FormData(); anFd.append("filename", filename); anFd.append("timeframe", "15m"); anFd.append("analysis_type", document.getElementById("strategy").value);
                 const res = await fetch("/api/analyze-chart", { method:"POST", headers:{"Authorization":"Bearer "+token}, body:anFd });
                 const data = await res.json();
-
                 if(res.ok) {
                     document.getElementById("result-box").style.display = "block";
-                    document.getElementById("res-data-content").innerHTML = `
-                        <div style="background:rgba(59,130,246,0.1); padding:15px; border-radius:12px; border:1px solid var(--primary);">
-                            <h4 style="color:var(--primary); margin-bottom:10px;">نتيجة التحليل</h4>
-                            <p style="font-size:13px; line-height:1.6;">${data.analysis.analysis_text}</p>
-                            <div style="margin-top:10px; font-weight:900; color:var(--gold);">Bias: ${data.analysis.market_bias}</div>
-                        </div>
-                    `;
+                    document.getElementById("res-data-content").innerHTML = `<p style="font-size:12px; line-height:1.6;">${data.analysis.analysis_text}</p><div style="font-weight:900; color:var(--primary);">Signal: ${data.analysis.market_bias}</div>`;
                     syncMobileApp();
                 }
-            } catch(e) { alert("حدث خطأ أثناء التحليل"); }
-            btn.innerText = "بدء التحليل الذكي"; btn.disabled = false;
+            } catch(e) { alert("خطأ"); }
+            btn.innerText = "بدء التحليل"; btn.disabled = false;
         }
 
-        window.switchMobileAppTab = function(tabId, el) {
+        function switchMobileAppTab(tab, el) {
             document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-            document.getElementById('tab-' + tabId).style.display = 'block';
+            document.getElementById('tab-' + tab).style.display = 'block';
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             el.classList.add('active');
-            window.scrollTo(0,0);
-            if(tabId === 'analysis' && !window.tvWidget) {
+            if(tab === 'analysis' && !window.tvWidget) {
                 window.tvWidget = new TradingView.widget({"autosize": true, "symbol": "FX:EURUSD", "interval": "15", "theme": "dark", "container_id": "tradingview_mobile_wrap", "locale": "ar"});
             }
-        };
-
-        async function loadMobileHistory() {
-            const hList = document.getElementById("history-list-mobile");
-            try {
-                const res = await fetch("/api/history", { headers: { "Authorization": "Bearer " + token } });
-                const data = await res.json();
-                if(res.ok && data.length > 0) {
-                    hList.innerHTML = data.map(item => `
-                        <div class="history-item">
-                            <div class="meta"><span>${item.symbol}</span><span>${new Date(item.created_at).toLocaleDateString()}</span></div>
-                            <div class="sig" style="color:var(--primary)">${item.signal}</div>
-                        </div>
-                    `).join("");
-                } else { hList.innerHTML = "<p>لا يوجد سجلات.</p>"; }
-            } catch(e) { }
         }
+
+        // Calculator Logic
+        function calcLotSize() {
+            const b = document.getElementById("risk-balance").value;
+            const sl = document.getElementById("risk-sl").value;
+            if(b && sl) {
+                const lot = (b * 0.01) / (sl * 10);
+                document.getElementById("risk-res").innerText = "Lot: " + lot.toFixed(2);
+            }
+        }
+        function calcPipValue() {
+            const l = document.getElementById("pip-lot").value;
+            const p = document.getElementById("pip-count").value;
+            if(l && p) {
+                const val = l * p * 10;
+                document.getElementById("pip-res").innerText = "Profit: $" + val.toFixed(2);
+            }
+        }
+
+        let mathExpr = "";
+        function mathInput(v) { mathExpr += v; document.getElementById("math-screen").value = mathExpr; }
+        function mathClear() { mathExpr = ""; document.getElementById("math-screen").value = "0"; }
+        function mathRes() { try { mathExpr = eval(mathExpr).toString(); document.getElementById("math-screen").value = mathExpr; } catch(e) { mathClear(); } }
 
         function logoutApp() { localStorage.removeItem("token"); location.reload(); }
         window.onload = checkAuth;
     </script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 </body>
 </html>
