@@ -3,277 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KAIA Mobile | تطبيق التداول المؤسسي</title>
+    <title>KAIA Mobile App | تطبيق الملك</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
     
     <style>
-        :root {
-            --bg-deep: #020617;
-            --bg-panel: #0b1222;
-            --primary: #3b82f6;
-            --success: #10b981;
-            --danger: #ef4444;
-            --gold: #ffd700;
-            --text: #ffffff;
-            --muted: #94a3b8;
-            --border: rgba(255, 255, 255, 0.08);
-        }
-
-        body { 
-            margin: 0; padding: 0;
-            font-family: 'Cairo', sans-serif; 
-            background: var(--bg-deep); 
-            color: var(--text); 
-            padding-bottom: 90px; /* مساحة للشريط السفلي */
-            overflow-x: hidden;
-        }
-
-        body.ltr { direction: ltr; text-align: left; }
-
-        /* هيدر التطبيق */
-        .app-header {
-            height: 65px; background: #050b14;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 15px; position: sticky; top: 0; z-index: 1000;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .header-logo { font-size: 20px; font-weight: 900; color: var(--primary); letter-spacing: 1px; }
+        body { background: #020617; color: white; padding-bottom: 90px; overflow-x: hidden; }
+        .app-header { height: 65px; background: #050b14; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .header-logo { font-size: 20px; font-weight: 900; color: var(--primary); }
+        .user-pill { background: rgba(255, 215, 0, 0.1); border: 1px solid var(--gold); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 900; color: #fff; }
         
-        .user-pill {
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px solid var(--primary);
-            padding: 5px 12px; border-radius: 20px;
-            font-size: 12px; font-weight: 900; color: #fff;
-        }
+        .tab-content { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* بطاقة الترحيب */
-        .app-hero-card {
-            margin: 15px; padding: 25px;
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            border-radius: 22px; border: 1px solid var(--border);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-        }
+        /* شريط التنقل السفلي المطور */
+        .app-bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 75px; background: #050b14; border-top: 2px solid var(--primary); display: flex; justify-content: space-around; align-items: center; z-index: 2000; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); }
+        .nav-link { text-decoration: none; color: var(--muted); display: flex; flex-direction: column; align-items: center; font-size: 10px; font-weight: 700; transition: 0.3s; gap: 5px; }
+        .nav-link i { font-size: 22px; }
+        .nav-link.active { color: var(--primary); transform: translateY(-5px); }
 
-        .app-hero-card h2 { margin: 0; font-size: 14px; color: var(--muted); font-weight: 600; }
-        .app-hero-card p { margin: 8px 0 0; font-size: 22px; font-weight: 900; color: #fff; }
-
-        /* شبكة الخدمات السريعة */
-        .app-grid {
-            display: grid; grid-template-columns: 1fr 1fr;
-            gap: 12px; padding: 0 15px;
-        }
-
-        .app-tool-item {
-            background: var(--bg-panel); border: 1px solid var(--border);
-            padding: 20px; border-radius: 20px; text-align: center;
-            text-decoration: none; color: #fff; transition: 0.3s;
-        }
-        .app-tool-item:active { transform: scale(0.95); background: #1e293b; }
-        .app-tool-item i { font-size: 24px; color: var(--primary); margin-bottom: 10px; display: block; }
-        .app-tool-item span { font-size: 13px; font-weight: 700; }
-
-        /* بطاقة آخر تحليل */
-        .app-result-card {
-            margin: 20px 15px; background: #0f172a;
-            border-radius: 25px; border: 1px solid var(--primary);
-            padding: 20px; display: none;
-            animation: slideUp 0.5s ease;
-        }
-
-        .sig-val { font-size: 32px; font-weight: 900; text-align: center; margin: 10px 0; letter-spacing: 2px; }
-        .buy { color: var(--success); text-shadow: 0 0 15px rgba(16,185,129,0.3); }
-        .sell { color: var(--danger); text-shadow: 0 0 15px rgba(239,68,68,0.3); }
-
-        .price-row {
-            display: grid; grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px; margin-top: 15px;
-        }
-
-        .p-box { background: rgba(0,0,0,0.4); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
-        .p-label { display: block; font-size: 10px; color: var(--muted); margin-bottom: 4px; font-weight: 800; }
-        .p-value { font-size: 13px; font-weight: 900; font-family: monospace; }
-
-        /* الشريط السفلي الثابت */
-        .app-bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            height: 75px; background: #050b14;
-            border-top: 1px solid var(--border);
-            display: flex; justify-content: space-around; align-items: center;
-            z-index: 2000; backdrop-filter: blur(10px);
-        }
-
-        .nav-link {
-            text-decoration: none; color: var(--muted);
-            display: flex; flex-direction: column; align-items: center;
-            font-size: 10px; font-weight: 700; transition: 0.3s;
-        }
-
-        .nav-link i { font-size: 20px; margin-bottom: 5px; }
-        .nav-link.active { color: var(--primary); }
-
-        .app-upgrade-msg {
-            margin: 15px; background: rgba(239, 68, 68, 0.1);
-            border: 1px solid var(--danger); padding: 15px;
-            border-radius: 15px; text-align: center; display: none;
-        }
-
-        @keyframes slideUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+        /* تنسيقات غرف العمليات */
+        .mobile-card { background: #0b1222; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); padding: 20px; margin-bottom: 15px; }
+        .mobile-card h3 { font-size: 14px; font-weight: 900; margin-bottom: 15px; color: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
+        
+        .mobile-input-group { margin-bottom: 15px; }
+        .mobile-input-group label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; font-weight: 800; }
+        .mobile-input { width: 100%; height: 50px; background: #000; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; padding: 0 15px; font-family: inherit; font-weight: 700; }
+        
+        .history-item { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 15px; margin-bottom: 10px; border-right: 4px solid var(--primary); }
+        .history-item .meta { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 5px; }
+        .history-item .sig { font-size: 18px; font-weight: 900; }
     </style>
 </head>
 <body class="mobile-root">
 
     <header class="app-header">
-        <div id="mob-credits" class="user-pill">
-            <i class="fa-solid fa-coins" style="color:var(--gold)"></i> <span id="cred-val">--</span>
-        </div>
-
+        <div class="user-pill"><i class="fa-solid fa-coins" style="color:var(--gold)"></i> <span id="cred-val">--</span></div>
         <div class="header-logo">KAIA <span style="color:#fff">AI</span></div>
-
-        <select class="lang-mini" id="language-select" style="background:#1e293b; color:#fff; border:none; border-radius:5px; padding:5px;">
-            <option value="ar">AR</option>
-            <option value="en">EN</option>
+        <select id="language-select" class="lang-mini" style="background:#1e293b; color:#fff; border:none; border-radius:5px; padding:5px; font-weight: 800;">
+            <option value="ar">AR</option><option value="en">EN</option>
         </select>
     </header>
 
-    <div class="app-hero-card">
-        <h2 data-i18n="nav_welcome">أهلاً بك</h2>
-        <p id="mob-user-name">Loading...</p>
-    </div>
-
-    <div id="mob-upgrade-alert" class="app-upgrade-msg">
-        <div data-i18n="dash_lock_msg" style="color: var(--danger); font-weight: 900; font-size: 13px;">⚠️ رصيدك منخفض، يرجى الترقية للاستمرار.</div>
-    </div>
-
-    <div class="app-grid">
-        <a href="/" class="app-tool-item" style="border-color: var(--primary); background: rgba(59,130,246,0.05);">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-            <span data-i18n="hero_btn">تحليل جديد</span>
-        </a>
-
-        <a href="/dashboard" class="app-tool-item">
-            <i class="fa-solid fa-gauge-high"></i>
-            <span data-i18n="nav_dashboard">القيادة</span>
-        </a>
-    </div>
-
-    <!-- بطاقة آخر تحليل تم إجراؤه -->
-    <div id="mob-ana-card" class="app-result-card">
-        <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); font-weight: 800; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
-            <span data-i18n="dash_history_title">آخر دراسة فنية</span>
-            <span id="mob-ana-time">--:--</span>
+    <!-- 1. قسم المراقبة (Radar) -->
+    <section id="tab-radar" class="tab-content" style="display: block;">
+        <div class="mobile-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: none;">
+            <h2 id="mob-user-welcome" style="margin:0; font-size: 20px; font-weight: 900;">أهلاً بك يا ملك 👑</h2>
+            <p style="margin:5px 0 0; color: var(--muted); font-size: 12px;">تغطية حية لكافة الأسواق العالمية</p>
         </div>
 
-        <!-- [تحديث] عرض الفريم الزمني المختار بجانب الإشارة -->
-        <div id="mob-ana-sig" class="sig-val">---</div>
-        <div id="mob-ana-tf" style="text-align: center; font-size: 12px; font-weight: 900; color: var(--primary); margin-bottom: 10px;"></div>
-
-        <div class="price-row">
-            <div class="p-box">
-                <span class="p-label">ENTRY</span>
-                <span id="mob-ana-ent" class="p-value">--</span>
-            </div>
-            <div class="p-box">
-                <span class="p-label" style="color:var(--success)">TARGET</span>
-                <span id="mob-ana-tp" class="p-value">--</span>
-            </div>
-            <div class="p-box">
-                <span class="p-label" style="color:var(--danger)">STOP</span>
-                <span id="mob-ana-sl" class="p-value">--</span>
+        <div class="mobile-card">
+            <h3><i class="fa-solid fa-dollar-sign"></i> FOREX LIVE WATCHLIST</h3>
+            <div style="height: 250px;">
+                <div class="tradingview-widget-container">
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+                    { "colorTheme": "dark", "showChart": false, "locale": "en", "width": "100%", "height": "100%", "isTransparent": true,
+                      "symbolsGroups": [{ "name": "Forex", "symbols": [{ "s": "FX:EURUSD" }, { "s": "FX:GBPUSD" }, { "s": "FX:USDJPY" }, { "s": "FX:AUDUSD" }, { "s": "FX:USDCAD" }]}] }
+                    </script>
+                </div>
             </div>
         </div>
-        
-        <div style="margin-top:15px; font-size:12px; line-height:1.5; color:#94a3b8; text-align:justify;" id="mob-ana-reason"></div>
-    </div>
 
+        <div class="mobile-card">
+            <h3><i class="fa-solid fa-chart-line"></i> GLOBAL MARKETS HUB</h3>
+            <div style="height: 250px;">
+                <div class="tradingview-widget-container">
+                    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+                    { "colorTheme": "dark", "showChart": false, "locale": "en", "width": "100%", "height": "100%", "isTransparent": true,
+                      "symbolsGroups": [{ "name": "Markets", "symbols": [{ "s": "FOREXCOM:SPX500" }, { "s": "FOREXCOM:NAS100" }, { "s": "TVC:GOLD" }, { "s": "TVC:USOIL" }, { "s": "NASDAQ:NVDA" }]}] }
+                    </script>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. غرفة العمليات (Analysis: Chart + AI) -->
+    <section id="tab-analysis" class="tab-content">
+        <div class="mobile-card" style="padding:0; height: 400px; overflow: hidden;">
+            <div id="tradingview_mobile_wrap" style="height: 100%;"></div>
+        </div>
+
+        <div class="mobile-card">
+            <h3><i class="fa-solid fa-robot"></i> KAIA AI ANALYZER</h3>
+            <div class="drop-zone-v2" id="drop-zone" style="padding: 30px; background: rgba(0,0,0,0.3); border-radius: 15px; text-align: center; border: 2px dashed rgba(59, 130, 246, 0.3);">
+                <h4 id="status-text" style="font-size: 14px; font-weight: 800;">إلصق صورة الشارت هنا 📸</h4>
+                <input type="file" id="chartUpload" style="display: none;" accept="image/*">
+            </div>
+            <div class="mobile-input-group" style="margin-top:15px;">
+                <label>الاستراتيجية</label>
+                <select id="strategy" class="mobile-input"><option value="SMC">SMC Concepts 💎</option><option value="Elliott Wave">Elliott Wave 🌊</option></select>
+            </div>
+            <button class="core-analyze-btn" id="run-btn" style="width:100%; height:55px; font-weight:900;">بدء التحليل الذكي</button>
+            <div id="result-box" style="display: none; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                <div id="res-data-content"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. الأدوات (Tools: Calculators) -->
+    <section id="tab-tools" class="tab-content">
+        <div class="mobile-card">
+            <h3><i class="fa-solid fa-shield-halved"></i> RISK & LOT CALCULATOR</h3>
+            <div class="mobile-input-group"><label>رأس المال ($)</label><input type="number" id="balance" class="mobile-input" placeholder="1000"></div>
+            <div class="mobile-input-group"><label>اللوت (Lot)</label><input type="number" id="risk-lot" class="mobile-input" placeholder="0.10"></div>
+            <div class="mobile-input-group"><label>وقف الخسارة (Pips)</label><input type="number" id="sl-pips-input" class="mobile-input" placeholder="20"></div>
+            <button class="core-analyze-btn" onclick="calculateRiskPercent()" style="width:100%; background: var(--primary); color:#fff;">حساب المخاطرة</button>
+            <div id="risk-result" style="margin-top:15px; text-align:center; font-weight:900; color:var(--primary);"></div>
+        </div>
+
+        <div class="mobile-card">
+            <h3><i class="fa-solid fa-pen-fancy"></i> TRADER NOTES</h3>
+            <textarea id="trader-notes" class="mobile-input" style="height: 150px; padding:15px;" placeholder="سجل خطتك هنا..."></textarea>
+        </div>
+    </section>
+
+    <!-- 4. الحساب (Account: Profile & King Status) -->
+    <section id="tab-account" class="tab-content">
+        <div class="mobile-card" style="text-align: center; border-color: var(--gold);">
+            <i class="fa-solid fa-crown" style="font-size: 60px; color: var(--gold); margin-bottom: 15px;"></i>
+            <h2 id="mob-user-name" style="font-weight: 900;">Loading...</h2>
+            <p style="color: var(--gold); font-weight: 800; font-size: 12px; letter-spacing: 2px;">INSTITUTIONAL KING STATUS</p>
+            
+            <div style="display: grid; gap: 10px; margin-top: 30px;">
+                <button class="wallet-btn" style="width:100%; height:55px;" onclick="window.location.href='/#pricing-section'">ترقية الحساب</button>
+                <button class="nav-btn-logout" style="width:100%; height:55px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444;" onclick="logoutApp()">تسجيل الخروج</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. السجل (History) -->
+    <section id="tab-history" class="tab-content">
+        <div class="mobile-card">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> RECENT ANALYSES</h3>
+            <div id="history-list-mobile">
+                <p style="text-align:center; color:var(--muted);">جاري جلب السجل...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- شريط التنقل السفلي -->
     <nav class="app-bottom-nav">
-        <a href="/" class="nav-link">
-            <i class="fa-solid fa-house"></i>
-            <span data-i18n="nav_home">الرئيسية</span>
-        </a>
-
-        <a href="/mobile" class="nav-link active">
-            <i class="fa-solid fa-robot"></i>
-            <span>KAIA AI</span>
-        </a>
-
-        <a href="/history" class="nav-link">
-            <i class="fa-solid fa-clock-rotate-left"></i>
-            <span data-i18n="dash_history_title">السجل</span>
-        </a>
-
-        <a href="https://wa.me/970594060648" class="nav-link">
-            <i class="fa-brands fa-whatsapp"></i>
-            <span data-i18n="footer_support">الدعم</span>
-        </a>
+        <div class="nav-link active" onclick="switchMobileAppTab('radar', this)"><i class="fa-solid fa-satellite-dish"></i><span>Radar</span></div>
+        <div class="nav-link" onclick="switchMobileAppTab('analysis', this)"><i class="fa-solid fa-chart-line"></i><span>War Room</span></div>
+        <div class="nav-link" onclick="switchMobileAppTab('tools', this)"><i class="fa-solid fa-calculator"></i><span>Tools</span></div>
+        <div class="nav-link" onclick="switchMobileAppTab('account', this)"><i class="fa-solid fa-crown"></i><span>King</span></div>
+        <div class="nav-link" onclick="switchMobileAppTab('history', this)"><i class="fa-solid fa-clock-rotate-left"></i><span>History</span></div>
     </nav>
 
     <script src="/static/translations.js"></script>
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
         const token = localStorage.getItem("token");
         let currentLang = localStorage.getItem("kaia_lang") || "ar";
 
-        function applyMobileI18n(lang) {
-            const dict = translations[lang];
-            if(!dict) return;
-            document.querySelectorAll("[data-i18n]").forEach(el => {
-                const key = el.getAttribute("data-i18n");
-                if(dict[key]) el.innerText = dict[key];
-            });
-            document.body.className = lang === "ar" ? "" : "ltr";
-            document.body.dir = lang === "ar" ? "rtl" : "ltr";
-            localStorage.setItem("kaia_lang", lang);
-        }
+        // 1. محرك التنقل بين التبويبات
+        window.switchMobileAppTab = function(tabId, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+            document.getElementById('tab-' + tabId).style.display = 'block';
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            el.classList.add('active');
+            window.scrollTo(0,0);
+            
+            // تهيئة الشارت عند فتح قسم التحليل لأول مرة
+            if(tabId === 'analysis' && !window.tvWidget) {
+                window.tvWidget = new TradingView.widget({
+                    "autosize": true, "symbol": "FX:EURUSD", "interval": "15", "theme": "dark", "container_id": "tradingview_mobile_wrap", "locale": "ar"
+                });
+            }
+        };
 
-        async function syncMobileUI() {
+        // 2. مزامنة البيانات والاشتراكات
+        async function syncMobileApp() {
             if(!token) { window.location.href = "/"; return; }
-            applyMobileI18n(currentLang);
-
             try {
-                // 1. جلب بيانات المستخدم
-                const uRes = await fetch("/api/me", { headers: { "Authorization": "Bearer " + token } });
-                const uData = await uRes.json();
-                if(uRes.ok) {
-                    document.getElementById("mob-user-name").innerText = uData.full_name;
-                    document.getElementById("cred-val").innerText = uData.credits;
-                    if(uData.credits <= 0 && !uData.is_whale) {
-                        document.getElementById("mob-upgrade-alert").style.display = "block";
-                    }
+                const res = await fetch("/api/me", { headers: { "Authorization": "Bearer " + token } });
+                const u = await res.json();
+                if(res.ok) {
+                    document.getElementById("cred-val").innerText = u.credits;
+                    document.getElementById("mob-user-name").innerText = u.full_name;
+                    document.getElementById("mob-user-welcome").innerText = (currentLang === 'ar' ? "أهلاً بك، " : "Welcome, ") + u.full_name + " 👑";
                 }
-
-                // 2. جلب آخر تحليل من السجل
-                const hRes = await fetch("/api/history", { headers: { "Authorization": "Bearer " + token } });
-                const hData = await hRes.json();
-                if(hRes.ok && hData.length > 0) {
-                    const last = hData[0];
-                    document.getElementById("mob-ana-card").style.display = "block";
-                    const sigEl = document.getElementById("mob-ana-sig");
-                    sigEl.innerText = last.signal;
-                    sigEl.className = "sig-val " + (last.signal.toLowerCase().includes("buy") ? "buy" : "sell");
-                    
-                    // عرض الفريم الزمني
-                    document.getElementById("mob-ana-tf").innerText = "TF: " + (last.timeframe || "---");
-                    
-                    document.getElementById("mob-ana-ent").innerText = last.entry || "---";
-                    document.getElementById("mob-ana-tp").innerText = last.tp || "---";
-                    document.getElementById("mob-ana-sl").innerText = last.sl || "---";
-                    document.getElementById("mob-ana-reason").innerText = last.reason.substring(0, 120) + "...";
-                    
-                    const d = new Date(last.created_at);
-                    document.getElementById("mob-ana-time").innerText = d.getHours() + ":" + d.getMinutes();
-                }
-            } catch(e) { console.error("Mobile Sync Error"); }
+                loadMobileHistory();
+            } catch(e) { console.error("Sync Error"); }
         }
+
+        // 3. جلب سجل التحليلات للجوال
+        async function loadMobileHistory() {
+            const hList = document.getElementById("history-list-mobile");
+            try {
+                const res = await fetch("/api/history", { headers: { "Authorization": "Bearer " + token } });
+                const data = await res.json();
+                if(res.ok && data.length > 0) {
+                    hList.innerHTML = data.map(item => `
+                        <div class="history-item">
+                            <div class="meta"><span>${item.symbol} [${item.timeframe}]</span><span>${new Date(item.created_at).toLocaleDateString()}</span></div>
+                            <div class="sig" style="color:${item.signal.toLowerCase().includes('buy') ? 'var(--success)' : 'var(--danger)'}">${item.signal}</div>
+                        </div>
+                    `).join("");
+                } else { hList.innerHTML = "<p>لا يوجد سجلات حتى الآن.</p>"; }
+            } catch(e) { hList.innerHTML = "<p>خطأ في جلب السجل.</p>"; }
+        }
+
+        function logoutApp() { localStorage.removeItem("token"); window.location.href = "/"; }
 
         document.getElementById("language-select").onchange = (e) => {
             localStorage.setItem("kaia_lang", e.target.value);
             location.reload();
         };
 
-        window.onload = syncMobileUI;
+        window.onload = syncMobileApp;
     </script>
 </body>
 </html>
