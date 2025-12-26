@@ -244,7 +244,7 @@ async function updateMarketSessions() {
         const isTodayHoliday = holidays.some(h => h.date === todayISO && h.country === s.country);
         
         let isOpen = false;
-        if (!isWeekend && !isTodayHoliday) {
+        if (!isWeekend) {
             if (s.start < s.end) {
                 isOpen = utcHour >= s.start && utcHour < s.end;
             } else {
