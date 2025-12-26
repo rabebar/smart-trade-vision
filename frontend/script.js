@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   KAIA AI × KAIA - MASTER FRONTEND ENGINE (Final Integrated)
+   KAIA AI - MASTER FRONTEND ENGINE (Final Integrated)
    Version: 7.2 - Stable Commercial Release
    ============================================================ */
 
@@ -46,12 +46,10 @@ function applyTranslations(lang) {
    3. إدارة شاشات التحميل والافتتاحية
    ------------------------------------------------------------ */
 function hidePreloader() {
-    // إخفاء شاشة الافتتاحية إذا تم رؤيتها مسبقاً
     if (sessionStorage.getItem("kaia_intro_seen")) {
         const intro = $("kaia-intro-overlay");
         if (intro) intro.style.display = "none";
     }
-    // إخفاء أي لودر عام
     const loaders = document.querySelectorAll('.preloader, .loader-wrapper, #preloader');
     loaders.forEach(l => l.style.display = "none");
 }
@@ -60,7 +58,6 @@ function runIntroSequence() {
     const overlay = $("kaia-intro-overlay");
     if (!overlay || sessionStorage.getItem("kaia_intro_seen")) return;
 
-    // [حقن] ضمان ترجمة واجهة الافتتاح فور تشغيلها بالإنجليزية أو العربية
     applyTranslations(currentLang);
 
     setTimeout(() => {
@@ -87,7 +84,6 @@ function runIntroSequence() {
 async function updateUIBasedOnAuth() {
     const authZone = $("auth-zone");
     const accessArea = $("access-control-area");
-    // [تحديث] استدعاء مساحة التجربة
     const demoArea = $("demo-analysis-area");
 
     if (!authZone) return;
@@ -103,18 +99,17 @@ async function updateUIBasedOnAuth() {
             if (res.ok) {
                 currentUserData = await res.json();
                 
-                // --- [تعديل المنطق المطلوب] التحكم في ظهور صندوق التحليل في الصفحة الرئيسية ---
+                // --- [حقن التعديل المطلوب] التحكم في ظهور صندوق التحليل في الصفحة الرئيسية ---
                 if (demoArea) {
-                    // الصندوق يظهر فقط في الصفحة الرئيسية لحساب Trial فقط
+                    // يظهر الصندوق فقط وحصرياً لباقة Trial
                     if (currentUserData.tier === "Trial") {
                         demoArea.style.display = "block";
                     } else {
-                        // يختفي للباقات المدفوعة لأن الصندوق موجود عندهم في الداشبورد
+                        // يختفي للباقات المدفوعة (Basic, Pro, Platinum) لأن لديهم محركاً في الداشبورد
                         demoArea.style.display = "none";
                     }
                 }
 
-                // --- [إضافة منطق زر الإدارة المتطور] ---
                 let adminBtn = "";
                 if (currentUserData.is_admin === true) {
                     adminBtn = `
@@ -143,7 +138,6 @@ async function updateUIBasedOnAuth() {
                     </div>
                 `;
 
-                // حجب زر الدخول للداشبورد عن مستخدمي Trial
                 if (accessArea) {
                     if (currentUserData.tier !== "Trial" || currentUserData.is_admin === true) {
                         accessArea.style.display = "block";
@@ -168,12 +162,12 @@ async function updateUIBasedOnAuth() {
     authZone.innerHTML = `<button class="wallet-btn" id="open-auth-btn"><i class="fa-solid fa-user-circle"></i> ${dict.nav_login || 'Login'}</button>`;
     if (accessArea) accessArea.style.display = "none";
     
-    // --- [تعديل المنطق المطلوب] إخفاء صندوق التحليل عن الزوار دائماً قبل الدخول ---
+    // --- [حقن التعديل المطلوب] إخفاء صندوق التحليل عن الزوار دائماً قبل تسجيل الدخول ---
     if (demoArea) demoArea.style.display = "none";
     
     if ($("open-auth-btn")) {
         $("open-auth-btn").onclick = () => { 
-            isRegisterMode = false; // الوضع الافتراضي عند الفتح هو الدخول
+            isRegisterMode = false; 
             updateAuthModalState(); 
             $("auth-modal").style.display = "flex"; 
         };
@@ -188,7 +182,6 @@ function toggleAuthMode() {
 function updateAuthModalState() {
     const dict = (typeof translations !== 'undefined') ? translations[currentLang] : {};
     
-    // التحكم في ظهور واختفاء الحقول بناءً على الوضع (تسجيل أو دخول)
     const fields = ["name-field-wrap", "whatsapp-field-wrap", "country-field-wrap"];
     fields.forEach(id => { 
         if($(id)) $(id).style.display = isRegisterMode ? "block" : "none"; 
@@ -198,12 +191,10 @@ function updateAuthModalState() {
     if ($("auth-submit-btn")) $("auth-submit-btn").innerText = isRegisterMode ? (dict.auth_submit || "Confirm") : (dict.nav_login || "Login");
     if ($("auth-toggle-text")) $("auth-toggle-text").innerText = isRegisterMode ? (dict.auth_toggle_login || "Login") : (dict.auth_toggle_reg || "Register");
 
-    // [حقن] حقن واجهة البنك والاشتراك عند اختيار باقة مدفوعة
     const paymentSection = $("payment-info-section");
-    const authSide = $("auth-side-container"); // تم استعادة هذا المتغير
+    const authSide = $("auth-side-container");
 
     if (paymentSection) {
-        // [حقن تصحيح] إذا كان المستخدم مسجلاً دخولاً، نظهر له البنك مباشرة ونخفي نموذج التسجيل
         if (authToken && selectedPlan.name !== "Trial") {
             if (authSide) authSide.style.display = "none"; 
             paymentSection.style.display = "block";
@@ -240,7 +231,6 @@ function updateAuthModalState() {
 }
 
 async function handleAuthSubmit() {
-    // [حقن تصحيح] تنظيف الإيميل
     const rawEmail = $("auth-email")?.value || "";
     const email = rawEmail.trim().toLowerCase();
     const pass = $("auth-pass")?.value;
@@ -252,8 +242,6 @@ async function handleAuthSubmit() {
 
     try {
         if (isRegisterMode) {
-            
-            // --- [منطق التسجيل مع الباقة المختارة] ---
             const res = await fetch("/api/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -264,7 +252,7 @@ async function handleAuthSubmit() {
                     phone: "000",
                     whatsapp: $("auth-whatsapp").value || "",
                     country: $("auth-country").value || "Global",
-                    tier: selectedPlan.name // إرسال الباقة المختارة للسيرفر
+                    tier: selectedPlan.name 
                 })
             });
             
@@ -279,7 +267,6 @@ async function handleAuthSubmit() {
             }
             
         } else {
-            // --- [منطق تسجيل الدخول] ---
             const fd = new FormData();
             fd.append("username", email);
             fd.append("password", pass);
@@ -304,11 +291,9 @@ async function handleAuthSubmit() {
    ------------------------------------------------------------ */
 async function fetchMarketNews() {
     try {
-        // [حقن] إرسال اللغة الحالية للسيرفر ليجلب أخباراً متوافقة (AR أو EN)
         const res = await fetch(`/api/news?lang=${currentLang}`);
         const data = await res.json();
         if (data.news && $("news-ticker-v2")) {
-            // تكرار الأخبار لضمان ملء الشريط بالكامل
             $("news-ticker-v2").innerText = (data.news + "  ★  ").repeat(4);
         }
     } catch (e) { 
@@ -326,7 +311,6 @@ function initUploadEngine() {
 
     dropZone.onclick = () => fileInput.click();
     
-    // تأثيرات السحب والإفلات (Drag & Drop)
     dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.borderColor = "var(--primary)"; };
     dropZone.ondragleave = () => { dropZone.style.borderColor = "var(--border)"; };
     dropZone.ondrop = (e) => {
@@ -337,7 +321,6 @@ function initUploadEngine() {
         }
     };
 
-    // ميزة اللصق المباشرة (Direct Paste)
     document.addEventListener('paste', (e) => {
         const item = Array.from(e.clipboardData.items).find(x => x.type.indexOf("image") !== -1);
         if (item) {
@@ -362,7 +345,6 @@ function initUploadEngine() {
 }
 
 async function runDemoAnalysis() {
-    // التحقق من وجود توكن (يجب أن يكون مسجلاً حتى لو Trial)
     if (!authToken) { 
         alert(currentLang === 'ar' ? "يرجى تسجيل الدخول أو إنشاء حساب مجاني للتجربة" : "Please login or register to try"); 
         isRegisterMode = false;
@@ -370,7 +352,6 @@ async function runDemoAnalysis() {
         return $("auth-modal").style.display="flex"; 
     }
 
-    // --- [تحديث] منع التحليل إذا كان الرصيد صفراً لمستخدمي Trial ---
     if (currentUserData && currentUserData.tier === "Trial" && currentUserData.credits <= 0 && !currentUserData.is_admin) {
         alert(currentLang === 'ar' ? "لقد استنفدت جميع التحليلات المجانية المتاحة لك (3/3). يرجى ترقية باقتك للاستمرار." : "You have exhausted all free analyses (3/3). Please upgrade your plan to continue.");
         return;
@@ -384,18 +365,15 @@ async function runDemoAnalysis() {
     btn.innerText = "KAIA ANALYZING...";
 
     try {
-        // الخطوة 1: رفع الصورة
         const upFd = new FormData(); 
         upFd.append("chart", fileInput.files[0]);
         const uploadRes = await fetch("/api/upload-chart", { method: "POST", body: upFd });
         const { filename } = await uploadRes.json();
 
-        // الخطوة 2: طلب التحليل بمسميات السيرفر الجديدة
         const anFd = new FormData();
         anFd.append("filename", filename);
         anFd.append("timeframe", $("timeframe").value);
         anFd.append("analysis_type", $("strategy").value);
-        // [تحديث] إرسال اللغة الحالية المختارة لترجمة النتائج
         anFd.append("lang", currentLang);
 
         const res = await fetch("/api/analyze-chart", { 
@@ -408,13 +386,10 @@ async function runDemoAnalysis() {
         
         if (!res.ok) throw new Error(data.detail);
 
-        // تحديث الرصيد محلياً فور النجاح
         if (currentUserData) currentUserData.credits = data.remaining_credits;
 
-        // إظهار النتائج باستخدام signal و reason لضمان التوافق
         $("result-box").style.display = "block";
 
-        // ===================== [تحديث نظام عرض النتائج المترجمة] =====================
         const analysis = (data && typeof data.analysis === "object" && data.analysis) ? data.analysis : null;
 
         const signalText = (analysis && typeof analysis.market_bias === "string")
@@ -437,8 +412,6 @@ async function runDemoAnalysis() {
         const biasClass = safeSignal.toLowerCase().includes('buy')
             ? 'bullish-glow'
             : (safeSignal.toLowerCase().includes('sell') ? 'bearish-glow' : '');
-        // =================== [نهاية تحديث العرض] ===================
-
         
         $("res-data-content").innerHTML = `
             <div class="analysis-result-card ${biasClass}">
@@ -462,7 +435,6 @@ async function runDemoAnalysis() {
     } finally { 
         btn.disabled = false; 
         btn.innerText = "Analyze Now"; 
-        // تحديث واجهة الرصيد فوراً
         updateUIBasedOnAuth();
     }
 }
@@ -472,14 +444,11 @@ async function runDemoAnalysis() {
    ------------------------------------------------------------ */
 window.onload = async () => {
     try {
-        // تهيئة اللغات والافتتاحية
         applyTranslations(currentLang);
         runIntroSequence();
         
-        // تحديث الواجهة بناءً على حالة الدخول
         await updateUIBasedOnAuth();
 
-        // ربط أحداث العناصر (Events)
         if ($("language-select")) {
             $("language-select").onchange = (e) => { 
                 applyTranslations(e.target.value); 
@@ -492,37 +461,25 @@ window.onload = async () => {
         if ($("close-modal")) $("close-modal").onclick = () => $("auth-modal").style.display = "none";
         if ($("run-btn")) $("run-btn").onclick = runDemoAnalysis;
 
-        // ربط أزرار الباقات في صفحة الأسعار
         document.querySelectorAll(".plan-btn").forEach(btn => {
             btn.onclick = () => {
                 selectedPlan = { 
                     name: btn.getAttribute("data-plan"), 
                     price: btn.getAttribute("data-price") 
                 };
-                
-                // [حقن تصحيح] إذا كان مسجلاً دخولاً، يظهر له البنك فوراً
                 if (authToken) { isRegisterMode = false; } else { isRegisterMode = true; }
-                
                 updateAuthModalState();
                 $("auth-modal").style.display = "flex";
             };
         });
 
-        // تشغيل محركات الواجهة
         initUploadEngine();
         fetchMarketNews();
-        
-        // تحديث الأخبار دورياً كل 5 دقائق
         setInterval(fetchMarketNews, 300000);
         
     } catch (err) { 
         console.error("Critical Initialization Error:", err); 
     } finally { 
-        // إخفاء شاشة التحميل بعد الانتهاء
         setTimeout(hidePreloader, 800); 
     }
 };
-
-/* ============================================================
-   END OF MASTER SCRIPT ENGINE V7.3 [FINAL FIXED INJECTED]
-   ============================================================ */
