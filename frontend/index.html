@@ -270,25 +270,70 @@
             text-transform: uppercase;
         }
 
-        /* تنسيق مسميات أشرطة الأسعار */
-        .ticker-label 
-        {
-            background: #050b14;
-            color: var(--primary);
-            font-size: 12px;
-            font-weight: 900;
-            padding: 5px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+   <!-- =========================================================
+     4. أشرطة الأسعار العالمية الموسعة (Multi-Market Hub)
+     ========================================================= -->
 
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
-    </style>
-</head>
-<body>
+<!-- 1. شريط الفوركس المؤسسي -->
+<div class="ticker-wrapper-v3">
+    <div class="ticker-label-v3 bg-forex">FOREX</div>
+    <div class="ticker-content-v3">
+        <div class="tradingview-widget-container">
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+            {
+              "symbols": [
+                { "proName": "FX:EURUSD", "title": "EUR/USD" },
+                { "proName": "FX:GBPUSD", "title": "GBP/USD" },
+                { "proName": "FX:USDJPY", "title": "USD/JPY" },
+                { "proName": "FX:AUDUSD", "title": "AUD/USD" },
+                { "proName": "FX:USDCAD", "title": "USD/CAD" },
+                { "proName": "FX:USDCHF", "title": "USD/CHF" },
+                { "proName": "FX:NZDUSD", "title": "NZD/USD" },
+                { "proName": "FX:EURGBP", "title": "EUR/GBP" },
+                { "proName": "FX:EURJPY", "title": "EUR/JPY" }
+              ],
+              "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "en"
+            }
+            </script>
+        </div>
+    </div>
+</div>
+
+<!-- 2. شريط الأسهم والمؤشرات والسلع (قائمة ضخمة) -->
+<div class="ticker-wrapper-v3">
+    <div class="ticker-label-v3 bg-markets">MARKETS</div>
+    <div class="ticker-content-v3">
+        <div class="tradingview-widget-container">
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+            {
+              "symbols": [
+                { "proName": "FOREXCOM:SPX500", "title": "S&P 500" },
+                { "proName": "FOREXCOM:NAS100", "title": "Nasdaq 100" },
+                { "proName": "FOREXCOM:DJI", "title": "Dow Jones 30" },
+                { "proName": "INDEX:DAX", "title": "DAX 40" },
+                { "proName": "INDEX:FTSE100", "title": "FTSE 100" },
+                { "proName": "INDEX:NI225", "title": "Nikkei 225" },
+                { "proName": "TVC:GOLD", "title": "GOLD" },
+                { "proName": "TVC:SILVER", "title": "SILVER" },
+                { "proName": "TVC:USOIL", "title": "CRUDE OIL" },
+                { "proName": "TVC:UKOIL", "title": "BRENT OIL" },
+                { "proName": "NASDAQ:AAPL", "title": "Apple" },
+                { "proName": "NASDAQ:MSFT", "title": "Microsoft" },
+                { "proName": "NASDAQ:NVDA", "title": "NVIDIA" },
+                { "proName": "NASDAQ:TSLA", "title": "Tesla" },
+                { "proName": "NASDAQ:AMZN", "title": "Amazon" },
+                { "proName": "NASDAQ:GOOGL", "title": "Alphabet" },
+                { "proName": "NASDAQ:META", "title": "Meta" },
+                { "proName": "NASDAQ:NFLX", "title": "Netflix" },
+                { "proName": "NYSE:JPM", "title": "JP Morgan" },
+                { "proName": "NYSE:V", "title": "Visa" }
+              ],
+              "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "en"
+            }
+            </script>
+        </div>
+    </div>
+</div>
 
 <!-- =========================================================
      1. واجهة الاستقبال ثنائية اللغة (Fixed & Bilingual)
@@ -384,15 +429,11 @@
 </header>
 
 <!-- =========================================================
-     4. أشرطة الأسعار العالمية الموسعة (Professional Market Hub)
+     4. أشرطة الأسعار العالمية (Global Multi-Market Tickers)
      ========================================================= -->
-
-<!-- 1. شريط الفوركس المؤسسي (Institutional Forex Hub) -->
-<div class="ticker-label" style="background: #0f172a; color: #3b82f6; border-top: 1px solid #1e293b; padding: 10px 25px;">
-    <i class="fa-solid fa-earth-americas"></i> 
-    <span style="margin-right: 10px; letter-spacing: 1px;">INSTITUTIONAL FOREX HUB</span>
-</div>
-<div class="ticker-box" style="border-bottom: 2px solid rgba(59, 130, 246, 0.2); height: 50px;">
+<!-- 1. Forex Label & Ticker -->
+<div class="ticker-label"><i class="fa-solid fa-dollar-sign"></i> GLOBAL FOREX MARKETS</div>
+<div class="ticker-box" style="border-bottom: 1px solid rgba(59, 130, 246, 0.1);">
     <div class="tradingview-widget-container">
         <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
         {
@@ -402,11 +443,7 @@
             { "proName": "FX:USDJPY", "title": "USD/JPY" },
             { "proName": "FX:AUDUSD", "title": "AUD/USD" },
             { "proName": "FX:USDCAD", "title": "USD/CAD" },
-            { "proName": "FX:USDCHF", "title": "USD/CHF" },
-            { "proName": "FX:NZDUSD", "title": "NZD/USD" },
-            { "proName": "FX:EURGBP", "title": "EUR/GBP" },
-            { "proName": "FX:EURJPY", "title": "EUR/JPY" },
-            { "proName": "FX:GBPJPY", "title": "GBP/JPY" }
+            { "proName": "FX:USDCHF", "title": "USD/CHF" }
           ],
           "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "en"
         }
@@ -414,37 +451,20 @@
     </div>
 </div>
 
-<!-- 2. شريط الأسهم والمؤشرات والسلع (Global Stocks, Indices & Commodities) -->
-<div class="ticker-label" style="background: #0f172a; color: #10b981; padding: 10px 25px;">
-    <i class="fa-solid fa-chart-line"></i> 
-    <span style="margin-right: 10px; letter-spacing: 1px;">GLOBAL STOCKS, INDICES & COMMODITIES</span>
-</div>
-<div class="ticker-box" style="height: 50px;">
+<!-- 2. Stocks/Futures Label & Ticker -->
+<div class="ticker-label" style="color: var(--success);"><i class="fa-solid fa-chart-line"></i> STOCKS, INDICES & COMMODITIES</div>
+<div class="ticker-box">
     <div class="tradingview-widget-container">
         <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
         {
           "symbols": [
-            { "proName": "FOREXCOM:SPX500", "title": "S&P 500 Index" },
+            { "proName": "FOREXCOM:SPX500", "title": "S&P 500" },
             { "proName": "FOREXCOM:NAS100", "title": "Nasdaq 100" },
             { "proName": "FOREXCOM:DJI", "title": "Dow Jones 30" },
-            { "proName": "INDEX:DAX", "title": "DAX 40 (Germany)" },
-            { "proName": "INDEX:FTSE100", "title": "FTSE 100 (UK)" },
-            { "proName": "INDEX:NI225", "title": "Nikkei 225 (Japan)" },
-            { "proName": "TVC:GOLD", "title": "GOLD (Spot)" },
-            { "proName": "TVC:SILVER", "title": "SILVER" },
-            { "proName": "TVC:USOIL", "title": "WTI CRUDE OIL" },
-            { "proName": "TVC:UKOIL", "title": "BRENT OIL" },
-            { "proName": "NASDAQ:AAPL", "title": "Apple Inc." },
-            { "proName": "NASDAQ:MSFT", "title": "Microsoft" },
-            { "proName": "NASDAQ:NVDA", "title": "NVIDIA Corp" },
-            { "proName": "NASDAQ:TSLA", "title": "Tesla Motors" },
-            { "proName": "NASDAQ:AMZN", "title": "Amazon.com" },
-            { "proName": "NASDAQ:GOOGL", "title": "Alphabet (Google)" },
-            { "proName": "NASDAQ:META", "title": "Meta (Facebook)" },
-            { "proName": "NASDAQ:NFLX", "title": "Netflix" },
-            { "proName": "NYSE:JPM", "title": "JP Morgan Chase" },
-            { "proName": "NYSE:V", "title": "Visa Inc." },
-            { "proName": "NYSE:BRK.B", "title": "Berkshire Hathaway" }
+            { "proName": "TVC:GOLD", "title": "GOLD" },
+            { "proName": "TVC:USOIL", "title": "CRUDE OIL" },
+            { "proName": "NASDAQ:TSLA", "title": "TESLA" },
+            { "proName": "NASDAQ:NVDA", "title": "NVIDIA" }
           ],
           "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "en"
         }

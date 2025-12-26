@@ -267,3 +267,43 @@ body {
 }
 
 @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+/* --- تنسيق حاوية الشريط الموحدة (FOREX & MARKETS) --- */
+.ticker-wrapper-v3 {
+    background-color: #131722;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #2a2e39;
+    overflow: hidden;
+    position: relative;
+}
+
+/* --- تنسيق الليبل الثابت الملون --- */
+.ticker-label-v3 {
+    color: #ffffff;
+    padding: 0 20px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    font-weight: 900;
+    font-size: 14px;
+    z-index: 100;
+    box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+    white-space: nowrap;
+    min-width: 110px;
+    justify-content: center;
+    letter-spacing: 1px;
+}
+
+/* --- لون مخصص لليبل الفوركس --- */
+.bg-forex { background-color: #3b82f6; }
+
+/* --- لون مخصص لليبل الأسهم --- */
+.bg-markets { background-color: #10b981; }
+
+/* --- حاوية محتوى الشريط --- */
+.ticker-content-v3 {
+    flex: 1;
+    overflow: hidden;
+    height: 100%;
+}
