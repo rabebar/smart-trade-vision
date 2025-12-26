@@ -198,30 +198,53 @@ window.resetWorkspace = function() {
 };
 
 /* =======================
-   منطق جلسات التداول
+   منطق جلسات التداول الذكي (ربط تلقائي بأجندة العطلات العالمية API)
    ======================= */
-function updateMarketSessions() {
+async function updateMarketSessions() {
     const now = new Date();
     const utcHour = now.getUTCHours();
-    const utcDay = now.getUTCDay(); // 0=Sunday, 6=Saturday
+    const utcDay = now.getUTCDay();
+    const year = now.getFullYear();
+    const todayISO = now.toISOString().split('T')[0]; // صيغة YYYY-MM-DD
+
+    // 1. جلب العطلات من API عالمي (مرة واحدة يومياً وتخزينها في المتصفح)
+    let holidays = JSON.parse(localStorage.getItem('kaia_holidays') || '[]');
+    const lastFetch = localStorage.getItem('kaia_holiday_last_fetch');
+
+    if (!lastFetch || lastFetch !== todayISO) {
+        try {
+            const countryCodes = ['AU', 'JP', 'GB', 'US'];
+            let fetchedHolidays = [];
+
+            for (let code of countryCodes) {
+                const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${code}`);
+                const data = await res.json();
+                fetchedHolidays.push(...data.map(h => ({ date: h.date, country: code })));
+            }
+            localStorage.setItem('kaia_holidays', JSON.stringify(fetchedHolidays));
+            localStorage.setItem('kaia_holiday_last_fetch', todayISO);
+            holidays = fetchedHolidays;
+        } catch (e) { console.error("Holiday API Link Error"); }
+    }
 
     const sessions = [
-        { id: "session-sydney", start: 22, end: 7 },
-        { id: "session-tokyo", start: 0, end: 9 },
-        { id: "session-london", start: 8, end: 17 },
-        { id: "session-newyork", start: 13, end: 22 }
+        { id: "session-sydney", start: 22, end: 7, country: 'AU' },
+        { id: "session-tokyo", start: 0, end: 9, country: 'JP' },
+        { id: "session-london", start: 8, end: 17, country: 'GB' },
+        { id: "session-newyork", start: 13, end: 22, country: 'US' }
     ];
+
+    const isWeekend = (utcDay === 6) || (utcDay === 0 && utcHour < 22) || (utcDay === 5 && utcHour >= 22);
 
     sessions.forEach(s => {
         const el = $(s.id);
         if (!el) return;
 
-        let isOpen = false;
+        // [الذكاء] التحقق إذا كان اليوم عطلة رسمية "في دولة البورصة المحددة فقط"
+        const isTodayHoliday = holidays.some(h => h.date === todayISO && h.country === s.country);
         
-        // [حقن تصحيح] التحقق من العطلة الأسبوعية (السبت والأحد)
-        const isWeekend = (utcDay === 6) || (utcDay === 0 && utcHour < 22) || (utcDay === 5 && utcHour >= 22);
-
-        if (!isWeekend) {
+        let isOpen = false;
+        if (!isWeekend && !isTodayHoliday) {
             if (s.start < s.end) {
                 isOpen = utcHour >= s.start && utcHour < s.end;
             } else {

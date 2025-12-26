@@ -623,5 +623,56 @@
 <style>
 @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
 </style>
+<!-- KAIA AI Seasonal Celebration Pack (Santa Hat & Snow) -->
+<style id="seasonal-styles">
+    /* طاقية سانتا على حرف K */
+    .santa-k { position: relative; display: inline-block; }
+    .santa-k::before {
+        content: '🎅'; position: absolute; top: -35px; left: -10px;
+        font-size: 35px; transform: rotate(-20deg); z-index: 10;
+    }
+    /* تأثير الثلج */
+    .snowflake {
+        position: fixed; top: -10px; color: #fff; font-size: 1em;
+        user-select: none; z-index: 10000; pointer-events: none;
+        animation: fall linear forwards;
+    }
+    @keyframes fall { to { transform: translateY(105vh); } }
+</style>
+
+<script id="seasonal-script">
+    (function() {
+        const now = new Date();
+        const expiryDate = new Date('2026-01-06'); // تنتهي في 5 يناير (بداية 6 يناير)
+
+        if (now < expiryDate) {
+            // 1. إضافة الطاقية لحرف K في شاشة الافتتاحية
+            const introTitle = document.querySelector('#intro-reveal h1');
+            if (introTitle) {
+                const text = introTitle.innerHTML;
+                if (text.startsWith('K')) {
+                    introTitle.innerHTML = '<span class="santa-k">K</span>' + text.substring(1);
+                }
+            }
+
+            // 2. محرك هبوط الثلج خفيف الوزن
+            setInterval(() => {
+                const flake = document.createElement('div');
+                flake.innerHTML = '•';
+                flake.className = 'snowflake';
+                flake.style.left = Math.random() * 100 + 'vw';
+                flake.style.opacity = Math.random();
+                flake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+                flake.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                document.body.appendChild(flake);
+                setTimeout(() => flake.remove(), 5000);
+            }, 300);
+        } else {
+            // إزالة الأكواد تلقائياً بعد التاريخ المحدد لتوفير الأداء
+            document.getElementById('seasonal-styles')?.remove();
+            document.getElementById('seasonal-script')?.remove();
+        }
+    })();
+</script>
 </body>
 </html>
