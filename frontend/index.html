@@ -70,16 +70,6 @@
             order: 2;
         }
 
-        body.ltr .news-label-v2 
-        {
-            order: 1;
-        }
-
-        body.ltr .news-marquee-v2 
-        {
-            order: 2;
-        }
-
         /* تنسيقات كروت الباقات الفردية */
         .price-card.trial 
         { 
@@ -143,70 +133,6 @@
             font-weight: 900;
             margin-bottom: 40px;
             text-align: center;
-        }
-
-        /* تنسيق شريط الأخبار المطور والمعدل لضمان عدم الانقطاع */
-        .news-bar-v2 
-        {
-            background-color: #131722;
-            height: 46px;
-            display: flex;
-            align-items: center;
-            border-bottom-width: 1px;
-            border-bottom-style: solid;
-            border-bottom-color: #2a2e39;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .news-label-v2 
-        {
-            background-color: #ff3131;
-            color: #ffffff;
-            padding-left: 15px;
-            padding-right: 15px;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            font-weight: 900;
-            font-size: 14px;
-            z-index: 10;
-            box-shadow: 5px 0px 15px rgba(0,0,0,0.5);
-            white-space: nowrap;
-        }
-
-        .news-marquee-v2 
-        {
-            flex: 1;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            position: relative;
-            direction: ltr !important;
-
-        }
-
-        /* تثبيت السرعة 120 والاتجاه من اليسار إلى اليمين ومعالجة الاختفاء */
-        #news-ticker-v2 {
-            display: inline-block;
-            white-space: nowrap;
-            color: #ffffff;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            padding: 0;
-            margin: 0;
-            animation: scroll-news-ltr 120s linear infinite;
-        }
-
-        #news-ticker-v2:hover {
-            animation-play-state: paused;
-        }
-
-        /* الحركة المحسنة: تبدأ من خارج الشاشة يساراً وتتحرك لليمين */
-        @keyframes scroll-news-ltr {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100vw); }
         }
 
         /* الجملة التحفيزية المتوسطة الفخمة */
@@ -343,6 +269,8 @@
             margin-right: 10px;
             text-transform: uppercase;
         }
+
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -441,32 +369,46 @@
 </header>
 
 <!-- =========================================================
-     4. أشرطة الأسعار والأخبار (Tickers)
+     4. أشرطة الأسعار العالمية (Global Market Tickers - No Crypto)
      ========================================================= -->
-<div class="ticker-box">
+<!-- Forex Ticker (English) -->
+<div class="ticker-box" style="border-bottom: 1px solid rgba(59, 130, 246, 0.2);">
     <div class="tradingview-widget-container">
         <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
         {
           "symbols": [
-            { "proName": "BITSTAMP:BTCUSD", "title": "BTC/USD" },
-            { "proName": "OANDA:XAUUSD", "title": "الذهب" },
             { "proName": "FX:EURUSD", "title": "EUR/USD" },
-            { "proName": "BITSTAMP:ETHUSD", "title": "Ethereum" },
-            { "proName": "CAPITALCOM:DXY", "title": "مؤشر الدولار" }
+            { "proName": "FX:GBPUSD", "title": "GBP/USD" },
+            { "proName": "FX:USDJPY", "title": "USD/JPY" },
+            { "proName": "FX:AUDUSD", "title": "AUD/USD" },
+            { "proName": "FX:USDCAD", "title": "USD/CAD" },
+            { "proName": "FX:USDCHF", "title": "USD/CHF" },
+            { "proName": "FX:NZDUSD", "title": "NZD/USD" }
           ],
-          "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "ar"
+          "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "en"
         }
         </script>
     </div>
 </div>
 
-<div class="news-bar-v2">
-    <div class="news-label-v2" data-i18n="news_bar_label">نبض الاقتصاد مباشر</div>
-    <div class="news-marquee-v2">
-        <!-- شريط الأخبار يسير الآن من اليسار لليمين بسرعة هادئة 120 ثانية -->
-        <div id="news-ticker-v2">
-            جاري جلب نبض الاقتصاد مباشر من الأسواق العالمية...
-        </div>
+<!-- Stocks, Indices & Commodities Ticker (English) -->
+<div class="ticker-box">
+    <div class="tradingview-widget-container">
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+        {
+          "symbols": [
+            { "proName": "FOREXCOM:SPX500", "title": "S&P 500" },
+            { "proName": "FOREXCOM:NAS100", "title": "Nasdaq 100" },
+            { "proName": "FOREXCOM:DJI", "title": "Dow Jones 30" },
+            { "proName": "TVC:GOLD", "title": "GOLD" },
+            { "proName": "TVC:USOIL", "title": "CRUDE OIL" },
+            { "proName": "NASDAQ:AAPL", "title": "APPLE" },
+            { "proName": "NASDAQ:TSLA", "title": "TESLA" },
+            { "proName": "NASDAQ:NVDA", "title": "NVIDIA" }
+          ],
+          "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "en"
+        }
+        </script>
     </div>
 </div>
 
@@ -620,18 +562,7 @@
 <script src="/static/translations.js"></script>
 <script src="/static/script.js"></script>
 
-<style>
-@keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
-</style>
 <!-- KAIA AI Seasonal Celebration Pack (Santa Hat & Snow) -->
-<style id="seasonal-styles">
-    /* طاقية سانتا على حرف K */
-    .santa-k { position: relative; display: inline-block; }
-    .santa-k::before {
-        content: '🎅'; position: absolute; top: -35px; left: -10px;
-        font-size: 35px; transform: rotate(-20deg); z-index: 10;
-    }
-   <!-- KAIA AI Seasonal Celebration Pack (Santa Hat & Snow) -->
 <style id="seasonal-styles">
     /* تصميم طاقية سانتا احترافية (SVG) بدون وجه */
     .santa-k { position: relative; display: inline-block; }
@@ -686,5 +617,6 @@
         }
     })();
 </script>
+
 </body>
 </html>
