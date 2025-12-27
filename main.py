@@ -13,7 +13,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 
 # =========================================================
-# ENV + DB
+# 1. ENV + DB Setup
 # =========================================================
 load_dotenv()
 
@@ -21,7 +21,7 @@ from database import SessionLocal, User, Analysis
 import schemas
 
 # =========================================================
-# Security & AI
+# 2. Security & AI Configuration
 # =========================================================
 SECRET_KEY = os.getenv("SECRET_KEY", "KAIA_ULTIMATE_SEC_2025")
 ALGORITHM = "HS256"
@@ -33,7 +33,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 app = FastAPI(title="KAIA AI – Institutional Analyst Engine")
 
 # =========================================================
-# CORS + Static
+# 3. CORS & Static Folders (The Logo Fix)
 # =========================================================
 app.add_middleware(
     CORSMiddleware,
@@ -43,14 +43,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# إنشاء مجلد الصور المرفوعة
 os.makedirs("images", exist_ok=True)
 app.mount("/images", StaticFiles(directory="images"), name="images")
 
-if os.path.exists("frontend"):
-    app.mount("/static", StaticFiles(directory="frontend"), name="static")
+# [حقن ذكي] حل مشكلة المجلد static vs statics لظهور اللوجو
+# يبحث السيرفر عن المجلد الصحيح ويربطه برابط موحد /static
+current_static_path = "frontend/static"
+if not os.path.exists(current_static_path):
+    if os.path.exists("frontend/statics"):
+        current_static_path = "frontend/statics"
+    else:
+        os.makedirs(current_static_path, exist_ok=True)
+
+app.mount("/static", StaticFiles(directory=current_static_path), name="static")
 
 # =========================================================
-# Helpers
+# 4. Helpers
 # =========================================================
 def get_db():
     db = SessionLocal()
@@ -75,7 +84,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise HTTPException(status_code=401, detail="انتهت الجلسة")
 
 # =========================================================
-# News (Bilingual Support: AR/EN)
+# 5. News Logic (Bilingual Support)
 # =========================================================
 @app.get("/api/news")
 def get_news(lang: str = "ar"):
@@ -100,7 +109,7 @@ def get_news(lang: str = "ar"):
         return {"news": err_msg}
 
 # =========================================================
-# Auth System
+# 6. Authentication System
 # =========================================================
 @app.post("/api/register", response_model=schemas.UserOut)
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
@@ -143,7 +152,7 @@ def me(current_user: User = Depends(get_current_user)):
         return current_user
 
 # =========================================================
-# Admin Operations
+# 7. Admin Operations
 # =========================================================
 @app.get("/api/admin/users")
 def admin_get_users(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -181,7 +190,7 @@ def admin_delete_user(user_id: int, current_user: User = Depends(get_current_use
     return {"status": "success"}
 
 # =========================================================
-# KAIA Descriptive Analysis Engine
+# 8. KAIA AI Analysis Engine (With Anti-Disconnect Fix)
 # =========================================================
 @app.post("/api/analyze-chart")
 async def analyze_chart(
@@ -217,7 +226,7 @@ async def analyze_chart(
 JSON ONLY: market_bias, market_phase, opportunity_context, analysis_text, risk_note, confidence
 Language: {target_lang}
 """
-
+        # [حقن حماية] إضافة timeout=60 لمنع Lost Connection في اللابتوب
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -225,13 +234,14 @@ Language: {target_lang}
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": f"حلل هذا الشارت على الإطار {timeframe} باستخدام {analysis_type}."},
+                        {"type": "text", "text": f"Analyze this chart on {timeframe} using {analysis_type}."},
                         {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{base64_image}"}}
                     ]
                 }
             ],
             response_format={"type": "json_object"},
-            temperature=0.3
+            temperature=0.3,
+            timeout=60.0
         )
 
         result = json.loads(response.choices[0].message.content)
@@ -264,7 +274,7 @@ Language: {target_lang}
             os.remove(path)
 
 # =========================================================
-# Upload & History
+# 9. Upload & History & PWA support
 # =========================================================
 @app.post("/api/upload-chart")
 async def upload_chart(chart: UploadFile = File(...)):
@@ -277,9 +287,6 @@ async def upload_chart(chart: UploadFile = File(...)):
 def get_user_history(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     return db.query(Analysis).filter(Analysis.user_id == current_user.id).order_by(Analysis.id.desc()).all()
 
-# =========================================================
-# PWA & Service Worker Support
-# =========================================================
 @app.get("/manifest.json")
 def get_manifest(): return FileResponse("frontend/manifest.json")
 
@@ -287,16 +294,13 @@ def get_manifest(): return FileResponse("frontend/manifest.json")
 def get_sw(): return FileResponse("frontend/sw.js")
 
 # =========================================================
-# Pages & Logic Control
+# 10. Pages & Router Control
 # =========================================================
 @app.get("/")
 def home(request: Request): 
-    # فحص بصمة الجهاز
     user_agent = request.headers.get("user-agent", "").lower()
-    # إذا كان موبايل، أعطه واجهة العمل فوراً
     if "iphone" in user_agent or "android" in user_agent:
         return FileResponse("frontend/mobile.html")
-    # إذا كان كمبيوتر، أعطه الصفحة الرئيسية
     return FileResponse("frontend/index.html")
 
 @app.get("/dashboard")
@@ -312,7 +316,7 @@ def history(): return FileResponse("frontend/history.html")
 def admin(): return FileResponse("frontend/admin.html")
 
 # =========================================================
-# Emergency Tools
+# 11. Emergency Tools
 # =========================================================
 @app.get("/api/nuclear-wipe")
 def nuclear_wipe(email: str, db: Session = Depends(get_db)):
