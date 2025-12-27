@@ -39,7 +39,8 @@
 
         /* 4. البار السفلي */
         .app-bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 75px; background: #050b14; border-top: 2px solid var(--primary); display: flex; justify-content: space-around; align-items: center; z-index: 2000; box-shadow: 0 -10px 30px #000; }
-        .nav-link { text-decoration: none; color: var(--muted); display: flex; flex-direction: column; align-items: center; font-size: 10px; font-weight: 700; gap: 4px; }
+        .nav-link { text-decoration: none; color: var(--muted); display: flex; flex-direction: column; align-items: center; font-size: 10px; font-weight: 700; gap: 4px; transition: 0.3s; }
+        .nav-link i { font-size: 20px; }
         .nav-link.active { color: var(--primary); transform: translateY(-5px); transition: 0.3s; }
 
         .mobile-card { background: #0b1222; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); padding: 20px; margin-bottom: 15px; position: relative; }
@@ -47,7 +48,7 @@
         
         .trader-journal { width: 100%; height: 120px; background: #000; color: #fff; border: 1px solid #222; border-radius: 12px; padding: 12px; font-family: inherit; resize: none; font-size: 14px; }
         
-        /* إرشاد الآيفون */
+        /* iOS Install Guide */
         #ios-guide { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:11000; align-items:center; justify-content:center; padding:30px; }
         .guide-box { background:#0b1222; border:2px solid var(--primary); border-radius:25px; padding:30px; text-align:center; }
     </style>
@@ -109,7 +110,7 @@
                             {"s":"FX:EURUSD"},{"s":"FX:GBPUSD"},{"s":"FX:USDJPY"},{"s":"FX:AUDUSD"},{"s":"FX:USDCAD"},{"s":"FX:USDCHF"},{"s":"FX:NZDUSD"},{"s":"FX:EURGBP"},{"s":"FX:EURJPY"},{"s":"FX:GBPJPY"}
                         ]},
                         { "title": "معادن وطاقة", "symbols": [
-                            {"s":"TVC:GOLD","d":"الذهب"},{"s":"TVC:SILVER","d":"الفضة"},{"s":"TVC:USOIL","d":"النفط"},{"s":"TVC:UKOIL"},{"s":"TVC:NGAS"}
+                            {"s":"TVC:GOLD","d":"الذهب"},{"s":"TVC:SILVER","d":"الفضة"},{"s":"TVC:USOIL","d":"النفط الخام"},{"s":"TVC:UKOIL","d":"نفط برنت"}
                         ]},
                         { "title": "مؤشرات وأسهم", "symbols": [
                             {"s":"FOREXCOM:NAS100"},{"s":"FOREXCOM:DJI"},{"s":"FOREXCOM:SPX500"},{"s":"NASDAQ:TSLA"},{"s":"NASDAQ:NVDA"},{"s":"NASDAQ:AAPL"},{"s":"NASDAQ:MSFT"}
@@ -144,10 +145,9 @@
             </div>
         </section>
 
-        <!-- [ج] الأدوات (Tools - نسخة كاملة) -->
+        <!-- [ج] الأدوات (Tools) -->
         <section id="tab-tools" class="tab-content">
             <div class="mobile-card"><h3><i class="fa-solid fa-pen-nib"></i> مفكرة المتداول</h3><textarea id="mob-journal" class="trader-journal" placeholder="سجل خطتك هنا.."></textarea></div>
-            
             <div class="mobile-card" style="height: 480px; padding: 10px; overflow: hidden;">
                 <h3 style="margin-bottom: 10px;"><i class="fa-solid fa-bolt"></i> قوة العملات (Heatmap)</h3>
                 <div class="tradingview-widget-container" style="height: calc(100% - 45px); width: 100%;">
@@ -157,7 +157,6 @@
                     </script>
                 </div>
             </div>
-
             <div class="mobile-card" style="height: 420px; padding: 0; overflow: hidden;">
                 <h3 style="padding: 15px 20px;"><i class="fa-solid fa-calendar-days"></i> الأجندة الاقتصادية</h3>
                 <div class="tradingview-widget-container" style="height: calc(100% - 50px); width: 100%;">
@@ -167,14 +166,7 @@
                     </script>
                 </div>
             </div>
-
-            <div class="mobile-card">
-                <h3>حاسبة اللوت (1%)</h3>
-                <input type="number" id="risk-bal" placeholder="رأس المال $" class="mobile-input">
-                <input type="number" id="risk-sl" placeholder="وقف الخسارة Pips" class="mobile-input">
-                <button class="core-analyze-btn" style="width:100%; height:45px;" onclick="calculateLot()">احسب</button>
-                <p id="risk-result" style="text-align:center; margin-top:15px; font-weight:900; color:var(--primary);"></p>
-            </div>
+            <div class="mobile-card"><h3>حاسبة اللوت (1%)</h3><input type="number" id="risk-bal" placeholder="رأس المال $" class="mobile-input"><input type="number" id="risk-sl" placeholder="الوقف Pips" class="mobile-input"><button class="core-analyze-btn" style="width:100%; height:45px;" onclick="calculateLot()">احسب</button><p id="risk-result" style="text-align:center; margin-top:10px; font-weight:900; color:var(--primary);"></p></div>
         </section>
 
         <!-- [د] الحساب (Profile) -->
@@ -184,11 +176,12 @@
                 <h2 id="user-full-name" style="font-weight: 900; color:#fff;">تحميل...</h2>
                 <div id="user-badge-text" style="font-size:11px; font-weight:900; background:#1e293b; padding:4px 15px; border-radius:15px; display:inline-block; margin-top:10px;">Member</div>
                 <div style="margin-top:35px; display: grid; gap: 15px;">
-                    <button class="core-analyze-btn" style="background:var(--gold); color:#000; height:65px; font-weight:900;" onclick="window.open('/#pricing-section', '_blank')">
+                    <!-- مصلح: الترقية في نافذة جديدة تماماً -->
+                    <button class="core-analyze-btn" style="background:var(--gold); color:#000; height:65px; font-weight:900;" onclick="window.open(window.location.origin + '/index.html#pricing-section', '_blank')">
                         <i class="fa-solid fa-crown"></i> ترقية الحساب (Upgrade)
                     </button>
                     <button id="pwa-install-btn" class="core-analyze-btn" style="background:#1e293b; display:none;" onclick="installPWA()">تثبيت التطبيق على الهاتف 📲</button>
-                    <button class="core-analyze-btn" style="background:#25d366; color:#fff;" onclick="window.open('https://wa.me/970594060648?text=مرحباً KAIA، لدي اقتراح:', '_blank')">إرسال اقتراح 💬</button>
+                    <button class="core-analyze-btn" style="background:#25d366; color:#fff;" onclick="window.open('https://wa.me/970594060648?text=Feedback', '_blank')">إرسال اقتراح 💬</button>
                     <button class="nav-btn-logout" onclick="logout()">تسجيل الخروج</button>
                 </div>
             </div>
@@ -220,9 +213,6 @@
             journal.oninput = (e) => localStorage.setItem("mob_journal", e.target.value);
         };
 
-        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('pwa-install-btn').style.display = 'block'; });
-        function installPWA() { if (/iPad|iPhone|iPod/.test(navigator.userAgent)) { document.getElementById('ios-guide').style.display = 'flex'; } else if (deferredPrompt) { deferredPrompt.prompt(); } }
-
         function toggleAuthMode() {
             isRegister = !isRegister;
             document.getElementById("auth-ui-title").innerText = isRegister ? "حساب جديد" : "دخول آمن";
@@ -236,18 +226,37 @@
             const pass = document.getElementById("auth-pass").value;
             if(!email || !pass) return alert("يرجى إدخال البيانات");
             const url = isRegister ? "/api/register" : "/api/login";
-            let body = isRegister ? JSON.stringify({email, password:pass, full_name:document.getElementById("auth-name").value, whatsapp:document.getElementById("auth-whatsapp").value, tier:"Trial"}) : (() => { let fd = new FormData(); fd.append("username", email); fd.append("password", pass); return fd; })();
+            let body;
+            if(isRegister) {
+                // مصلح: إضافة phone و country لضمان قبول السيرفر للحساب
+                body = JSON.stringify({
+                    email: email.trim().toLowerCase(), 
+                    password: pass, 
+                    full_name: document.getElementById("auth-name").value || "User", 
+                    whatsapp: document.getElementById("auth-whatsapp").value || "000", 
+                    phone: document.getElementById("auth-whatsapp").value || "000",
+                    country: "Other",
+                    tier: "Trial"
+                });
+            } else {
+                body = new FormData(); body.append("username", email.trim().toLowerCase()); body.append("password", pass);
+            }
             try {
                 const res = await fetch(url, { method:"POST", headers: isRegister?{"Content-Type":"application/json"}:{}, body });
                 const data = await res.json();
                 if(res.ok) { 
                     if(isRegister) { alert("تم إنشاء حسابك الملكي بنجاح! يمكنك الآن تسجيل الدخول."); toggleAuthMode(); } 
                     else { localStorage.setItem("token", data.access_token); location.reload(); }
-                } else alert(data.detail || "خطأ في البيانات أو البريد مستخدم مسبقاً");
+                } else {
+                    let err = data.detail;
+                    if(typeof err === 'object') err = "يرجى ملء كافة البيانات بشكل صحيح";
+                    alert(err || "حدث خطأ");
+                }
             } catch(e) { alert("فشل الاتصال"); }
         }
 
         function checkAuth() { if(!token) document.getElementById("auth-screen").style.display="flex"; else { document.getElementById("app-main").style.display="block"; syncData(); } }
+        
         async function syncData() {
             try {
                 const res = await fetch("/api/me", { headers: {"Authorization":"Bearer "+token} });
@@ -275,12 +284,13 @@
             document.getElementById("result-box").style.display = "none";
             document.getElementById("chartUpload").value = "";
             document.getElementById("up-confirm").style.display = "none";
+            const btn = document.getElementById("run-btn"); btn.disabled = false; btn.innerText = "بدء التحليل";
         }
 
         async function runMobileAnalysis() {
             const file = document.getElementById("chartUpload").files[0];
-            if(!file) return alert("اختر صورة شارت أولاً");
-            const btn = document.getElementById("run-btn"); btn.disabled = true; btn.innerText = "جاري التحليل المؤسسي...";
+            if(!file) return alert("اختر صورة");
+            const btn = document.getElementById("run-btn"); btn.disabled = true; btn.innerText = "جاري التحليل...";
             try {
                 const upFd = new FormData(); upFd.append("chart", file);
                 const upRes = await fetch("/api/upload-chart", {method:"POST", body:upFd});
@@ -290,7 +300,7 @@
                 const data = await res.json();
                 if(res.ok) { document.getElementById("result-box").style.display="block"; document.getElementById("res-data-content").innerHTML = `<p>${data.analysis.analysis_text}</p><b>Bias: ${data.analysis.market_bias}</b>`; syncData(); }
             } catch(e) { alert("خطأ اتصال"); }
-            btn.disabled = false; btn.innerText = "بدء التحليل المؤسسي";
+            btn.disabled = false; btn.innerText = "بدء التحليل";
         }
 
         function switchTab(t, el) {
@@ -306,6 +316,8 @@
             if(b && s) { document.getElementById("risk-result").innerText = "اللوت المقترح: " + ((b*0.01)/(s*10)).toFixed(2); }
         }
 
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('pwa-install-btn').style.display = 'block'; });
+        function installPWA() { if (/iPad|iPhone|iPod/.test(navigator.userAgent)) { document.getElementById('ios-guide').style.display = 'flex'; } else if (deferredPrompt) { deferredPrompt.prompt(); } }
         function logout() { localStorage.removeItem("token"); location.reload(); }
     </script>
 </body>
