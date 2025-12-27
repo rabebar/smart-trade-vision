@@ -11,17 +11,21 @@ import shutil, os, base64, json, requests, uuid
 from bs4 import BeautifulSoup
 from openai import OpenAI
 from dotenv import load_dotenv
+from pathlib import Path
 
 # =========================================================
-# 1. ENV + DB Setup
+# 1. الإعدادات والبيئة (Environment Setup)
 # =========================================================
 load_dotenv()
+
+# تحديد المسار المطلق للمشروع لضمان عمل المجلدات على Render
+BASE_DIR = Path(__file__).resolve().parent
 
 from database import SessionLocal, User, Analysis
 import schemas
 
 # =========================================================
-# 2. Security & AI Configuration
+# 2. الأمن والذكاء الاصطناعي (Security & AI)
 # =========================================================
 SECRET_KEY = os.getenv("SECRET_KEY", "KAIA_ULTIMATE_SEC_2025")
 ALGORITHM = "HS256"
@@ -33,7 +37,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 app = FastAPI(title="KAIA AI – Institutional Analyst Engine")
 
 # =========================================================
-# 3. CORS & Static Folders (The Logo Fix)
+# 3. الربط والمجلدات الثابتة (Static Files & Paths)
 # =========================================================
 app.add_middleware(
     CORSMiddleware,
@@ -44,22 +48,28 @@ app.add_middleware(
 )
 
 # إنشاء مجلد الصور المرفوعة
-os.makedirs("images", exist_ok=True)
-app.mount("/images", StaticFiles(directory="images"), name="images")
+images_path = BASE_DIR / "images"
+images_path.mkdir(exist_ok=True)
+app.mount("/images", StaticFiles(directory=str(images_path)), name="images")
 
-# [حقن ذكي] حل مشكلة المجلد static vs statics لظهور اللوجو
-# يبحث السيرفر عن المجلد الصحيح ويربطه برابط موحد /static
-current_static_path = "frontend/static"
-if not os.path.exists(current_static_path):
-    if os.path.exists("frontend/statics"):
-        current_static_path = "frontend/statics"
-    else:
-        os.makedirs(current_static_path, exist_ok=True)
+# [حل مشكلة الشعار والدمار البصري]
+# نحدد مكان المجلد frontend/static بدقة مطلقة
+static_path = BASE_DIR / "frontend" / "static"
 
-app.mount("/static", StaticFiles(directory=current_static_path), name="static")
+# إذا لم يجد المجلد باسم static، يجرب المجلد باسم statics
+if not static_path.exists():
+    static_path = BASE_DIR / "frontend" / "statics"
+
+# إذا لم يجد أياً منهما، يقوم بإنشاء المجلد الأصلي لمنع الخطأ
+if not static_path.exists():
+    static_path = BASE_DIR / "frontend" / "static"
+    static_path.mkdir(parents=True, exist_ok=True)
+
+# ربط المجلد المكتشف برابط /static الموحد
+app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
 
 # =========================================================
-# 4. Helpers
+# 4. الدوال المساعدة (Helpers)
 # =========================================================
 def get_db():
     db = SessionLocal()
@@ -84,7 +94,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise HTTPException(status_code=401, detail="انتهت الجلسة")
 
 # =========================================================
-# 5. News Logic (Bilingual Support)
+# 5. محرك الأخبار (Market News Support)
 # =========================================================
 @app.get("/api/news")
 def get_news(lang: str = "ar"):
@@ -109,7 +119,7 @@ def get_news(lang: str = "ar"):
         return {"news": err_msg}
 
 # =========================================================
-# 6. Authentication System
+# 6. نظام المصادقة (Registration & Login)
 # =========================================================
 @app.post("/api/register", response_model=schemas.UserOut)
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
@@ -152,7 +162,7 @@ def me(current_user: User = Depends(get_current_user)):
         return current_user
 
 # =========================================================
-# 7. Admin Operations
+# 7. عمليات المشرفين (Admin Operations)
 # =========================================================
 @app.get("/api/admin/users")
 def admin_get_users(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -190,7 +200,7 @@ def admin_delete_user(user_id: int, current_user: User = Depends(get_current_use
     return {"status": "success"}
 
 # =========================================================
-# 8. KAIA AI Analysis Engine (With Anti-Disconnect Fix)
+# 8. محرك التحليل الذكي (Analysis Engine)
 # =========================================================
 @app.post("/api/analyze-chart")
 async def analyze_chart(
@@ -204,29 +214,19 @@ async def analyze_chart(
     if current_user.credits <= 0 and not current_user.is_whale:
         raise HTTPException(status_code=400, detail="الرصيد غير كافٍ")
 
-    path = f"images/{filename}"
-    if not os.path.exists(path):
+    path = images_path / filename
+    if not path.exists():
         raise HTTPException(status_code=404, detail="الصورة غير موجودة")
 
     try:
-        with open(path, "rb") as f:
+        with open(str(path), "rb") as f:
             base64_image = base64.b64encode(f.read()).decode()
 
-        lang_map = {
-            "ar": "Arabic (العربية)",
-            "en": "English",
-            "fr": "French (Français)",
-            "es": "Spanish (Español)",
-            "it": "Italiano"
-        }
-        target_lang = lang_map.get(lang, "Arabic")
-
-        system_prompt = f"""
+        system_prompt = """
 أنت محلل أسواق مؤسسي محترف. مهمتك هي قراءة الشارت بصريًا وبدقة عالية، ثم اتخاذ قرارات تحليلية واضحة.
 JSON ONLY: market_bias, market_phase, opportunity_context, analysis_text, risk_note, confidence
-Language: {target_lang}
 """
-        # [حقن حماية] إضافة timeout=60 لمنع Lost Connection في اللابتوب
+        # إضافة حماية Timeout لمدة دقيقة كاملة لمنع انقطاع الاتصال
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -234,7 +234,7 @@ Language: {target_lang}
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": f"Analyze this chart on {timeframe} using {analysis_type}."},
+                        {"type": "text", "text": f"Analyze this chart on {timeframe} using {analysis_type}. Language: {lang}"},
                         {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{base64_image}"}}
                     ]
                 }
@@ -270,16 +270,16 @@ Language: {target_lang}
         raise HTTPException(status_code=500, detail=str(e))
 
     finally:
-        if os.path.exists(path):
-            os.remove(path)
+        if path.exists():
+            os.remove(str(path))
 
 # =========================================================
-# 9. Upload & History & PWA support
+# 9. الرفع والسجلات (Upload & History)
 # =========================================================
 @app.post("/api/upload-chart")
 async def upload_chart(chart: UploadFile = File(...)):
     name = f"{uuid.uuid4()}.{chart.filename.split('.')[-1]}"
-    with open(f"images/{name}", "wb") as buffer:
+    with open(str(images_path / name), "wb") as buffer:
         shutil.copyfileobj(chart.file, buffer)
     return {"filename": name}
 
@@ -287,36 +287,35 @@ async def upload_chart(chart: UploadFile = File(...)):
 def get_user_history(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     return db.query(Analysis).filter(Analysis.user_id == current_user.id).order_by(Analysis.id.desc()).all()
 
+# =========================================================
+# 10. دعم تطبيق الويب (PWA & Routes)
+# =========================================================
 @app.get("/manifest.json")
-def get_manifest(): return FileResponse("frontend/manifest.json")
+def get_manifest(): return FileResponse(str(BASE_DIR / "frontend" / "manifest.json"))
 
 @app.get("/sw.js")
-def get_sw(): return FileResponse("frontend/sw.js")
+def get_sw(): return FileResponse(str(BASE_DIR / "frontend" / "sw.js"))
 
-# =========================================================
-# 10. Pages & Router Control
-# =========================================================
 @app.get("/")
 def home(request: Request): 
     user_agent = request.headers.get("user-agent", "").lower()
-    if "iphone" in user_agent or "android" in user_agent:
-        return FileResponse("frontend/mobile.html")
-    return FileResponse("frontend/index.html")
+    page = "mobile.html" if "iphone" in user_agent or "android" in user_agent else "index.html"
+    return FileResponse(str(BASE_DIR / "frontend" / page))
 
 @app.get("/dashboard")
-def dashboard(): return FileResponse("frontend/dashboard.html")
+def dashboard(): return FileResponse(str(BASE_DIR / "frontend" / "dashboard.html"))
 
 @app.get("/mobile")
-def mobile(): return FileResponse("frontend/mobile.html")
+def mobile(): return FileResponse(str(BASE_DIR / "frontend" / "mobile.html"))
 
 @app.get("/history")
-def history(): return FileResponse("frontend/history.html")
+def history(): return FileResponse(str(BASE_DIR / "frontend" / "history.html"))
 
 @app.get("/admin")
-def admin(): return FileResponse("frontend/admin.html")
+def admin(): return FileResponse(str(BASE_DIR / "frontend" / "admin.html"))
 
 # =========================================================
-# 11. Emergency Tools
+# 11. أدوات الطوارئ (Emergency Tools)
 # =========================================================
 @app.get("/api/nuclear-wipe")
 def nuclear_wipe(email: str, db: Session = Depends(get_db)):
