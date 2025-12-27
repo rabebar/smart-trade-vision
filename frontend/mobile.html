@@ -146,7 +146,9 @@
         </section>
 
         <!-- [ج] الأدوات (Tools) -->
-        <section id="tab-tools" class="tab-content">
+         <section id="tab-tools" class="tab-content">
+    <p style="text-align:center; color:var(--gold); font-size:11px; margin-bottom:15px;"><i class="fa-solid fa-lock"></i> ميزات حصرية للمشتركين</p>
+    <!-- باقي محتوى الأدوات كما هو -->
             <div class="mobile-card"><h3><i class="fa-solid fa-pen-nib"></i> مفكرة المتداول</h3><textarea id="mob-journal" class="trader-journal" placeholder="سجل خطتك هنا.."></textarea></div>
             <div class="mobile-card" style="height: 480px; padding: 10px; overflow: hidden;">
                 <h3 style="margin-bottom: 10px;"><i class="fa-solid fa-bolt"></i> قوة العملات (Heatmap)</h3>
@@ -258,20 +260,25 @@
 
         function checkAuth() { if(!token) document.getElementById("auth-screen").style.display="flex"; else { document.getElementById("app-main").style.display="block"; syncData(); } }
         
-        async function syncData() {
+       async function syncData() {
             try {
                 const res = await fetch("/api/me", { headers: {"Authorization":"Bearer "+token} });
                 const u = await res.json();
                 if(res.ok) {
-                    document.getElementById("user-credits").innerText = u.credits; document.getElementById("user-full-name").innerText = u.full_name;
+                    // حفظ الرتبة في ذاكرة المتصفح لاستخدامها في الحماية
+                    localStorage.setItem("user_tier", u.tier); 
+
+                    document.getElementById("user-credits").innerText = u.credits; 
+                    document.getElementById("user-full-name").innerText = u.full_name;
                     document.getElementById("welcome-msg").innerText = "أهلاً، " + u.full_name.split(' ')[0];
                     let icon = u.tier === "Platinum" ? "🐳" : u.tier === "Pro" ? "🥇" : u.tier === "Basic" ? "🥈" : "🪵";
-                    document.getElementById("user-rank-header").innerText = icon; document.getElementById("user-avatar-big").innerText = icon;
+                    document.getElementById("user-rank-header").innerText = icon; 
+                    document.getElementById("user-avatar-big").innerText = icon;
                     document.getElementById("user-badge-text").innerText = u.tier + " MEMBER";
                     loadHistory();
                 } else logout();
             } catch(e) { logout(); }
-        }
+                }
 
         async function loadHistory() {
             const res = await fetch("/api/history", { headers: {"Authorization":"Bearer "+token} });
@@ -305,10 +312,25 @@
         }
 
         function switchTab(t, el) {
-            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none'); document.getElementById('tab-' + t).style.display = 'block';
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active')); el.classList.add('active');
+            // [حقن حماية] منع حسابات التريال من دخول قسم الأدوات
+            const userTier = localStorage.getItem("user_tier"); 
+            if (t === 'tools' && userTier === "Trial") {
+                alert("عذراً، قسم الأدوات الاحترافية مخصص للمشتركين فقط. يرجى ترقية حسابك للوصول.");
+                // توجيهه تلقائياً لقسم الحساب ليرى زر الترقية
+                switchTab('account', document.querySelector('.nav-link i.fa-user-tie').parentElement);
+                return;
+            }
+
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none'); 
+            document.getElementById('tab-' + t).style.display = 'block';
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active')); 
+            el.classList.add('active');
+            
             if(t === 'analysis' && !window.tvWidget) {
-                window.tvWidget = new TradingView.widget({ autosize: true, symbol: "FX:EURUSD", interval: "15", theme: "dark", locale: "ar", container_id: "tv_chart_mobile", allow_symbol_change: true, hide_top_toolbar: false, save_image: true, hide_side_toolbar: false });
+                window.tvWidget = new TradingView.widget({ 
+                    autosize: true, symbol: "FX:EURUSD", interval: "15", theme: "dark", locale: "ar", 
+                    container_id: "tv_chart_mobile", allow_symbol_change: true, hide_top_toolbar: false, save_image: true 
+                });
             }
         }
 
