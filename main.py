@@ -11,21 +11,17 @@ import shutil, os, base64, json, requests, uuid
 from bs4 import BeautifulSoup
 from openai import OpenAI
 from dotenv import load_dotenv
-from pathlib import Path
 
 # =========================================================
-# 1. الإعدادات والبيئة (Environment Setup)
+# ENV + DB
 # =========================================================
 load_dotenv()
-
-# تحديد المسار المطلق للمشروع لضمان عمل المجلدات على Render
-BASE_DIR = Path(__file__).resolve().parent
 
 from database import SessionLocal, User, Analysis
 import schemas
 
 # =========================================================
-# 2. الأمن والذكاء الاصطناعي (Security & AI)
+# Security & AI
 # =========================================================
 SECRET_KEY = os.getenv("SECRET_KEY", "KAIA_ULTIMATE_SEC_2025")
 ALGORITHM = "HS256"
@@ -37,7 +33,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 app = FastAPI(title="KAIA AI – Institutional Analyst Engine")
 
 # =========================================================
-# 3. الربط والمجلدات الثابتة (Static Files & Paths)
+# CORS + Static
 # =========================================================
 app.add_middleware(
     CORSMiddleware,
@@ -47,29 +43,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# إنشاء مجلد الصور المرفوعة
-images_path = BASE_DIR / "images"
-images_path.mkdir(exist_ok=True)
-app.mount("/images", StaticFiles(directory=str(images_path)), name="images")
+os.makedirs("images", exist_ok=True)
+app.mount("/images", StaticFiles(directory="images"), name="images")
 
-# [حل مشكلة الشعار والدمار البصري]
-# نحدد مكان المجلد frontend/static بدقة مطلقة
-static_path = BASE_DIR / "frontend" / "static"
-
-# إذا لم يجد المجلد باسم static، يجرب المجلد باسم statics
-if not static_path.exists():
-    static_path = BASE_DIR / "frontend" / "statics"
-
-# إذا لم يجد أياً منهما، يقوم بإنشاء المجلد الأصلي لمنع الخطأ
-if not static_path.exists():
-    static_path = BASE_DIR / "frontend" / "static"
-    static_path.mkdir(parents=True, exist_ok=True)
-
-# ربط المجلد المكتشف برابط /static الموحد
-app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
+if os.path.exists("frontend"):
+    app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 # =========================================================
-# 4. الدوال المساعدة (Helpers)
+# Helpers
 # =========================================================
 def get_db():
     db = SessionLocal()
@@ -94,7 +75,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise HTTPException(status_code=401, detail="انتهت الجلسة")
 
 # =========================================================
-# 5. محرك الأخبار (Market News Support)
+# News (Bilingual Support: AR/EN)
 # =========================================================
 @app.get("/api/news")
 def get_news(lang: str = "ar"):
@@ -119,7 +100,7 @@ def get_news(lang: str = "ar"):
         return {"news": err_msg}
 
 # =========================================================
-# 6. نظام المصادقة (Registration & Login)
+# Auth System
 # =========================================================
 @app.post("/api/register", response_model=schemas.UserOut)
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
@@ -162,7 +143,7 @@ def me(current_user: User = Depends(get_current_user)):
         return current_user
 
 # =========================================================
-# 7. عمليات المشرفين (Admin Operations)
+# Admin Operations
 # =========================================================
 @app.get("/api/admin/users")
 def admin_get_users(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -200,7 +181,7 @@ def admin_delete_user(user_id: int, current_user: User = Depends(get_current_use
     return {"status": "success"}
 
 # =========================================================
-# 8. محرك التحليل الذكي (Analysis Engine)
+# KAIA Descriptive Analysis Engine
 # =========================================================
 @app.post("/api/analyze-chart")
 async def analyze_chart(
@@ -214,19 +195,29 @@ async def analyze_chart(
     if current_user.credits <= 0 and not current_user.is_whale:
         raise HTTPException(status_code=400, detail="الرصيد غير كافٍ")
 
-    path = images_path / filename
-    if not path.exists():
+    path = f"images/{filename}"
+    if not os.path.exists(path):
         raise HTTPException(status_code=404, detail="الصورة غير موجودة")
 
     try:
-        with open(str(path), "rb") as f:
+        with open(path, "rb") as f:
             base64_image = base64.b64encode(f.read()).decode()
 
-        system_prompt = """
+        lang_map = {
+            "ar": "Arabic (العربية)",
+            "en": "English",
+            "fr": "French (Français)",
+            "es": "Spanish (Español)",
+            "it": "Italiano"
+        }
+        target_lang = lang_map.get(lang, "Arabic")
+
+        system_prompt = f"""
 أنت محلل أسواق مؤسسي محترف. مهمتك هي قراءة الشارت بصريًا وبدقة عالية، ثم اتخاذ قرارات تحليلية واضحة.
 JSON ONLY: market_bias, market_phase, opportunity_context, analysis_text, risk_note, confidence
+Language: {target_lang}
 """
-        # إضافة حماية Timeout لمدة دقيقة كاملة لمنع انقطاع الاتصال
+
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -234,14 +225,13 @@ JSON ONLY: market_bias, market_phase, opportunity_context, analysis_text, risk_n
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": f"Analyze this chart on {timeframe} using {analysis_type}. Language: {lang}"},
+                        {"type": "text", "text": f"حلل هذا الشارت على الإطار {timeframe} باستخدام {analysis_type}."},
                         {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{base64_image}"}}
                     ]
                 }
             ],
             response_format={"type": "json_object"},
-            temperature=0.3,
-            timeout=60.0
+            temperature=0.3
         )
 
         result = json.loads(response.choices[0].message.content)
@@ -270,16 +260,16 @@ JSON ONLY: market_bias, market_phase, opportunity_context, analysis_text, risk_n
         raise HTTPException(status_code=500, detail=str(e))
 
     finally:
-        if path.exists():
-            os.remove(str(path))
+        if os.path.exists(path):
+            os.remove(path)
 
 # =========================================================
-# 9. الرفع والسجلات (Upload & History)
+# Upload & History
 # =========================================================
 @app.post("/api/upload-chart")
 async def upload_chart(chart: UploadFile = File(...)):
     name = f"{uuid.uuid4()}.{chart.filename.split('.')[-1]}"
-    with open(str(images_path / name), "wb") as buffer:
+    with open(f"images/{name}", "wb") as buffer:
         shutil.copyfileobj(chart.file, buffer)
     return {"filename": name}
 
@@ -288,34 +278,41 @@ def get_user_history(current_user: User = Depends(get_current_user), db: Session
     return db.query(Analysis).filter(Analysis.user_id == current_user.id).order_by(Analysis.id.desc()).all()
 
 # =========================================================
-# 10. دعم تطبيق الويب (PWA & Routes)
+# PWA & Service Worker Support
 # =========================================================
 @app.get("/manifest.json")
-def get_manifest(): return FileResponse(str(BASE_DIR / "frontend" / "manifest.json"))
+def get_manifest(): return FileResponse("frontend/manifest.json")
 
 @app.get("/sw.js")
-def get_sw(): return FileResponse(str(BASE_DIR / "frontend" / "sw.js"))
-
-@app.get("/")
-def home(request: Request): 
-    user_agent = request.headers.get("user-agent", "").lower()
-    page = "mobile.html" if "iphone" in user_agent or "android" in user_agent else "index.html"
-    return FileResponse(str(BASE_DIR / "frontend" / page))
-
-@app.get("/dashboard")
-def dashboard(): return FileResponse(str(BASE_DIR / "frontend" / "dashboard.html"))
-
-@app.get("/mobile")
-def mobile(): return FileResponse(str(BASE_DIR / "frontend" / "mobile.html"))
-
-@app.get("/history")
-def history(): return FileResponse(str(BASE_DIR / "frontend" / "history.html"))
-
-@app.get("/admin")
-def admin(): return FileResponse(str(BASE_DIR / "frontend" / "admin.html"))
+def get_sw(): return FileResponse("frontend/sw.js")
 
 # =========================================================
-# 11. أدوات الطوارئ (Emergency Tools)
+# Pages & Logic Control
+# =========================================================
+@app.get("/")
+def home(request: Request): 
+    # فحص بصمة الجهاز
+    user_agent = request.headers.get("user-agent", "").lower()
+    # إذا كان موبايل، أعطه واجهة العمل فوراً
+    if "iphone" in user_agent or "android" in user_agent:
+        return FileResponse("frontend/mobile.html")
+    # إذا كان كمبيوتر، أعطه الصفحة الرئيسية
+    return FileResponse("frontend/index.html")
+
+@app.get("/dashboard")
+def dashboard(): return FileResponse("frontend/dashboard.html")
+
+@app.get("/mobile")
+def mobile(): return FileResponse("frontend/mobile.html")
+
+@app.get("/history")
+def history(): return FileResponse("frontend/history.html")
+
+@app.get("/admin")
+def admin(): return FileResponse("frontend/admin.html")
+
+# =========================================================
+# Emergency Tools
 # =========================================================
 @app.get("/api/nuclear-wipe")
 def nuclear_wipe(email: str, db: Session = Depends(get_db)):
