@@ -311,6 +311,10 @@ def history(): return FileResponse("frontend/history.html")
 @app.get("/admin")
 def admin(): return FileResponse("frontend/admin.html")
 
+@app.get("/upgrade")
+def upgrade_page():
+    return FileResponse("frontend/index.html")
+
 # =========================================================
 # Emergency Tools
 # =========================================================
