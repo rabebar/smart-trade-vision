@@ -93,18 +93,15 @@
         .price-card.pro { border-top: 5px solid var(--pro-color); transform: scale(1.05); z-index: 5; }
         .price-card.platinum { border-top: 5px solid var(--platinum-color); }
 
-        /* صندوق إخلاء المسؤولية المطور */
-        .disclaimer-box {
-            background-color: rgba(239, 68, 68, 0.1);
-            border: 1px solid #ef4444;
-            padding: 25px;
-            margin-top: 40px;
-            border-radius: 20px;
-            font-size: 15px;
-            color: #fca5a5;
-            text-align: justify;
-            line-height: 1.8;
-        }
+        /* قائمة المميزات داخل الباقات */
+        .plan-features { list-style: none; padding: 0; margin: 20px 0; text-align: right; }
+        .plan-features li { font-size: 14px; margin-bottom: 10px; color: #d1d4dc; font-weight: 600; }
+        .plan-features li i { color: var(--primary); margin-left: 10px; font-size: 12px; }
+
+        /* الفوتر المطور - الحجم المؤسسي */
+        .main-footer-v2 { background: #020617; padding: 40px 20px; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 50px; }
+        .footer-grid-v2 { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; }
+        .footer-bottom-v2 { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 12px; color: var(--muted); }
 
         body { font-size: 18px; margin: 0; padding: 0; }
         h2.section-title { font-size: 40px !important; font-weight: 900; margin-bottom: 40px; text-align: center; }
@@ -149,7 +146,7 @@
 <body>
 
 <!-- =========================================================
-     1. واجهة الاستقبال (Intro Overlay) - منع التكرار لإصلاح الشاشة السوداء
+     1. واجهة الاستقبال (Intro Overlay)
      ========================================================= -->
 <div id="kaia-intro-overlay" class="modal-overlay" style="z-index: 9999; background-color: #000000; position: fixed; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; flex-direction: column;">
     <div id="intro-content" style="max-width: 850px; padding: 20px;">
@@ -212,7 +209,7 @@
 </div>
 
 <!-- =========================================================
-     3. الهيدر الملكي (Navbar) - مع استعادة اللغات الخمس
+     3. الهيدر الملكي (Navbar)
      ========================================================= -->
 <header class="top-navbar">
     <div class="header-left" id="auth-zone"></div>
@@ -280,11 +277,7 @@
     <div style="max-width: 1200px; margin-left: auto; margin-right: auto; text-align: center;">
         <h1 class="main-glow_title" data-i18n="hero_title" style="font-size: 75px; line-height: 1.1;">التداول برؤية مؤسسية أوضح</h1>
         <p class="institutional-subtitle" data-i18n="hero_subtitle">KAIA AI هي منصة تحليل ذكي صُممت للمتداول الذي يبحث عن الفهم قبل القرار.</p>
-        <div id="access-control-area" style="margin-top: 60px; display: none;">
-            <a href="/dashboard" class="btn-glow-access">
-                <i class="fa-solid fa-gauge-high"></i> <span data-i18n="nav_dashboard">الدخول إلى غرفة القيادة والتحكم</span>
-            </a>
-        </div>
+        <!-- تمت إزالة الرابط البنفسجي العشوائي من هنا لضمان التناسق -->
     </div>
 </section>
 
@@ -323,7 +316,7 @@
 </section>
 
 <!-- =========================================================
-     7. قسم باقات الاشتراك (Pricing Section)
+     7. قسم باقات الاشتراك (Pricing Section) - تم إضافة الشرح
      ========================================================= -->
 <section id="pricing-section" style="padding-top: 100px; padding-bottom: 100px; padding-left: 40px; padding-right: 40px; background-color: #000000;">
     <h2 class="section-title" data-i18n="pricing_title">باقات الاشتراك والترقية (USD $)</h2>
@@ -331,21 +324,41 @@
         <div class="price-card trial">
             <h3 data-i18n="plan_trial" style="color: var(--trial-color); font-weight: 900;">TRIAL</h3>
             <div class="price">مجاناً</div>
+            <ul class="plan-features">
+                <li><i class="fa-solid fa-check"></i> 3 تحليلات ذكية مجانية</li>
+                <li><i class="fa-solid fa-check"></i> وصول لأسواق الفوركس</li>
+                <li><i class="fa-solid fa-check"></i> تجربة نظام SMC</li>
+            </ul>
             <button class="plan-btn" data-plan="Trial" data-price="0" data-i18n="plan_btn_free" style="background-color: var(--trial-color); color: #000; width: 100%; border-radius: 12px; padding: 15px; cursor: pointer; border: none; font-weight: 900; margin-top: 20px;">ابدأ الآن</button>
         </div>
         <div class="price-card basic">
             <h3 data-i18n="plan_basic" style="color: var(--basic-color); font-weight: 900;">BASIC</h3>
             <div class="price">$5</div>
+            <ul class="plan-features">
+                <li><i class="fa-solid fa-check"></i> 20 تحليلاً شهرياً</li>
+                <li><i class="fa-solid fa-check"></i> كافة أزواج العملات</li>
+                <li><i class="fa-solid fa-check"></i> دعم فني عبر الإيميل</li>
+            </ul>
             <button class="plan-btn" data-plan="Basic" data-price="5" data-i18n="plan_btn_sub" style="background-color: var(--basic-color); color: #000; width: 100%; border-radius: 12px; padding: 15px; cursor: pointer; border: none; font-weight: 900; margin-top: 20px;">اشترك الآن</button>
         </div>
         <div class="price-card pro">
             <h3 data-i18n="plan_pro" style="color: var(--pro-color); font-weight: 900;">PRO</h3>
             <div class="price">$15</div>
+            <ul class="plan-features">
+                <li><i class="fa-solid fa-check"></i> 40 تحليلاً شهرياً</li>
+                <li><i class="fa-solid fa-check"></i> معالجة فائقة السرعة</li>
+                <li><i class="fa-solid fa-check"></i> استراتيجيات إليوت وSMC</li>
+            </ul>
             <button class="plan-btn" data-plan="Pro" data-price="15" data-i18n="plan_btn_upgrade" style="background-color: var(--pro-color); color: #fff; width: 100%; border-radius: 12px; padding: 15px; cursor: pointer; border: none; font-weight: 900; margin-top: 20px;">ترقية الآن</button>
         </div>
         <div class="price-card platinum">
             <h3 data-i18n="plan_platinum" style="color: var(--platinum-color); font-weight: 900;">PLATINUM</h3>
             <div class="price">$50</div>
+            <ul class="plan-features">
+                <li><i class="fa-solid fa-crown"></i> 200 تحليل (رتبة الحوت)</li>
+                <li><i class="fa-solid fa-crown"></i> أولوية مطلقة للمحرك</li>
+                <li><i class="fa-solid fa-crown"></i> استشارات مؤسسية VIP</li>
+            </ul>
             <button class="plan-btn" data-plan="Platinum" data-price="50" data-i18n="plan_btn_upgrade" style="background-color: var(--platinum-color); color: #000; width: 100%; border-radius: 12px; padding: 15px; cursor: pointer; border: none; font-weight: 900; margin-top: 20px;">احصل على الملكية</button>
         </div>
     </div>
@@ -384,30 +397,32 @@
 </section>
 
 <!-- =========================================================
-     9. الفوتر وإخلاء المسؤولية (Footer Section)
+     9. الفوتر وإخلاء المسؤولية (Footer Section) - منظم ومؤسسي
      ========================================================= -->
-<footer class="main-footer" style="background: #050b14; padding: 60px 40px; border-top: 1px solid var(--border); margin-top: 80px;">
-    <div class="footer-container" style="max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 50px;">
+<footer class="main-footer-v2">
+    <div class="footer-grid-v2">
         <div class="footer-col" style="text-align: right;">
-            <h3 style="font-size: 28px; font-weight: 900; color: var(--primary);">KAIA AI <i class="fa-solid fa-cubes-stacked"></i></h3>
-            <p data-i18n="footer_desc" style="font-weight: 700; margin-top: 15px;">منصة مؤسسية تعتمد على تقنيات KAIA AI لدعم قرارات المتداول العربي.</p>
-            <div class="disclaimer-box">
-                <strong data-i18n="disclaimer_title" style="color: #ef4444; font-size: 16px;">⚠️ إخلاء مسؤولية قانوني:</strong><br>
-                <span data-i18n="disclaimer_text">التداول ينطوي على مخاطر عالية جداً. التحليلات هي أدوات استشارية وليست نصيحة مالية.</span>
-            </div>
+            <h3 style="color: var(--primary); font-weight: 900; margin-bottom: 15px;">KAIA AI <i class="fa-solid fa-microchip"></i></h3>
+            <p style="font-size: 14px; color: #d1d4dc; font-weight: 600; line-height: 1.6;">
+                المحرك الأول للتحليل المؤسسي المبني على الذكاء الاصطناعي، لدعم قراراتك في أسواق المال العالمية.
+            </p>
         </div>
-        <div class="footer-col" style="padding-right: 40px;">
-            <h3 data-i18n="footer_links" style="font-weight: 900;">روابط سريعة</h3>
-            <ul style="list-style: none; padding: 0; margin-top: 15px;">
-                <li onclick="window.location.href='/dashboard'" style="cursor:pointer; color:var(--primary); font-weight: 800; margin-bottom: 15px;" data-i18n="nav_dashboard">غرفة القيادة</li>
+        <div class="footer-col" style="text-align: right;">
+            <h3 style="font-weight: 900; margin-bottom: 15px;">روابط سريعة</h3>
+            <ul style="list-style: none; padding: 0; font-size: 14px; font-weight: 700;">
+                <li style="margin-bottom: 10px;"><a href="/dashboard" style="text-decoration: none; color: #fff;">غرفة القيادة</a></li>
+                <li style="margin-bottom: 10px;"><a href="#pricing-section" style="text-decoration: none; color: #fff;">الباقات والأسعار</a></li>
             </ul>
         </div>
-        <div class="footer-col">
-            <h3 data-i18n="footer_support" style="font-weight: 900;">تواصل مع الدعم</h3>
-            <p style="font-size: 22px; font-weight: 900; color: #ffffff; margin-top: 15px;" dir="ltr"><i class="fa-brands fa-whatsapp" style="color: #25d366;"></i> +970 59 406 0648</p>
+        <div class="footer-col" style="text-align: right;">
+            <h3 style="font-weight: 900; margin-bottom: 15px;">تواصل معنا</h3>
+            <p style="font-size: 16px; font-weight: 900; color: #fff;" dir="ltr"><i class="fa-brands fa-whatsapp" style="color: #25d366;"></i> +970 59 406 0648</p>
         </div>
     </div>
-    <div style="text-align: center; margin-top: 60px; padding-top: 30px; border-top: 1px solid var(--border); color: var(--muted); font-weight: 700; font-size: 14px;" data-i18n="footer_rights">جميع الحقوق محفوظة © 2025 لشركة KAIA AI.</div>
+    <div class="footer-bottom-v2">
+        <p style="margin-bottom: 10px; color: #ef4444; font-weight: 800;">إخلاء مسؤولية: التداول ينطوي على مخاطر، التحليلات لأغراض استشارية فقط.</p>
+        <p>جميع الحقوق محفوظة © 2025 لشركة KAIA AI.</p>
+    </div>
 </footer>
 
 <script src="/static/translations.js"></script>
