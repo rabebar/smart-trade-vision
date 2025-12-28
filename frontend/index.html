@@ -468,12 +468,14 @@
         }
     })();
 </script>
-
 <!-- المحرك الإعلامي الملكي المطور (الإصدار النهائي المستقر) -->
 <script>
-    // [1] دالة السيطرة على الإظهار والإخفاء (تعمل فوراً)
+    // [1] دالة السيطرة على الإظهار والإخفاء (تعمل فوراً بناءً على اختيار اللغة)
     function forceShowTicker() {
-        const lang = localStorage.getItem("kaia_lang") || "ar";
+        // نحدد اللغة من القائمة المنسدلة مباشرة لضمان الاستجابة اللحظية
+        const langSelect = document.getElementById("language-select");
+        const lang = langSelect ? langSelect.value : (localStorage.getItem("kaia_lang") || "ar");
+        
         const container = document.getElementById("kaia-ticker-container");
         const articlesSection = document.getElementById("articles-section");
 
@@ -488,9 +490,11 @@
 
     // [2] دالة جلب البيانات وتحديث المحتوى
     async function syncKAIAWorld() {
-        forceShowTicker(); // تأكيد الحالة أولاً
+        forceShowTicker(); // تأكيد الحالة (إظهار أو إخفاء) قبل البدء
 
-        const lang = localStorage.getItem("kaia_lang") || "ar";
+        const langSelect = document.getElementById("language-select");
+        const lang = langSelect ? langSelect.value : (localStorage.getItem("kaia_lang") || "ar");
+        
         if (lang !== "ar") return;
 
         const tickerWrap = document.getElementById("kaia-ticker-wrap");
@@ -501,13 +505,11 @@
             let myTitles = "";
             let worldNews = "جاري جلب النبض العالمي...";
 
-            // جلب البيانات من الـ API
             const [resArt, resNews] = await Promise.allSettled([
                 fetch('/api/articles?lang=ar').then(r => r.json()),
                 fetch('/api/news?lang=ar').then(r => r.json())
             ]);
 
-            // معالجة المقالات (العربي فقط)
             if (resArt.status === 'fulfilled' && Array.isArray(resArt.value)) {
                 myTitles = resArt.value.map(a => ` 🔥 ${a.title}`).join(" ★ ");
                 const artBox = document.getElementById("articles-container");
@@ -525,12 +527,10 @@
                 }
             }
 
-            // معالجة أخبار العالم
             if (resNews.status === 'fulfilled') {
                 worldNews = resNews.value.news || worldNews;
             }
 
-            // حقن الـ Marquee النهائي
             if (tickerWrap) {
                 const separator = myTitles ? " | " : "";
                 tickerWrap.innerHTML = `
@@ -541,7 +541,6 @@
         } catch (e) { console.error("Ticker Sync Error"); }
     }
 
-    // دالة عرض المقال في نافذة فخمة
     function openRoyalArticle(title, content) {
         const win = window.open("", "_blank");
         win.document.write('<html><head><title>'+title+'</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"><style>body{background:#020617; color:white; font-family:"Cairo",sans-serif; padding:50px; line-height:2; text-align:right; direction:rtl;}.container{max-width:800px; margin:0 auto; background:#0b1222; padding:40px; border-radius:20px; border:1px solid #1e293b;}h1{color:#3b82f6; font-weight:900;}p{font-size:18px; color:#d1d5db; white-space:pre-wrap;}.btn{background:#3b82f6; color:#000; border:none; padding:12px 30px; border-radius:10px; font-weight:900; cursor:pointer; margin-top:40px; font-family:inherit;}</style></head><body><div class="container"><h1>'+title+'</h1><p>'+content+'</p><button class="btn" onclick="window.close()">إغلاق التقرير</button></div></body></html>');
@@ -552,11 +551,12 @@
     forceShowTicker(); 
     window.addEventListener("load", () => setTimeout(syncKAIAWorld, 150));
 
-    // مراقبة تغيير اللغة
+    // مراقبة تغيير اللغة فوراً عند الضغط
     const selector = document.getElementById("language-select");
     if (selector) {
         selector.addEventListener("change", () => {
-            setTimeout(forceShowTicker, 20);
+            forceShowTicker(); // إخفاء أو إظهار فوري
+            setTimeout(syncKAIAWorld, 100); 
         });
     }
 </script>
