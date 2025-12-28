@@ -141,8 +141,39 @@
         }
         @keyframes fall { to { transform: translateY(105vh); } }
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
-    </style>
-</head>
+/* [حقن ملكي] تنسيق شريط الخدمات المطور */
+        .services-dashboard {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            background: rgba(11, 18, 34, 0.5); /* خلفية زجاجية */
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 25px;
+            padding: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+        .service-item {
+            text-align: center;
+            transition: 0.3s;
+            flex: 1;
+            min-width: 200px;
+        }
+        .service-item:hover { transform: translateY(-5px); }
+        .service-item i { 
+            font-size: 40px; 
+            margin-bottom: 15px; 
+            display: block;
+            filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
+        }
+        .service-item h4 { font-weight: 900; font-size: 16px; color: #fff; margin: 0; }
+        .service-item p { font-size: 11px; color: var(--muted); margin-top: 5px; font-weight: 700; }
+</style>
+    </head>
 <body>
 
 <!-- =========================================================
@@ -288,45 +319,32 @@
 </section>
 
 <!-- =========================================================
-     6. سرد الفلسفة والخدمات (Narrative Sections)
+     6. شريط الخدمات المؤسسي المطور (Services Dashboard)
      ========================================================= -->
-
-<!-- [حقن] شريط الخدمات المؤسسي المدمج -->
-<section style="padding: 40px 20px; background-color: #020617; border-bottom: 1px solid rgba(59, 130, 246, 0.1);">
-    <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 20px;">
-        <div style="text-align: center; flex: 1; min-width: 150px;">
-            <i class="fa-solid fa-brain" style="font-size: 30px; color: var(--primary); margin-bottom: 10px;"></i>
-            <h4 style="font-size: 14px; font-weight: 900; margin: 0; color: #fff;">تحليل SMC المتقدم</h4>
+<section style="padding: 60px 20px; background: #020617;">
+    <div class="services-dashboard">
+        <!-- الخدمة الأولى -->
+        <div class="service-item">
+            <i class="fa-solid fa-brain" style="color: var(--primary);"></i>
+            <h4>تحليل SMC المتقدم</h4>
+            <p>قراءة مناطق السيولة والأوردر بلوك</p>
         </div>
-        <div style="text-align: center; flex: 1; min-width: 150px;">
-            <i class="fa-solid fa-wave-square" style="font-size: 30px; color: var(--success); margin-bottom: 10px;"></i>
-            <h4 style="font-size: 14px; font-weight: 900; margin: 0; color: #fff;">موجات إليوت</h4>
-        </div>
-        <div style="text-align: center; flex: 1; min-width: 150px;">
-            <i class="fa-solid fa-gem" style="font-size: 30px; color: var(--gold); margin-bottom: 10px;"></i>
-            <h4 style="font-size: 14px; font-weight: 900; margin: 0; color: #fff;">KAIA Master Vision</h4>
-        </div>
-    </div>
-</section>
-
-<!-- [حقن] صالة عرض المقالات والتقارير (المساحة الجديدة) -->
-<section id="articles-section" style="padding: 80px 20px; background: linear-gradient(180deg, #020617 0%, #050b14 100%);">
-    <div style="max-width: 1200px; margin: 0 auto;">
-        <h2 class="section-title" style="margin-bottom: 10px; font-size: 35px !important;">رؤى المحلل المؤسسي</h2>
-        <p style="text-align: center; color: var(--muted); margin-bottom: 50px; font-weight: 600;">اكتشف نية الحيتان من خلال أحدث تقاريرنا الفنية</p>
         
-        <div id="articles-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px;">
-            <!-- سيتم حقن المقالات هنا آلياً من غرفة التحرير -->
-            <p style="text-align: center; grid-column: 1/-1; opacity: 0.5;">جاري جلب أحدث التقارير...</p>
+        <!-- الخدمة الثانية -->
+        <div class="service-item" style="border-right: 1px solid rgba(255,255,255,0.1); border-left: 1px solid rgba(255,255,255,0.1);">
+            <i class="fa-solid fa-wave-square" style="color: var(--success);"></i>
+            <h4>نظرية موجات إليوت</h4>
+            <p>تحديد موقع السعر في الدورة الموجية</p>
+        </div>
+        
+        <!-- الخدمة الثالثة -->
+        <div class="service-item">
+            <i class="fa-solid fa-gem" style="color: var(--gold);"></i>
+            <h4>KAIA Master Vision</h4>
+            <p>دمج الاستراتيجيات برؤية سيادية</p>
         </div>
     </div>
 </section>
-<!-- مساحة إعلانية لشركاء كايا (Premium Ad Slot) -->
-<div id="ad-space-main" style="max-width: 1200px; margin: 40px auto; padding: 0 20px;">
-    <div style="width: 100%; height: 90px; background: rgba(59,130,246,0.02); border: 1px dashed #333; border-radius: 15px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 14px; font-weight: 700;">
-        <i class="fa-solid fa-handshake" style="margin-left: 10px;"></i> مساحة مخصصة لشركاء KAIA AI
-    </div>
-</div>
 
 <!-- =========================================================
      7. قسم باقات الاشتراك (Pricing Section) - الشرح المطور
