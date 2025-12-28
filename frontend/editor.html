@@ -28,16 +28,13 @@
         .publish-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
         .status-msg { text-align: center; margin-top: 20px; font-weight: 800; padding: 15px; border-radius: 10px; display: none; }
-        
-        /* تحسين شكل القائمة المنسدلة */
-        select.editor-input { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 15px center; background-size: 20px; }
     </style>
 </head>
 <body>
 
 <div class="editor-container">
     <div class="editor-header">
-        <img src="/static/logo.png" alt="KAIA" style="height: 60px; filter: drop-shadow(0 0 10px var(--primary));">
+        <img src="/static/logo.png" alt="KAIA" style="height: 60px;">
         <h1>غرفة التحرير والإعلام المؤسسي</h1>
         <p style="color: var(--muted); font-weight: 600;">بوابة الملك ربيع البرغوثي لنشر الرؤية السيادية</p>
     </div>
@@ -46,42 +43,42 @@
         <!-- 1. لغة المقال -->
         <div class="input-group">
             <label><i class="fa-solid fa-language"></i> لغة النشر</label>
-            <select id="art-lang" class="editor-input">
-                <option value="ar">العربية 🇸🇦 (تظهر للجمهور العربي)</option>
-                <option value="en">English 🇺🇸 (تظهر للجمهور العالمي)</option>
+            <select id="art-lang" class="editor-input" style="background:#1e293b">
+                <option value="ar">العربية 🇸🇦</option>
+                <option value="en">English 🇺🇸</option>
             </select>
         </div>
 
         <!-- 2. العنوان -->
         <div class="input-group">
-            <label><i class="fa-solid fa-heading"></i> عنوان المقال</label>
-            <input type="text" id="art-title" class="editor-input" placeholder="اكتب عنواناً جذاباً ومختصراً...">
+            <label>عنوان المقال</label>
+            <input type="text" id="art-title" class="editor-input" placeholder="اكتب العنوان هنا...">
         </div>
 
         <!-- 3. الملخص -->
         <div class="input-group">
-            <label><i class="fa-solid fa-align-right"></i> ملخص المقال (يظهر في الكرت الرئيسي)</label>
-            <input type="text" id="art-summary" class="editor-input" placeholder="سطر واحد يلخص أهمية هذا التقرير...">
+            <label>ملخص المقال (يظهر في الواجهة)</label>
+            <input type="text" id="art-summary" class="editor-input" placeholder="سطر واحد جذاب...">
         </div>
 
-        <!-- منطقة رفع الصورة الجديدة -->
+        <!-- 4. رفع الصورة (النظام المصلح) -->
         <div class="input-group">
-            <label><i class="fa-solid fa-camera"></i> رفع صورة غلاف المقال</label>
+            <label><i class="fa-solid fa-camera"></i> رفع صورة الغلاف</label>
             <input type="file" id="art-image-file" class="editor-input" accept="image/*" onchange="uploadImageToServer()">
-            <input type="hidden" id="art-image-url"> <!-- مخزن سري للرابط الذي سيرجعه السيرفر -->
+            <input type="hidden" id="art-image-url"> <!-- هنا يُخزن الرابط القادم من السيرفر -->
             <p id="upload-status" style="font-size: 12px; margin-top: 5px; font-weight: 800; display: none;"></p>
         </div>
 
         <!-- 5. المحتوى -->
         <div class="input-group">
-            <label><i class="fa-solid fa-pen-fancy"></i> المحتوى الكامل للتحليل</label>
-            <textarea id="art-content" class="editor-input editor-textarea" placeholder="اكتب هنا تفاصيل التحليل، الأرقام، والرؤية الفنية الكاملة..."></textarea>
+            <label>المحتوى الكامل</label>
+            <textarea id="art-content" class="editor-input editor-textarea" placeholder="اكتب التحليل هنا..."></textarea>
         </div>
 
         <!-- زر النشر -->
         <button class="publish-btn" onclick="publishArticle()">
             <i class="fa-solid fa-paper-plane"></i> 
-            <span>نشر المقال في صالة العرض الآن</span>
+            <span>نشر المقال الآن</span>
         </button>
 
         <!-- رسالة الحالة -->
@@ -92,27 +89,17 @@
 <script>
     const token = localStorage.getItem("token");
 
-    // 1. حماية الغرفة: التأكد من هوية الآدمن فور الدخول
+    // 1. حماية الغرفة
     async function checkAdminStatus() {
-        if (!token) {
-            window.location.href = "/";
-            return;
-        }
+        if (!token) { window.location.href = "/"; return; }
         try {
-            const res = await fetch("/api/me", { 
-                headers: {"Authorization": "Bearer " + token} 
-            });
+            const res = await fetch("/api/me", { headers: {"Authorization": "Bearer " + token} });
             const user = await res.json();
-            if (!user.is_admin) {
-                alert("🔒 منطقة محظورة: هذه الغرفة مخصصة للملك فقط.");
-                window.location.href = "/";
-            }
-        } catch (e) {
-            window.location.href = "/";
-        }
+            if (!user.is_admin) { window.location.href = "/"; }
+        } catch (e) { window.location.href = "/"; }
     }
 
-// دالة إرسال الصورة للسيرفر فور اختيارها من الجهاز
+    // 2. دالة رفع الصورة للسيرفر
     async function uploadImageToServer() {
         const fileInput = document.getElementById("art-image-file");
         const status = document.getElementById("upload-status");
@@ -121,7 +108,7 @@
         if (!fileInput.files[0]) return;
 
         status.style.display = "block";
-        status.innerText = "⏳ جاري رفع الصورة للسيرفر...";
+        status.innerText = "⏳ جاري الرفع...";
         status.style.color = "var(--primary)";
 
         const formData = new FormData();
@@ -133,87 +120,68 @@
                 headers: { "Authorization": "Bearer " + token },
                 body: formData
             });
-
             const data = await res.json();
-
             if (res.ok) {
-                // حفظ الرابط المرتجع من السيرفر في الخانة المخفية
-                urlInput.value = data.image_url; 
-                status.innerText = "✅ تم رفع الصورة بنجاح وتجهيز الرابط.";
+                urlInput.value = data.image_url;
+                status.innerText = "✅ تم الرفع بنجاح!";
                 status.style.color = "#10b981";
-            } else {
-                alert("فشل رفع الصورة: " + (data.detail || "خطأ غير معروف"));
-                status.style.display = "none";
-            }
-        } catch (e) {
-            alert("خطأ في الاتصال أثناء الرفع");
-            status.style.display = "none";
-        }
-    }    
+            } else { alert("فشل الرفع"); }
+        } catch (e) { alert("خطأ في الاتصال"); }
+    }
+
+    // 3. دالة النشر النهائية (مصلحة بالكامل)
     async function publishArticle() {
         const btn = document.querySelector(".publish-btn");
         const status = document.getElementById("status-text");
 
-        // جمع البيانات وتنظيفها
         const articleData = {
             title: document.getElementById("art-title").value.trim(),
             summary: document.getElementById("art-summary").value.trim(),
             content: document.getElementById("art-content").value.trim(),
-            image_url: document.getElementById("art-image-url").value,
+            image_url: document.getElementById("art-image-url").value, // سحب الرابط من الخانة المخفية
             language: document.getElementById("art-lang").value
         };
 
-        // التحقق من المدخلات الأساسية
         if (!articleData.title || !articleData.content) {
-            return alert("الرجاء إدخال العنوان والمحتوى على الأقل.");
+            return alert("يرجى ملء العنوان والمحتوى");
         }
 
-        // قفل الزر وتغيير النص
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري النشر في السيرفر...';
+        btn.innerText = "جاري النشر...";
 
         try {
             const response = await fetch("/api/admin/add_article", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "accept": "application/json",
                     "Authorization": "Bearer " + token
                 },
                 body: JSON.stringify(articleData)
             });
 
-            const result = await response.json();
-
             if (response.ok) {
-                // عرض رسالة النجاح
                 status.style.display = "block";
-                status.style.background = "rgba(16, 185, 129, 0.1)";
                 status.style.color = "#10b981";
-                status.style.border = "1px solid #10b981";
-                status.innerText = "✅ تم النشر بنجاح! المقال متاح الآن للجمهور في الصفحة الرئيسية.";
+                status.innerText = "✅ تم النشر بنجاح! المقال متاح الآن للجمهور.";
                 
-                // مسح البيانات من الخانات لتجهيز مقال جديد
+                // مسح الخانات (بالمسميات الصحيحة 100%)
                 document.getElementById("art-title").value = "";
                 document.getElementById("art-summary").value = "";
                 document.getElementById("art-content").value = "";
-                document.getElementById("art-image").value = "";
-                
-                // إخفاء الرسالة بعد 5 ثوانٍ
-                setTimeout(() => { status.style.display = "none"; }, 5000);
+                document.getElementById("art-image-url").value = "";
+                document.getElementById("art-image-file").value = "";
+                document.getElementById("upload-status").style.display = "none";
             } else {
-                alert("فشل السيرفر في معالجة الطلب: " + (result.detail || "خطأ غير معروف"));
+                alert("فشل في النشر، تأكد من صلاحيات الآدمن.");
             }
         } catch (error) {
-            console.error("Critical Fetch Error:", error);
-            alert("خطأ في الاتصال: تأكد من إنترنت الجهاز ومن رفع التعديلات الأخيرة.");
+            alert("خطأ في الاتصال بالسيرفر.");
         } finally {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> نشر مقال جديد';
+            btn.innerText = "نشر مقال جديد";
         }
     }
 
-    // تشغيل فحص الحماية عند التحميل
     window.onload = checkAdminStatus;
 </script>
 </body>
