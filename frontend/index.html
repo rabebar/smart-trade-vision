@@ -295,8 +295,7 @@
 </div>
 
 <!-- شريط أخبار كايا الهجين -->
-<div style="background: #050b14; border-bottom: 1px solid rgba(59,130,246,0.2); padding: 8px 0; overflow: hidden; position: relative; z-index: 10;">
-    <div id="kaia-ticker-wrap">
+<div id="kaia-ticker-container" style="display: none; background: #050b14; border-bottom: 1px solid rgba(59,130,246,0.2); padding: 8px 0; overflow: hidden; position: relative; z-index: 10;">    <div id="kaia-ticker-wrap">
         <p style="text-align: center; font-size: 13px; color: var(--primary); opacity: 0.5; margin: 0;">جاري جلب النبض العالمي...</p>
     </div>
 </div>
@@ -473,103 +472,74 @@
 <!-- المحرك الإعلامي الملكي المعدل -->
 <script>
     async function syncKAIAWorld() {
-        const langSelect = document.getElementById("language-select");
-        const lang = langSelect ? langSelect.value : "ar";
-        const articlesSection = document.getElementById("articles-section");
+        // 1. قراءة اللغة من الذاكرة أولاً لضمان عدم حدوث تضارب
+        const lang = localStorage.getItem("kaia_lang") || "ar";
+        const container = document.getElementById("kaia-ticker-container");
         const tickerWrap = document.getElementById("kaia-ticker-wrap");
+        const articlesSection = document.getElementById("articles-section");
 
-        // [1] إظهار/إخفاء قسم المقالات بناءً على اللغة العربية فقط
-        if (articlesSection) {
-            articlesSection.style.display = (lang === "ar") ? "block" : "none";
+        // 2. القتل الفوري: إذا لم تكن اللغة عربية، تأكد أن كل شيء مخفي تماماً واخرج من الدالة
+        if (lang !== "ar") {
+            if (container) container.style.setProperty("display", "none", "important");
+            if (articlesSection) articlesSection.style.display = "none";
+            return; 
         }
 
+        // 3. إذا وصلنا هنا، يعني اللغة عربية: ابدأ التحضير بصمت قبل الإظهار
         try {
-            let tickerContent = "";
-            let moveDir = (lang === "ar") ? "right" : "left";
+            let myTitles = "";
+            let worldNews = "جاري جلب النبض العالمي...";
 
-            if (lang === "ar") {
-                // --- النسخة العربية: جلب البيانات مع حماية من الأخطاء ---
-                let myTitles = "";
-                let worldNews = "جاري جلب النبض العالمي...";
+            // جلب البيانات (المقالات + الأخبار)
+            const [resArt, resNews] = await Promise.allSettled([
+                fetch('/api/articles?lang=ar').then(r => r.json()),
+                fetch('/api/news?lang=ar').then(r => r.json())
+            ]);
 
-                // محاولة جلب المقالات الخاصة
-                try {
-                    const resArt = await fetch(`/api/articles?lang=ar`);
-                    if (resArt.ok) {
-                        const myArticles = await resArt.json();
-                        myTitles = myArticles.map(a => ` 🔥 ${a.title}`).join(" ★ ");
-                        
-                        // تحديث صالة العرض
-                        const container = document.getElementById("articles-container");
-                        if (container && myArticles.length > 0) {
-                            container.innerHTML = myArticles.map(art => `
-                                <div class="service-card" style="padding: 0; overflow: hidden; border: 1px solid rgba(59, 130, 246, 0.1); background: #0b1222; text-align: right; display: flex; flex-direction: column; border-radius: 20px;">
-                                    <img src="${art.image_url || '/static/logo.png'}" style="width: 100%; height: 200px; object-fit: cover; border-bottom: 1px solid #1e293b;">
-                                    <div style="padding: 25px; flex-grow: 1;">
-                                        <h3 style="font-size: 20px; font-weight: 900; color: var(--primary); margin-bottom: 12px;">${art.title}</h3>
-                                        <p style="font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 20px;">${art.summary}</p>
-                                        <button onclick="openRoyalArticle('${art.title}', '${art.content.replace(/\n/g, "<br>").replace(/'/g, "\\'")}')" 
-                                                style="background: none; border: 1px solid var(--primary); color: var(--primary); padding: 8px 15px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%;">
-                                            اقرأ التحليل الكامل
-                                        </button>
-                                    </div>
-                                </div>
-                            `).join("");
-                        }
-                    }
-                } catch (e) { console.warn("Articles API Error:", e); }
-
-                // محاولة جلب الأخبار العالمية بالعربي
-                try {
-                    const resGlobal = await fetch(`/api/news?lang=ar`);
-                    if (resGlobal.ok) {
-                        const globalData = await resGlobal.json();
-                        worldNews = globalData.news || worldNews;
-                    }
-                } catch (e) { console.warn("News API Error:", e); }
-
-                // تركيب المحتوى العربي
-                const separator = myTitles ? " | " : "";
-                tickerContent = `<span style="color:#ffd700;">${myTitles}</span>${separator}<span style="color:#fff;">🌍 أخبار العالم: ${worldNews}</span>`;
-
-            } else {
-                // --- النسخ الأجنبية: أخبار Investing بالإنجليزي فقط ---
-                let worldNews = "Fetching Global Market Pulse...";
-                try {
-                    const resGlobal = await fetch(`/api/news?lang=en`);
-                    if (resGlobal.ok) {
-                        const globalData = await resGlobal.json();
-                        worldNews = globalData.news || worldNews;
-                    }
-                } catch (e) { console.warn("Global News Error:", e); }
-                tickerContent = `<span style="color:#fff;">🌍 World News: ${worldNews}</span>`;
+            if (resArt.status === 'fulfilled' && Array.isArray(resArt.value)) {
+                myTitles = resArt.value.map(a => ` 🔥 ${a.title}`).join(" ★ ");
+                // تحديث صالة عرض المقالات (العربي فقط)
+                const artBox = document.getElementById("articles-container");
+                if (artBox) {
+                    artBox.innerHTML = resArt.value.map(art => `
+                        <div class="service-card" style="padding: 0; overflow: hidden; border: 1px solid rgba(59, 130, 246, 0.1); background: #0b1222; text-align: right; display: flex; flex-direction: column; border-radius: 20px;">
+                            <img src="${art.image_url || '/static/logo.png'}" style="width: 100%; height: 200px; object-fit: cover;">
+                            <div style="padding: 25px; flex-grow: 1;">
+                                <h3 style="font-size: 20px; font-weight: 900; color: var(--primary);">${art.title}</h3>
+                                <p style="font-size: 14px; color: var(--muted);">${art.summary}</p>
+                                <button onclick="openRoyalArticle('${art.title}', '${art.content.replace(/\n/g, "<br>").replace(/'/g, "\\'")}')" 
+                                        style="border: 1px solid var(--primary); color: var(--primary); padding: 8px 15px; border-radius: 8px; cursor: pointer; width: 100%; background:none;">اقرأ التحليل</button>
+                            </div>
+                        </div>`).join("");
+                }
             }
 
-            // [2] حقن المحتوى في الشريط مع ضمان الاتجاه
+            if (resNews.status === 'fulfilled') {
+                worldNews = resNews.value.news || worldNews;
+            }
+
+            // 4. الآن وبعد أن أصبحت البيانات جاهزة، قم بحقنها وإظهار الشريط فجأة
+            const separator = myTitles ? " | " : "";
             if (tickerWrap) {
                 tickerWrap.innerHTML = `
-                    <marquee scrollamount="5" direction="${moveDir}" onmouseover="this.stop();" onmouseout="this.start();" style="color: #fff; font-weight: 700; font-size: 13px; cursor: pointer;">
-                        ${tickerContent}
+                    <marquee scrollamount="5" direction="right" onmouseover="this.stop();" onmouseout="this.start();" style="color: #fff; font-weight: 700; font-size: 13px;">
+                        <span style="color:#ffd700;">${myTitles}</span>${separator}<span style="color:#fff;">🌍 أخبار العالم: ${worldNews}</span>
                     </marquee>`;
             }
 
-        } catch (e) { 
-            console.error("Global Sync Error:", e);
-            if(tickerWrap) tickerWrap.innerHTML = `<p style="text-align:center; color:red; font-size:12px;">خطأ في الاتصال بالمحرك</p>`;
-        }
+            // إظهار الحاويات (العربي فقط)
+            if (container) container.style.setProperty("display", "block", "important");
+            if (articlesSection) articlesSection.style.display = "block";
+
+        } catch (e) { console.error("Sync Error"); }
     }
 
-    function openRoyalArticle(title, content) {
-        const win = window.open("", "_blank");
-        win.document.write('<html><head><title>'+title+'</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"><style>body{background:#020617; color:white; font-family:"Cairo",sans-serif; padding:50px; line-height:2; text-align:right; direction:rtl;}.container{max-width:800px; margin:0 auto; background:#0b1222; padding:40px; border-radius:20px; border:1px solid #1e293b;}h1{color:#3b82f6; font-weight:900; border-bottom:2px solid #1e293b; padding-bottom:20px;}p{font-size:18px; color:#d1d5db; white-space:pre-wrap;}.btn{background:#3b82f6; color:#000; border:none; padding:12px 30px; border-radius:10px; font-weight:900; cursor:pointer; margin-top:40px; font-family:inherit;}</style></head><body><div class="container"><h1>'+title+'</h1><p>'+content+'</p><button class="btn" onclick="window.close()">إغلاق التقرير</button></div></body></html>');
-        win.document.close();
-    }
-
-    document.addEventListener("DOMContentLoaded", syncKAIAWorld);
-    const langSelect = document.getElementById("language-select");
-    if (langSelect) {
-        langSelect.addEventListener("change", syncKAIAWorld);
-    }
+    // التنفيذ عند التحميل مع تأخير بسيط لتجاوز صراعات الملفات الأخرى
+    document.addEventListener("DOMContentLoaded", () => setTimeout(syncKAIAWorld, 300));
+    
+    // مراقبة تغيير اللغة من القائمة
+    const selector = document.getElementById("language-select");
+    if (selector) selector.addEventListener("change", () => setTimeout(syncKAIAWorld, 50));
 </script>
 </body>
 </html>
