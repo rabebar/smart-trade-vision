@@ -476,7 +476,7 @@
     </div>
 </footer>
 
-<!-- 1. استدعاء ملفات البرمجة والترجمة الأساسية -->
+<!-- 1. استدعاء ملفات البرمجة والترجمة الأساسية (نسخة واحدة فقط) -->
 <script src="/static/translations.js"></script>
 <script src="/static/script.js"></script>
 
@@ -489,8 +489,6 @@
             const introTitle = document.querySelector('#kaia-intro-overlay h1');
             if (introTitle) {
                 introTitle.style.setProperty("direction", "ltr", "important");
-                introTitle.style.display = "block";
-                introTitle.style.textAlign = "center";
                 const originalText = "KAIA AI";
                 introTitle.innerHTML = '<span class="santa-k">K</span>' + originalText.substring(1);
             }
@@ -506,59 +504,37 @@
     })();
 </script>
 
-<!-- 3. المحرك الإعلامي الملكي المطور (فلترة اللغات + اتجاه الشريط + أخبار العالم) -->
+<!-- 3. المحرك الإعلامي الملكي (الفلترة + الاتجاه + أخبار العالم) -->
 <script>
-     // [المحرك الإعلامي النهائي والمستقر لـ KAIA AI]
     async function syncKAIAWorld() {
         const lang = document.getElementById("language-select").value || "ar";
         const articlesSection = document.getElementById("articles-section");
         const tickerWrap = document.getElementById("kaia-ticker-wrap");
 
-        // 1. التحكم في ظهور قسم المقالات (فقط في العربية)
+        // [أ] فلترة الأقسام: المقالات تظهر فقط في النسخة العربية لضمان النظافة
         if (articlesSection) {
             articlesSection.style.display = (lang === "ar") ? "block" : "none";
         }
 
         try {
             let tickerContent = "";
-            let moveDir = (lang === "ar") ? "right" : "left"; // يمين للعربي، يسار للأجنبي
+            let moveDir = (lang === "ar") ? "right" : "left"; // يمين للعربي | يسار للأجنبي
 
             if (lang === "ar") {
-                // --- الحالة العربية: (مقالاتك + أخبار العالم بالعربي) ---
+                // --- النسخة العربية: مقالاتك الحقيقية + أخبار Investing بالعربي ---
                 const resArt = await fetch(`/api/articles?lang=ar`);
                 const myArticles = await resArt.json();
                 
                 const resGlobal = await fetch(`/api/news?lang=ar`);
                 const globalData = await resGlobal.json();
-                
-                const myTitles = myArticles.map(a => ` 🔥 ${a.title}`).join(" ★ ");
                 const worldNews = globalData.news || "جاري جلب النبض العالمي...";
-                
+
+                const myTitles = myArticles.map(a => ` 🔥 ${a.title}`).join(" ★ ");
                 tickerContent = `<span style="color:#ffd700;">${myTitles}</span> | <span style="color:#fff;">🌍 أخبار العالم: ${worldNews}</span>`;
-            } else {
-                // --- الحالات الأجنبية: (أخبار العالم بالإنجليزي فقط) ---
-                const resGlobal = await fetch(`/api/news?lang=en`); // نجلب الإنجليزي لكل اللغات الأخرى
-                const globalData = await resGlobal.json();
-                const worldNews = globalData.news || "Fetching Global Market Pulse...";
-                
-                tickerContent = `<span style="color:#fff;">🌍 World News: ${worldNews}</span>`;
-            }
 
-            // حقن المحتوى في الشريط مع ضبط الاتجاه الصحيح
-            if (tickerWrap) {
-                tickerWrap.innerHTML = `
-                    <marquee scrollamount="5" direction="${moveDir}" onmouseover="this.stop();" onmouseout="this.start();" style="color: #fff; font-weight: 700; font-size: 13px; cursor: pointer;">
-                        ${tickerContent}
-                    </marquee>`;
-            }
-
-            // تحديث صالة العرض (للعربي فقط)
-            if (lang === "ar") {
+                // تحديث صالة عرض المقالات (للعربي فقط)
                 const container = document.getElementById("articles-container");
-                const resArt = await fetch(`/api/articles?lang=ar`);
-                const myArticles = await resArt.json();
-                
-                if (myArticles.length > 0) {
+                if (container && myArticles.length > 0) {
                     container.innerHTML = myArticles.map(art => `
                         <div class="service-card" style="padding: 0; overflow: hidden; border: 1px solid rgba(59, 130, 246, 0.1); background: #0b1222; text-align: right; display: flex; flex-direction: column; border-radius: 20px;">
                             <img src="${art.image_url || '/static/logo.png'}" style="width: 100%; height: 200px; object-fit: cover; border-bottom: 1px solid #1e293b;">
@@ -573,11 +549,26 @@
                         </div>
                     `).join("");
                 }
+            } else {
+                // --- النسخ الأجنبية: أخبار Investing بالإنجليزي فقط لضمان الاحترافية ---
+                const resGlobal = await fetch(`/api/news?lang=en`);
+                const globalData = await resGlobal.json();
+                const worldNews = globalData.news || "Fetching Global Market Pulse...";
+                tickerContent = `<span style="color:#fff;">🌍 World News: ${worldNews}</span>`;
             }
 
-        } catch (e) { console.error("Critical Sync Error:", e); }
+            // حقن المحتوى في الشريط مع ضبط الاتجاه الصحيح
+            if (tickerWrap) {
+                tickerWrap.innerHTML = `
+                    <marquee scrollamount="5" direction="${moveDir}" onmouseover="this.stop();" onmouseout="this.start();" style="color: #fff; font-weight: 700; font-size: 13px; cursor: pointer;">
+                        ${tickerContent}
+                    </marquee>`;
+            }
+
+        } catch (e) { console.error("Sync Error:", e); }
     }
 
+    // دالة عرض المقال في نافذة فخمة
     function openRoyalArticle(title, content) {
         const win = window.open("", "_blank");
         win.document.write('<html><head><title>'+title+'</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"><style>body{background:#020617; color:white; font-family:"Cairo",sans-serif; padding:50px; line-height:2; text-align:right; direction:rtl;}.container{max-width:800px; margin:0 auto; background:#0b1222; padding:40px; border-radius:20px; border:1px solid #1e293b;}h1{color:#3b82f6; font-weight:900; border-bottom:2px solid #1e293b; padding-bottom:20px;}p{font-size:18px; color:#d1d5db; white-space:pre-wrap;}.btn{background:#3b82f6; color:#000; border:none; padding:12px 30px; border-radius:10px; font-weight:900; cursor:pointer; margin-top:40px; font-family:inherit;}</style></head><body><div class="container"><h1>'+title+'</h1><p>'+content+'</p><button class="btn" onclick="window.close()">إغلاق التقرير</button></div></body></html>');
@@ -587,5 +578,3 @@
     document.addEventListener("DOMContentLoaded", syncKAIAWorld);
     document.getElementById("language-select").addEventListener("change", syncKAIAWorld);
 </script>
-</body>
-</html>
