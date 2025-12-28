@@ -508,22 +508,31 @@
 
 <!-- 3. المحرك الإعلامي الملكي المطور (فلترة اللغات + اتجاه الشريط + أخبار العالم) -->
 <script>
-    async function syncKAIAWorld() {
+   async function syncKAIAWorld() {
         const lang = document.getElementById("language-select").value || "ar";
         const container = document.getElementById("articles-container");
         const tickerWrap = document.getElementById("kaia-ticker-wrap");
+        const articlesSection = document.getElementById("articles-section");
+
+        // [الحل الجذري] إذا لم تكن اللغة عربية، قم بإخفاء أقسام الأخبار والمقالات تماماً
+        if (lang !== "ar") {
+            if (articlesSection) articlesSection.style.display = "none";
+            if (tickerWrap) tickerWrap.parentElement.style.display = "none";
+            return; // توقف هنا ولا تجلب أي بيانات
+        }
+
+        // إذا كانت اللغة عربية، أكمل العمل الطبيعي
+        if (articlesSection) articlesSection.style.display = "block";
+        if (tickerWrap) tickerWrap.parentElement.style.display = "block";
 
         try {
-            // أ. جلب مقالات الملك (المفلترة حسب اللغة)
-            const resArt = await fetch(`/api/articles?lang=${lang}`);
+            const resArt = await fetch(`/api/articles?lang=ar`);
             const myArticles = await resArt.json();
-
-            // ب. جلب أخبار العالم الحية (المفلترة حسب اللغة من Investing.com)
-            const resGlobal = await fetch(`/api/news?lang=${lang}`);
+            const resGlobal = await fetch(`/api/news?lang=ar`);
             const globalData = await resGlobal.json();
             const worldNews = globalData.news || "";
 
-            // --- تحديث صالة العرض بالرؤى المؤسسية ---
+            // تحديث صالة العرض
             if (myArticles.length > 0) {
                 container.innerHTML = myArticles.map(art => `
                     <div class="service-card" style="padding: 0; overflow: hidden; border: 1px solid rgba(59, 130, 246, 0.1); background: #0b1222; text-align: right; display: flex; flex-direction: column; border-radius: 20px;">
@@ -538,25 +547,16 @@
                         </div>
                     </div>
                 `).join("");
-            } else {
-                container.innerHTML = `<p style="text-align: center; grid-column: 1/-1; opacity: 0.5;">بانتظار نشر أول تقرير مؤسسي باللغة: ${lang === 'ar' ? 'العربية' : 'English'}.</p>`;
             }
 
-            // --- تحديث شريط الأخبار الذكي (ضبط الاتجاه والدمج) ---
+            // تحديث شريط الأخبار (اتجاه اليمين للعربي)
             const myTitles = myArticles.map(a => ` 🔥 ${a.title}`).join(" ★ ");
-            const newsText = myTitles ? `${myTitles} | 🌍 أخبار العالم: ${worldNews}` : `🌍 أخبار العالم: ${worldNews}`;
-            
-            // ضبط الاتجاه: للعربي يزحف لليمين (right) للأجنبي يزحف لليسار (left)
-            const moveDir = (lang === "ar") ? "right" : "left";
-            
-            if (tickerWrap) {
-                tickerWrap.innerHTML = `
-                    <marquee scrollamount="5" direction="${moveDir}" onmouseover="this.stop();" onmouseout="this.start();" style="color: #fff; font-weight: 700; font-size: 13px; cursor: pointer;">
-                        <span style="color:#ffd700;">${newsText}</span>
-                    </marquee>`;
-            }
+            tickerWrap.innerHTML = `
+                <marquee scrollamount="5" direction="right" onmouseover="this.stop();" onmouseout="this.start();" style="color: #fff; font-weight: 700; font-size: 13px;">
+                    <span style="color:#ffd700;">${myTitles}</span> | 🌍 نبض الأسواق: ${worldNews}
+                </marquee>`;
 
-        } catch (e) { console.error("Sync Error:", e); }
+        } catch (e) { console.error("Sync Error"); }
     }
 
     // دالة عرض المقال في نافذة فخمة ومنظمة
