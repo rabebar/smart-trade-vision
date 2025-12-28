@@ -81,24 +81,44 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 @app.get("/api/news")
 def get_news(lang: str = "ar"):
     try:
+        # تحديد الرابط بناءً على اللغة
         if lang == "en":
             rss = "https://www.investing.com/rss/news_285.rss" 
         else:
             rss = "https://sa.investing.com/rss/news_1.rss"
             
-        res = requests.get(rss, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
+        # إضافة هوية متصفح كاملة لمنع الحظر
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "application/xml, text/xml, */*",
+            "Referer": "https://www.google.com/"
+        }
+        
+        res = requests.get(rss, timeout=10, headers=headers)
+        
+        # التأكد من نجاح الطلب
+        if res.status_code != 200:
+            return {"news": "نبض السوق حالياً: استقرار حذر في التداولات العالمية"}
+
         soup = BeautifulSoup(res.content, "xml")
-        items = soup.find_all("item")[:15]
-        titles = [i.title.text.strip() for i in items if i.title]
+        items = soup.find_all("item")
+        
+        # استخراج العناوين وتصفيتها من الرموز الغريبة
+        titles = []
+        for i in items[:15]:
+            if i.title:
+                clean_title = i.title.text.strip().replace("'", "").replace('"', "")
+                titles.append(clean_title)
         
         if titles:
             return {"news": " ★ ".join(titles)}
         else:
-            msg = "Market pulse is quiet" if lang == "en" else "نبض السوق هادئ"
-            return {"news": msg}
-    except:
-        err_msg = "Market news currently unavailable" if lang == "en" else "تعذر جلب الأخبار حالياً"
-        return {"news": err_msg}
+            # رسالة بديلة في حال كان الـ RSS فارغاً
+            return {"news": "KAIA AI: نراقب تحركات السيولة والسياسة النقدية الحالية"}
+            
+    except Exception as e:
+        print(f"News Error: {e}")
+        return {"news": "جاري تحديث موجز الأخبار المؤسسية... انتظر قليلاً"}
 
 # =========================================================
 # جلب المقالات والإعلانات للجمهور (Media API)
