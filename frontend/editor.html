@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KAIA AI | Newsroom ✍️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body { background: #020617; color: white; font-family: 'Cairo', sans-serif; padding: 40px 20px; }
+        .editor-container { max-width: 900px; margin: 0 auto; background: #0b1222; border: 2px solid var(--primary); border-radius: 30px; padding: 40px; box-shadow: 0 0 50px rgba(59, 130, 246, 0.2); }
+        .editor-header { text-align: center; margin-bottom: 40px; }
+        .editor-header h1 { font-weight: 900; color: var(--primary); font-size: 35px; }
+        .input-group { margin-bottom: 25px; }
+        .input-group label { display: block; margin-bottom: 10px; font-weight: 700; color: var(--muted); }
+        .editor-input { width: 100%; padding: 15px; background: #000; border: 1px solid #333; border-radius: 12px; color: #fff; font-family: inherit; font-size: 16px; outline: none; }
+        .editor-input:focus { border-color: var(--primary); }
+        .editor-textarea { height: 250px; resize: vertical; }
+        .publish-btn { width: 100%; height: 70px; background: var(--primary); color: #000; border: none; border-radius: 15px; font-size: 22px; font-weight: 900; cursor: pointer; transition: 0.3s; }
+        .publish-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4); }
+        .status-msg { text-align: center; margin-top: 20px; font-weight: 800; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="editor-container">
+    <div class="editor-header">
+        <img src="/static/logo.png" alt="K" style="height: 60px; margin-bottom: 15px;">
+        <h1>غرفة التحرير والإعلام المؤسسي</h1>
+        <p style="color: var(--muted);">أهلاً بك يا ملك، اكتب رؤيتك ليرتها العالم</p>
+    </div>
+
+    <div id="editor-form">
+        <div class="input-group">
+            <label>لغة المقال</label>
+            <select id="art-lang" class="editor-input" style="background-color: #1e293b;">
+                <option value="ar">العربية 🇸🇦</option>
+                <option value="en">English 🇺🇸</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>عنوان المقال</label>
+            <input type="text" id="art-title" class="editor-input" placeholder="مثلاً: انفجار وشيك في أسعار الذهب">
+        </div>
+
+        <div class="input-group">
+            <label>ملخص قصير (يظهر في صالة العرض)</label>
+            <input type="text" id="art-summary" class="editor-input" placeholder="اكتب سطرين يجذبان المتداول للقراءة">
+        </div>
+
+        <div class="input-group">
+            <label>رابط الصورة البارزة (URL)</label>
+            <input type="text" id="art-image" class="editor-input" placeholder="ضع هنا رابط الصورة (من موقع خارجي أو مجلد الصور)">
+        </div>
+
+        <div class="input-group">
+            <label>محتوى المقال الكامل</label>
+            <textarea id="art-content" class="editor-input editor-textarea" placeholder="اكتب هنا التحليل المفصل والمحتوى الكامل للمقال..."></textarea>
+        </div>
+
+        <button class="publish-btn" onclick="publishArticle()">
+            <i class="fa-solid fa-paper-plane"></i> نشر المقال في صالة العرض
+        </button>
+
+        <p id="status-text" class="status-msg"></p>
+    </div>
+</div>
+
+<script>
+    const token = localStorage.getItem("token");
+
+    // 1. حماية غرفة الملك: التأكد من الصلاحية فوراً
+    async function checkAdmin() {
+        if (!token) { window.location.href = "/"; return; }
+        try {
+            const res = await fetch("/api/me", { headers: {"Authorization": "Bearer " + token} });
+            const user = await res.json();
+            if (!user.is_admin) {
+                alert("🔒 منطقة محظورة: هذه الغرفة مخصصة للملك فقط.");
+                window.location.href = "/";
+            }
+        } catch (e) { window.location.href = "/"; }
+    }
+
+    // 2. دالة النشر
+    async function publishArticle() {
+        const btn = document.querySelector(".publish-btn");
+        const status = document.getElementById("status-text");
+
+        const data = {
+            title: document.getElementById("art-title").value,
+            summary: document.getElementById("art-summary").value,
+            content: document.getElementById("art-content").value,
+            image_url: document.getElementById("art-image").value,
+            language: document.getElementById("art-lang").value
+        };
+
+        if (!data.title || !data.content) return alert("يرجى تعبئة العنوان والمحتوى على الأقل");
+
+        btn.disabled = true;
+        btn.innerText = "جاري النشر في السيرفر...";
+
+        try {
+            const res = await fetch("/api/admin/add_article", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                status.style.display = "block";
+                status.innerText = "✅ تم النشر بنجاح! المقال الآن متاح للجمهور.";
+                status.style.color = "var(--success)";
+                document.getElementById("editor-form").reset(); // تفريغ الخانات
+            } else {
+                alert("فشل النشر، يرجى المحاولة لاحقاً.");
+            }
+        } catch (e) { alert("خطأ في الاتصال"); }
+        
+        btn.disabled = false;
+        btn.innerText = "نشر مقال جديد";
+    }
+
+    window.onload = checkAdmin;
+</script>
+</body>
+</html>

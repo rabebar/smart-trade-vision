@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 # =========================================================
 load_dotenv()
 
-from database import SessionLocal, User, Analysis
+from database import SessionLocal, User, Analysis, Article, Sponsor
 import schemas
 
 # =========================================================
@@ -98,6 +98,18 @@ def get_news(lang: str = "ar"):
     except:
         err_msg = "Market news currently unavailable" if lang == "en" else "تعذر جلب الأخبار حالياً"
         return {"news": err_msg}
+    # =========================================================
+# جلب المقالات والإعلانات للجمهور (Public API)
+# =========================================================
+@app.get("/api/articles")
+def get_articles(lang: str = "ar", db: Session = Depends(get_db)):
+    # جلب آخر 6 مقالات متوافقة مع لغة المستخدم
+    return db.query(Article).filter(Article.language == lang).order_by(Article.id.desc()).limit(6).all()
+
+@app.get("/api/sponsors")
+def get_sponsors(location: str = "main", db: Session = Depends(get_db)):
+    # جلب الإعلانات النشطة لمكان معين
+    return db.query(Sponsor).filter(Sponsor.location == location, Sponsor.is_active == True).all()
 
 # =========================================================
 # Auth System
@@ -179,6 +191,30 @@ def admin_delete_user(user_id: int, current_user: User = Depends(get_current_use
         db.delete(user)
         db.commit()
     return {"status": "success"}
+# =========================================================
+# أوامر غرفة التحرير - خاص بالآدمن (Editor API)
+# =========================================================
+@app.post("/api/admin/add_article")
+def admin_add_article(data: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # حماية ملكية: التأكد أن ربيع البرغوثي (الآدمن) هو من ينشر
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="صلاحيات غير كافية")
+    
+    new_art = Article(
+        title=data.get("title"),
+        summary=data.get("summary"),
+        content=data.get("content"),
+        image_url=data.get("image_url"),
+        language=data.get("language", "ar")
+    )
+    db.add(new_art)
+    db.commit()
+    return {"status": "success", "message": "تم نشر المقال في صالة العرض بنجاح"}
+
+@app.get("/editor")
+def editor_page():
+    # المسار السري لفتح واجهة التحرير الخاصة بك
+    return FileResponse("frontend/editor.html")
 
 # =========================================================
 # KAIA Descriptive Analysis Engine

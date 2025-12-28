@@ -77,6 +77,32 @@ class Analysis(Base):
     
     user_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="analyses")
+    # =========================================================
+# 3. جدول غرفة التحرير (Articles Table)
+# =========================================================
+class Article(Base):
+    __tablename__ = "articles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, index=True)         # عنوان المقال
+    summary = Column(Text)                    # ملخص يظهر في الكرت
+    content = Column(Text)                    # محتوى المقال الكامل
+    image_url = Column(String)                # رابط صورة الغلاف
+    language = Column(String, default="ar")    # لغة المقال (ar / en)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+# =========================================================
+# 4. جدول مساحات الإعلانات (Sponsors/Ads Table)
+# =========================================================
+class Sponsor(Base):
+    __tablename__ = "sponsors"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)                     # اسم الشركة المعلنة
+    image_url = Column(String)                # رابط صورة البانر
+    link_url = Column(String)                 # رابط الموقع (Affiliate Link)
+    location = Column(String, default="main") # مكان الظهور (main / dash / mobile)
+    is_active = Column(Boolean, default=True) # حالة الإعلان
 
 # =========================================================
 # 3. محرك الهجرة التلقائية (Auto-Migration Engine)
