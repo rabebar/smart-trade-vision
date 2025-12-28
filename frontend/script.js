@@ -2,7 +2,7 @@
 
 /* ============================================================
    KAIA AI - MASTER FRONTEND ENGINE (Final Integrated)
-   Version: 7.2 - Stable Commercial Release
+   Version: 7.3 - Fixed Language & Ticker Conflict
    ============================================================ */
 
 // --- 1. الثوابت والمتغيرات العامة ---
@@ -99,13 +99,10 @@ async function updateUIBasedOnAuth() {
             if (res.ok) {
                 currentUserData = await res.json();
                 
-                // --- [حقن التعديل المطلوب] التحكم في ظهور صندوق التحليل في الصفحة الرئيسية ---
                 if (demoArea) {
-                    // يظهر الصندوق فقط وحصرياً لباقة Trial
                     if (currentUserData.tier === "Trial") {
                         demoArea.style.display = "block";
                     } else {
-                        // يختفي للباقات المدفوعة (Basic, Pro, Platinum) لأن لديهم محركاً في الداشبورد
                         demoArea.style.display = "none";
                     }
                 }
@@ -158,11 +155,8 @@ async function updateUIBasedOnAuth() {
         }
     }
 
-    // واجهة الزائر (Guest Interface)
     authZone.innerHTML = `<button class="wallet-btn" id="open-auth-btn"><i class="fa-solid fa-user-circle"></i> ${dict.nav_login || 'Login'}</button>`;
     if (accessArea) accessArea.style.display = "none";
-    
-    // --- [حقن التعديل المطلوب] إخفاء صندوق التحليل عن الزوار دائماً قبل تسجيل الدخول ---
     if (demoArea) demoArea.style.display = "none";
     
     if ($("open-auth-btn")) {
@@ -287,22 +281,7 @@ async function handleAuthSubmit() {
 }
 
 /* ------------------------------------------------------------
-   5. شريط الأخبار ونبض السوق
-   ------------------------------------------------------------ */
-async function fetchMarketNews() {
-    try {
-        const res = await fetch(`/api/news?lang=${currentLang}`);
-        const data = await res.json();
-        if (data.news && $("news-ticker-v2")) {
-            $("news-ticker-v2").innerText = (data.news + "  ★  ").repeat(4);
-        }
-    } catch (e) { 
-        console.error("News Ticker Error"); 
-    }
-}
-
-/* ------------------------------------------------------------
-   6. محرك تحليل الشارت (Demo Experience)
+   5. محرك تحليل الشارت (Demo Experience)
    ------------------------------------------------------------ */
 function initUploadEngine() {
     const dropZone = $("drop-zone");
@@ -440,7 +419,7 @@ async function runDemoAnalysis() {
 }
 
 /* ------------------------------------------------------------
-   7. التشغيل الابتدائي عند تحميل الصفحة
+   6. التشغيل الابتدائي عند تحميل الصفحة
    ------------------------------------------------------------ */
 window.onload = async () => {
     try {
@@ -474,8 +453,9 @@ window.onload = async () => {
         });
 
         initUploadEngine();
-        fetchMarketNews();
-        setInterval(fetchMarketNews, 300000);
+        
+        // ملاحظة: تم حذف fetchMarketNews من هنا لأنها تدار من ملف index.html
+        // لضمان عدم وجود تعارضات برمجية.
         
     } catch (err) { 
         console.error("Critical Initialization Error:", err); 
@@ -483,7 +463,7 @@ window.onload = async () => {
         setTimeout(hidePreloader, 800); 
     }
 };
-// تفعيل ميزة التطبيق PWA
+
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js')
     .then(() => console.log("KAIA AI App Ready"))
