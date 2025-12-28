@@ -284,82 +284,91 @@
 <!-- =========================================================
      6. سرد الفلسفة والخدمات (Narrative Sections)
      ========================================================= -->
-<section class="promo-section" style="background-color: rgba(15, 23, 42, 0.4); padding: 100px 40px; border-bottom: 1px solid var(--border);">
-    <div class="promo-grid" style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 120px 1fr; gap: 40px; align-items: center;">
-        <i class="fa-solid fa-eye promo-icon" style="font-size: 70px; color: var(--primary);"></i>
-        <div class="promo-text-wrap">
-            <h2 data-i18n="philosophy_title" style="font-size: 36px; font-weight: 900; color: var(--primary);">تحليل ذكي بدون أوامر مباشرة</h2>
-            <p data-i18n="philosophy_desc_1" style="font-size: 20px; line-height: 1.8; color: #d1d4dc;">محرك KAIA AI يقدّم قراءة تحليلية لهيكل السوق الحالي.</p>
+
+<!-- [حقن] شريط الخدمات المؤسسي المدمج -->
+<section style="padding: 40px 20px; background-color: #020617; border-bottom: 1px solid rgba(59, 130, 246, 0.1);">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 20px;">
+        <div style="text-align: center; flex: 1; min-width: 150px;">
+            <i class="fa-solid fa-brain" style="font-size: 30px; color: var(--primary); margin-bottom: 10px;"></i>
+            <h4 style="font-size: 14px; font-weight: 900; margin: 0; color: #fff;">تحليل SMC المتقدم</h4>
+        </div>
+        <div style="text-align: center; flex: 1; min-width: 150px;">
+            <i class="fa-solid fa-wave-square" style="font-size: 30px; color: var(--success); margin-bottom: 10px;"></i>
+            <h4 style="font-size: 14px; font-weight: 900; margin: 0; color: #fff;">موجات إليوت</h4>
+        </div>
+        <div style="text-align: center; flex: 1; min-width: 150px;">
+            <i class="fa-solid fa-gem" style="font-size: 30px; color: var(--gold); margin-bottom: 10px;"></i>
+            <h4 style="font-size: 14px; font-weight: 900; margin: 0; color: #fff;">KAIA Master Vision</h4>
         </div>
     </div>
 </section>
 
-<section style="padding-top: 80px; padding-bottom: 80px; padding-left: 40px; padding-right: 40px; background-color: #020617;">
-    <h2 class="section-title" data-i18n="services_title">خدمات KAIA AI الاحترافية</h2>
-    <div class="horizontal-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; max-width: 1300px; margin: 0 auto;">
-        <div class="service-card" style="background-color: var(--bg-panel); padding: 50px; border-radius: 25px; border: 1px solid var(--border); text-align: center;">
-            <i class="fa-solid fa-brain" style="font-size: 60px; color: var(--primary); margin-bottom: 25px;"></i>
-            <h3 data-i18n="service_smc_title" style="font-size: 26px; font-weight: 900; margin-bottom: 15px;">تحليل SMC المتقدم</h3>
-            <p data-i18n="service_smc_desc" style="color: var(--muted); font-weight: 600;">قراءة مناطق السيولة.</p>
-        </div>
-        <div class="service-card" style="background-color: var(--bg-panel); padding: 50px; border-radius: 25px; border: 1px solid var(--border); text-align: center;">
-            <i class="fa-solid fa-wave-square" style="font-size: 60px; color: var(--success); margin-bottom: 25px;"></i>
-            <h3 data-i18n="service_elliott_title" style="font-size: 26px; font-weight: 900; margin-bottom: 15px;">نظرية موجات إليوت</h3>
-            <p data-i18n="service_elliott_desc" style="color: var(--muted); font-weight: 600;">فهم موقع السعر.</p>
-        </div>
-        <div class="service-card" style="background-color: var(--bg-panel); padding: 50px; border-radius: 25px; border: 1px solid var(--border); text-align: center;">
-            <i class="fa-solid fa-gem" style="font-size: 60px; color: var(--gold); margin-bottom: 25px;"></i>
-            <h3 data-i18n="service_master_title" style="font-size: 26px; font-weight: 900; margin-bottom: 15px;">KAIA Master</h3>
-            <p data-i18n="service_master_desc" style="color: var(--muted); font-weight: 600;">دمج كافة الاستراتيجيات.</p>
+<!-- [حقن] صالة عرض المقالات والتقارير (المساحة الجديدة) -->
+<section id="articles-section" style="padding: 80px 20px; background: linear-gradient(180deg, #020617 0%, #050b14 100%);">
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <h2 class="section-title" style="margin-bottom: 10px; font-size: 35px !important;">رؤى المحلل المؤسسي</h2>
+        <p style="text-align: center; color: var(--muted); margin-bottom: 50px; font-weight: 600;">اكتشف نية الحيتان من خلال أحدث تقاريرنا الفنية</p>
+        
+        <div id="articles-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px;">
+            <!-- سيتم حقن المقالات هنا آلياً من غرفة التحرير -->
+            <p style="text-align: center; grid-column: 1/-1; opacity: 0.5;">جاري جلب أحدث التقارير...</p>
         </div>
     </div>
 </section>
 
 <!-- =========================================================
-     7. قسم باقات الاشتراك (Pricing Section) - تم إضافة الشرح
+     7. قسم باقات الاشتراك (Pricing Section) - الشرح المطور
      ========================================================= -->
 <section id="pricing-section" style="padding-top: 100px; padding-bottom: 100px; padding-left: 40px; padding-right: 40px; background-color: #000000;">
-    <h2 class="section-title" data-i18n="pricing_title">باقات الاشتراك والترقية (USD $)</h2>
+    <h2 class="section-title" data-i18n="pricing_title">باقات العضوية الملكية (USD $)</h2>
     <div class="horizontal-grid tiers-4" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; max-width: 1300px; margin: 0 auto;">
+        
+        <!-- باقة Trial -->
         <div class="price-card trial">
             <h3 data-i18n="plan_trial" style="color: var(--trial-color); font-weight: 900;">TRIAL</h3>
             <div class="price">مجاناً</div>
-            <ul class="plan-features">
-                <li><i class="fa-solid fa-check"></i> 3 تحليلات ذكية مجانية</li>
-                <li><i class="fa-solid fa-check"></i> وصول لأسواق الفوركس</li>
-                <li><i class="fa-solid fa-check"></i> تجربة نظام SMC</li>
+            <ul style="list-style: none; padding: 0; margin: 20px 0; font-size: 14px; text-align: right; line-height: 2;">
+                <li><i class="fa-solid fa-check" style="color:var(--trial-color)"></i> 3 تحليلات SMC مجانية</li>
+                <li><i class="fa-solid fa-check" style="color:var(--trial-color)"></i> رادار الفوركس الأساسي</li>
+                <li><i class="fa-solid fa-xmark" style="color:red"></i> ميزات الاحتراف مغلقة</li>
             </ul>
-            <button class="plan-btn" data-plan="Trial" data-price="0" data-i18n="plan_btn_free" style="background-color: var(--trial-color); color: #000; width: 100%; border-radius: 12px; padding: 15px; cursor: pointer; border: none; font-weight: 900; margin-top: 20px;">ابدأ الآن</button>
+            <button class="plan-btn" data-plan="Trial" data-price="0" style="background-color: var(--trial-color); color: #000; width: 100%; border-radius: 12px; padding: 15px; cursor: pointer; border: none; font-weight: 900;">ابدأ التجربة</button>
         </div>
+
+        <!-- باقة Basic -->
         <div class="price-card basic">
             <h3 data-i18n="plan_basic" style="color: var(--basic-color); font-weight: 900;">BASIC</h3>
             <div class="price">$5</div>
-            <ul class="plan-features">
-                <li><i class="fa-solid fa-check"></i> 20 تحليلاً شهرياً</li>
-                <li><i class="fa-solid fa-check"></i> كافة أزواج العملات</li>
-                <li><i class="fa-solid fa-check"></i> دعم فني عبر الإيميل</li>
+            <ul style="list-style: none; padding: 0; margin: 20px 0; font-size: 14px; text-align: right; line-height: 2;">
+                <li><i class="fa-solid fa-check" style="color:var(--basic-color)"></i> 20 تحليلاً شهرياً</li>
+                <li><i class="fa-solid fa-check" style="color:var(--basic-color)"></i> رادار الأسواق الكامل</li>
+                <li><i class="fa-solid fa-check" style="color:var(--basic-color)"></i> خريطة قوة العملات</li>
             </ul>
-            <button class="plan-btn" data-plan="Basic" data-price="5" data-i18n="plan_btn_sub" style="background-color: var(--basic-color); color: #000; width: 100%; border-radius: 12px; padding: 15px; cursor: pointer; border: none; font-weight: 900; margin-top: 20px;">اشترك الآن</button>
+            <button class="plan-btn" data-plan="Basic" data-price="5" style="background-color: var(--basic-color); color: #000; width: 100%; border-radius: 12px; padding: 15px; cursor: pointer; border: none; font-weight: 900;">اشترك الآن</button>
         </div>
+
+        <!-- باقة Pro -->
         <div class="price-card pro">
             <h3 data-i18n="plan_pro" style="color: var(--pro-color); font-weight: 900;">PRO</h3>
             <div class="price">$15</div>
-            <ul class="plan-features">
-                <li><i class="fa-solid fa-check"></i> 40 تحليلاً شهرياً</li>
-                <li><i class="fa-solid fa-check"></i> معالجة فائقة السرعة</li>
-                <li><i class="fa-solid fa-check"></i> استراتيجيات إليوت وSMC</li>
+            <ul style="list-style: none; padding: 0; margin: 20px 0; font-size: 14px; text-align: right; line-height: 2;">
+                <li><i class="fa-solid fa-star" style="color:var(--pro-color)"></i> 40 تحليلاً (فريم 1m)</li>
+                <li><i class="fa-solid fa-star" style="color:var(--pro-color)"></i> KAIA Master Vision 🛡️</li>
+                <li><i class="fa-solid fa-star" style="color:var(--pro-color)"></i> معالجة فائقة السرعة</li>
             </ul>
-            <button class="plan-btn" data-plan="Pro" data-price="15" data-i18n="plan_btn_upgrade" style="background-color: var(--pro-color); color: #fff; width: 100%; border-radius: 12px; padding: 15px; cursor: pointer; border: none; font-weight: 900; margin-top: 20px;">ترقية الآن</button>
+            <button class="plan-btn" data-plan="Pro" data-price="15" style="background-color: var(--pro-color); color: #fff; width: 100%; border-radius: 12px; padding: 15px; cursor: pointer; border: none; font-weight: 900;">ترقية الآن</button>
         </div>
+
+        <!-- باقة Platinum -->
         <div class="price-card platinum">
             <h3 data-i18n="plan_platinum" style="color: var(--platinum-color); font-weight: 900;">PLATINUM</h3>
             <div class="price">$50</div>
-            <ul class="plan-features">
-                <li><i class="fa-solid fa-crown"></i> 200 تحليل (رتبة الحوت)</li>
-                <li><i class="fa-solid fa-crown"></i> أولوية مطلقة للمحرك</li>
-                <li><i class="fa-solid fa-crown"></i> استشارات مؤسسية VIP</li>
+            <ul style="list-style: none; padding: 0; margin: 20px 0; font-size: 14px; text-align: right; line-height: 2;">
+                <li><i class="fa-solid fa-crown" style="color:var(--platinum-color)"></i> رتبة الحوت (Whale)</li>
+                <li><i class="fa-solid fa-crown" style="color:var(--platinum-color)"></i> 200 تحليل شهرياً</li>
+                <li><i class="fa-solid fa-crown" style="color:var(--platinum-color)"></i> استشارات 1-on-1</li>
             </ul>
-            <button class="plan-btn" data-plan="Platinum" data-price="50" data-i18n="plan_btn_upgrade" style="background-color: var(--platinum-color); color: #000; width: 100%; border-radius: 12px; padding: 15px; cursor: pointer; border: none; font-weight: 900; margin-top: 20px;">احصل على الملكية</button>
+            <button class="plan-btn" data-plan="Platinum" data-price="50" style="background-color: var(--platinum-color); color: #000; width: 100%; border-radius: 12px; padding: 15px; cursor: pointer; border: none; font-weight: 900;">امتلك السيادة</button>
         </div>
     </div>
 </section>
