@@ -42,9 +42,9 @@
             border: 1px solid var(--border); 
             overflow-x: auto; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 40px;
         }
         
-        /* [تنسيق] زر غرفة التحرير الفخم */
         .btn-editor {
             background: linear-gradient(90deg, #1e40af, #3b82f6);
             color: white !important;
@@ -106,16 +106,15 @@
 <div class="header">
     <h1><i class="fa-solid fa-tower-observation"></i> مركز قيادة KAIA AI</h1>
     <div style="display: flex; gap: 10px;">
-        <!-- [حقن] زر غرفة التحرير في الهيدر -->
         <button class="btn btn-editor" onclick="window.location.href='/editor'">
             <i class="fa-solid fa-pen-nib"></i> غرفة التحرير
         </button>
-        <button class="btn btn-refresh" onclick="loadUsers()"><i class="fa-solid fa-rotate"></i> تحديث</button>
+        <button class="btn btn-refresh" onclick="location.reload()"><i class="fa-solid fa-rotate"></i> تحديث</button>
         <button class="btn btn-save" onclick="window.location.href='/'" style="background: #1e293b;"><i class="fa-solid fa-house"></i> الرئيسية</button>
     </div>
 </div>
 
-<!-- [حقن] بانر عريض للوصول السريع لغرفة التحرير -->
+<!-- بانر الوصول السريع -->
 <div style="margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; background: rgba(59, 130, 246, 0.05); padding: 20px; border-radius: 15px; border: 1px dashed var(--primary);">
     <div>
         <h2 style="margin: 0; font-size: 20px; font-weight: 900; color: var(--primary);">إدارة المحتوى والإعلام</h2>
@@ -126,8 +125,8 @@
     </button>
 </div>
 
+<!-- 1. إدارة المستخدمين -->
 <h2 style="margin-bottom: 20px; font-weight: 900;"><i class="fa-solid fa-users-gear"></i> إدارة أعضاء المنصة</h2>
-
 <div class="admin-card">
     <table>
         <thead>
@@ -143,7 +142,25 @@
             </tr>
         </thead>
         <tbody id="users-list">
-            <tr><td colspan="8" style="text-align:center; padding: 50px;">جاري جلب بيانات المتداولين من السيرفر...</td></tr>
+            <tr><td colspan="8" style="text-align:center; padding: 50px;">جاري جلب بيانات المتداولين...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- 2. إدارة المقالات (الميزة الجديدة المصلحة) -->
+<h2 style="margin-bottom: 20px; font-weight: 900; color: var(--gold);"><i class="fa-solid fa-newspaper"></i> إدارة التقارير المنشورة</h2>
+<div class="admin-card">
+    <table>
+        <thead>
+            <tr>
+                <th>عنوان التقرير</th>
+                <th>اللغة</th>
+                <th>تاريخ النشر</th>
+                <th>الإجراء</th>
+            </tr>
+        </thead>
+        <tbody id="admin-articles-list">
+            <tr><td colspan="4" style="text-align:center; padding: 30px;">جاري جلب المقالات...</td></tr>
         </tbody>
     </table>
 </div>
@@ -163,26 +180,19 @@
                 document.body.style.visibility = "visible";
                 document.body.style.opacity = "1";
                 loadUsers();
+                loadArticlesForAdmin(); // جلب المقالات فور الدخول
             }
         } catch (e) { window.location.href = "/"; }
     }
 
     async function loadUsers() {
         try {
-            const res = await fetch("/api/admin/users", { 
-                headers: { "Authorization": "Bearer " + token } 
-            });
-            if (!res.ok) return;
-            
+            const res = await fetch("/api/admin/users", { headers: { "Authorization": "Bearer " + token } });
             const users = await res.json();
             const tbody = document.getElementById("users-list");
-            
             tbody.innerHTML = users.map(u => `
                 <tr>
-                    <td>
-                        <div style="font-weight:900;">${u.full_name}</div>
-                        ${u.is_premium ? '<span class="badge-premium">PREMIUM</span>' : ''}
-                    </td>
+                    <td><div style="font-weight:900;">${u.full_name}</div>${u.is_premium ? '<span class="badge-premium">PREMIUM</span>' : ''}</td>
                     <td><span style="color:#94a3b8;">${u.country}</span></td>
                     <td><a href="https://wa.me/${u.whatsapp}" target="_blank" class="whatsapp-link"><i class="fa-brands fa-whatsapp"></i> واتساب</a></td>
                     <td style="color:#64748b; font-size:12px;">${u.email}</td>
@@ -200,63 +210,78 @@
                     </td>
                     <td><input type="number" id="cred-${u.id}" value="${u.credits}" style="width: 70px;"></td>
                     <td>
-                        <button class="btn btn-save" onclick="saveUser(${u.id})" title="حفظ">
-                            <i class="fa-solid fa-floppy-disk"></i>
-                        </button>
-                        <button class="btn btn-delete" onclick="deleteUser(${u.id}, '${u.full_name}')" title="حذف">
-                            <i class="fa-solid fa-trash-can"></i>
+                        <button class="btn btn-save" onclick="saveUser(${u.id})"><i class="fa-solid fa-floppy-disk"></i></button>
+                        <button class="btn btn-delete" onclick="deleteUser(${u.id}, '${u.full_name}')"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                </tr>
+            `).join("");
+        } catch (e) { console.error("Admin Users Error"); }
+    }
+
+    // [دالة جديدة] جلب المقالات للآدمن
+    async function loadArticlesForAdmin() {
+        try {
+            const resAr = await fetch("/api/articles?lang=ar");
+            const resEn = await fetch("/api/articles?lang=en");
+            const artAr = await resAr.json();
+            const artEn = await resEn.json();
+            const allArts = [...artAr, ...artEn];
+
+            const tbody = document.getElementById("admin-articles-list");
+            if (allArts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">لا توجد مقالات منشورة حالياً.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = allArts.map(art => `
+                <tr>
+                    <td style="font-weight:700;">${art.title}</td>
+                    <td>${art.language === 'ar' ? 'العربية 🇸🇦' : 'English 🇺🇸'}</td>
+                    <td style="opacity:0.6;">${new Date(art.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn btn-delete" onclick="deleteKAIAArticle(${art.id})">
+                            <i class="fa-solid fa-trash"></i> حذف المقال
                         </button>
                     </td>
                 </tr>
             `).join("");
-        } catch (e) { console.error("Admin Fetch Error"); }
+        } catch (e) { console.error("Admin Articles Error"); }
+    }
+
+    // [دالة جديدة] حذف المقال نهائياً
+    async function deleteKAIAArticle(id) {
+        if (!confirm("يا ملك، هل أنت متأكد من حذف هذا المقال نهائياً؟ لا يمكن التراجع!")) return;
+        try {
+            const res = await fetch(`/api/admin/delete_article/${id}`, {
+                method: "DELETE",
+                headers: { "Authorization": "Bearer " + token }
+            });
+            if (res.ok) {
+                alert("🗑️ تم حذف المقال بنجاح.");
+                loadArticlesForAdmin();
+            }
+        } catch (e) { alert("خطأ في الاتصال"); }
     }
 
     async function saveUser(userId) {
         const credits = document.getElementById(`cred-${userId}`).value;
         const tier = document.getElementById(`tier-${userId}`).value;
-        
         try {
             const res = await fetch("/api/admin/update_user", {
                 method: "POST",
-                headers: { 
-                    "Content-Type": "application/json", 
-                    "Authorization": "Bearer " + token 
-                },
-                body: JSON.stringify({ 
-                    user_id: userId, 
-                    credits: parseInt(credits), 
-                    tier: tier,
-                    is_premium: (tier !== 'Trial'),
-                    is_whale: (tier === 'Platinum')
-                })
+                headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+                body: JSON.stringify({ user_id: userId, credits: parseInt(credits), tier: tier, is_premium: (tier !== 'Trial'), is_whale: (tier === 'Platinum') })
             });
-            
-            if (res.ok) {
-                alert("✅ تم تحديث بيانات المتداول بنجاح");
-                loadUsers();
-            } else {
-                alert("❌ فشل التحديث");
-            }
-        } catch (e) { alert("خطأ في الاتصال بالسيرفر"); }
+            if (res.ok) { alert("✅ تم التحديث"); loadUsers(); }
+        } catch (e) { alert("خطأ اتصال"); }
     }
 
     async function deleteUser(userId, name) {
-        if (!confirm(`تحذير: هل أنت متأكد من حذف حساب (${name}) نهائياً من السحابة؟`)) return;
-        
+        if (!confirm(`حذف حساب (${name})؟`)) return;
         try {
-            const res = await fetch(`/api/admin/delete_user/${userId}`, {
-                method: "DELETE",
-                headers: { "Authorization": "Bearer " + token }
-            });
-            if (res.ok) {
-                alert("🗑️ تم الحذف الفعلي والنهائي من قاعدة البيانات");
-                loadUsers();
-            } else {
-                const err = await res.json();
-                alert("❌ فشل الحذف: " + (err.detail || "خطأ غير معروف"));
-            }
-        } catch (e) { alert("خطأ في الاتصال بالسيرفر"); }
+            const res = await fetch(`/api/admin/delete_user/${userId}`, { method: "DELETE", headers: { "Authorization": "Bearer " + token } });
+            if (res.ok) { alert("🗑️ تم الحذف"); loadUsers(); }
+        } catch (e) { alert("خطأ اتصال"); }
     }
 
     window.onload = checkAdminAuth;

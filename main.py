@@ -191,6 +191,16 @@ def admin_delete_user(user_id: int, current_user: User = Depends(get_current_use
         db.delete(user)
         db.commit()
     return {"status": "success"}
+# [حقن ملكي] دالة حذف المقالات من قاعدة البيانات
+@app.delete("/api/admin/delete_article/{art_id}")
+def admin_delete_article(art_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if not current_user.is_admin: 
+        raise HTTPException(status_code=403, detail="غير مسموح")
+    
+    # البحث عن المقال وحذفه
+    db.query(Article).filter(Article.id == art_id).delete()
+    db.commit()
+    return {"status": "success", "message": "تم حذف المقال نهائياً"}
 # =========================================================
 # أوامر غرفة التحرير - خاص بالآدمن (Editor API)
 # =========================================================

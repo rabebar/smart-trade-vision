@@ -513,26 +513,35 @@
         }
     }
 
-    // دالة لعرض المقال كاملاً بجمالية
+    // محرك عرض المقالات المؤسسي (بدون Alert)
     function viewFullArticle(title, content) {
-        const win = window.open("", "_blank", "width=800,height=900");
-        win.document.write(`
+        // إنشاء نافذة عرض فخمة ومنظمة
+        const modalHtml = `
             <html>
                 <head>
-                    <title>${title}</title>
-                    <style>
-                        body { background: #020617; color: white; font-family: 'Cairo', sans-serif; padding: 40px; line-height: 1.8; text-align: right; direction: rtl; }
-                        h1 { color: #3b82f6; font-weight: 900; border-bottom: 1px solid #333; padding-bottom: 20px; }
-                        p { font-size: 18px; color: #d1d5db; }
-                    </style>
+                    <title>KAIA | ${title}</title>
                     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+                    <style>
+                        body { background: #020617; color: white; font-family: 'Cairo', sans-serif; padding: 50px; line-height: 2; text-align: right; direction: rtl; }
+                        .container { max-width: 800px; margin: 0 auto; background: #0b1222; padding: 40px; border-radius: 20px; border: 1px solid #1e293b; position: relative; }
+                        h1 { color: #3b82f6; font-weight: 900; border-bottom: 2px solid #1e293b; padding-bottom: 20px; margin-bottom: 30px; font-size: 32px; }
+                        p { font-size: 18px; color: #d1d5db; white-space: pre-wrap; }
+                        .back-btn { background: #3b82f6; color: #000; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 900; cursor: pointer; margin-top: 40px; font-family: inherit; }
+                    </style>
                 </head>
                 <body>
-                    <h1>${title}</h1>
-                    <p>${content}</p>
+                    <div class="container">
+                        <h1>${title}</h1>
+                        <p>${content}</p>
+                        <button class="back-btn" onclick="window.close()">إغلاق وقراءة باقي التقارير</button>
+                    </div>
                 </body>
             </html>
-        `);
+        `;
+        
+        const win = window.open("", "_blank");
+        win.document.write(modalHtml);
+        win.document.close();
     }
 
     // التشغيل التلقائي
