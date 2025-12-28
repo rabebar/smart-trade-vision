@@ -15,6 +15,7 @@
             --danger: #ef4444; 
             --success: #10b981;
             --text: #f3f4f6; 
+            --gold: #ffd700;
         }
         body { 
             background: var(--bg); 
@@ -42,6 +43,14 @@
             overflow-x: auto; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
+        
+        /* [تنسيق] زر غرفة التحرير الفخم */
+        .btn-editor {
+            background: linear-gradient(90deg, #1e40af, #3b82f6);
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
         table { width: 100%; border-collapse: collapse; text-align: right; min-width: 1000px; }
         th, td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 14px; }
         th { color: var(--primary); font-weight: 900; background: rgba(59, 130, 246, 0.05); }
@@ -57,6 +66,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            text-decoration: none;
         }
         .btn-save { background: var(--primary); color: white; }
         .btn-save:hover { background: #2563eb; transform: translateY(-2px); }
@@ -88,7 +98,7 @@
         }
         .badge-premium { background: var(--success); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
         .badge-verify { background: #3b82f6; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; margin-right: 5px; }
-        .badge-whale { background: #ffd700; color: #000; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; margin-right: 5px; }
+        .badge-whale { background: var(--gold); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; margin-right: 5px; }
     </style>
 </head>
 <body>
@@ -96,10 +106,27 @@
 <div class="header">
     <h1><i class="fa-solid fa-tower-observation"></i> مركز قيادة KAIA AI</h1>
     <div style="display: flex; gap: 10px;">
+        <!-- [حقن] زر غرفة التحرير في الهيدر -->
+        <button class="btn btn-editor" onclick="window.location.href='/editor'">
+            <i class="fa-solid fa-pen-nib"></i> غرفة التحرير
+        </button>
         <button class="btn btn-refresh" onclick="loadUsers()"><i class="fa-solid fa-rotate"></i> تحديث</button>
         <button class="btn btn-save" onclick="window.location.href='/'" style="background: #1e293b;"><i class="fa-solid fa-house"></i> الرئيسية</button>
     </div>
 </div>
+
+<!-- [حقن] بانر عريض للوصول السريع لغرفة التحرير -->
+<div style="margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; background: rgba(59, 130, 246, 0.05); padding: 20px; border-radius: 15px; border: 1px dashed var(--primary);">
+    <div>
+        <h2 style="margin: 0; font-size: 20px; font-weight: 900; color: var(--primary);">إدارة المحتوى والإعلام</h2>
+        <p style="margin: 5px 0 0; font-size: 13px; color: var(--muted);">انشر رؤيتك الفنية، حدث شريط الأخبار، وتحكم في الإعلانات من هنا.</p>
+    </div>
+    <button class="btn btn-editor" style="height: 50px; padding: 0 30px; font-size: 16px;" onclick="window.location.href='/editor'">
+        <i class="fa-solid fa-paper-plane"></i> دخول غرفة التحرير
+    </button>
+</div>
+
+<h2 style="margin-bottom: 20px; font-weight: 900;"><i class="fa-solid fa-users-gear"></i> إدارة أعضاء المنصة</h2>
 
 <div class="admin-card">
     <table>
@@ -130,7 +157,7 @@
             const res = await fetch("/api/me", { headers: { "Authorization": "Bearer " + token } });
             const user = await res.json();
             if (!res.ok || !user.is_admin) {
-                alert("غير مسموح لك بدخول منطقة السيطرة!");
+                alert("🔒 منطقة محظورة: هذه الغرفة مخصصة للملك فقط!");
                 window.location.href = "/";
             } else {
                 document.body.style.visibility = "visible";
@@ -201,7 +228,7 @@
                     credits: parseInt(credits), 
                     tier: tier,
                     is_premium: (tier !== 'Trial'),
-                    is_whale: (tier === 'Platinum') // ترقية تلقائية لرتبة الملك عند اختيار باقة بلاتينيوم
+                    is_whale: (tier === 'Platinum')
                 })
             });
             

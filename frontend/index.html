@@ -269,6 +269,12 @@
         </div>
     </div>
 </div>
+<!-- شريط أخبار كايا (Breaking News) -->
+<div style="background: #050b14; border-bottom: 1px solid rgba(59,130,246,0.2); padding: 8px 0; overflow: hidden; position: relative; z-index: 10;">
+    <div id="kaia-ticker" style="display: flex; align-items: center; white-space: nowrap; font-size: 13px; font-weight: 800; color: #3b82f6;">
+        <i class="fa-solid fa-bolt" style="margin: 0 15px; color: #ffd700;"></i> جاري جلب أحدث تقارير المحلل المؤسسي...
+    </div>
+</div>
 
 <!-- =========================================================
      5. قسم الـ Hero التسويقي (Hero Section)
@@ -315,6 +321,12 @@
         </div>
     </div>
 </section>
+<!-- مساحة إعلانية لشركاء كايا (Premium Ad Slot) -->
+<div id="ad-space-main" style="max-width: 1200px; margin: 40px auto; padding: 0 20px;">
+    <div style="width: 100%; height: 90px; background: rgba(59,130,246,0.02); border: 1px dashed #333; border-radius: 15px; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 14px; font-weight: 700;">
+        <i class="fa-solid fa-handshake" style="margin-left: 10px;"></i> مساحة مخصصة لشركاء KAIA AI
+    </div>
+</div>
 
 <!-- =========================================================
      7. قسم باقات الاشتراك (Pricing Section) - الشرح المطور
@@ -461,6 +473,97 @@
         }
     })();
 </script>
+<script>
+    // محرك KAIA الإعلامي - جلب المقالات وتحديث الواجهة
+    async function loadKAIAHomeContent() {
+        const lang = document.getElementById("language-select").value || "ar";
+        const container = document.getElementById("articles-container");
+        const ticker = document.getElementById("kaia-ticker");
 
+        try {
+            // 1. طلب المقالات من السيرفر بناءً على اللغة
+            const response = await fetch(`/api/articles?lang=${lang}`);
+            const data = await response.json();
+
+            if (data.length > 0) {
+                // 2. تحديث صالة عرض المقالات
+                container.innerHTML = data.map(art => `
+                    <div class="service-card" style="padding: 0; overflow: hidden; border: 1px solid rgba(59, 130, 246, 0.1); background: #0b1222; text-align: right; display: flex; flex-direction: column; transition: 0.3s; border-radius: 20px;">
+                        <img src="${art.image_url || '/static/logo.png'}" style="width: 100%; height: 200px; object-fit: cover; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <div style="padding: 25px; flex-grow: 1;">
+                            <h3 style="font-size: 22px; font-weight: 900; color: var(--primary); margin-bottom: 15px;">${art.title}</h3>
+                            <p style="font-size: 15px; color: var(--muted); line-height: 1.6; margin-bottom: 25px;">${art.summary}</p>
+                            <button onclick="viewFullArticle('${art.title}', '${art.content.replace(/\n/g, "<br>").replace(/'/g, "\\'")}')" 
+                                    style="background: none; border: 1px solid var(--primary); color: var(--primary); padding: 10px 20px; border-radius: 10px; font-weight: 900; cursor: pointer; width: 100%;">
+                                اقرأ التحليل المؤسسي
+                            </button>
+                        </div>
+                    </div>
+                `).join("");
+
+                // 3. تحديث شريط الأخبار (Ticker) بعناوين المقالات
+                if (ticker) {
+                    ticker.innerHTML = data.map(art => `<span style="margin-left:40px;"><i class="fa-solid fa-bolt" style="color:#ffd700;"></i> ${art.title}</span>`).join("");
+                }
+            } else {
+                container.innerHTML = `<p style="text-align: center; grid-column: 1/-1; opacity: 0.5;">لا توجد تقارير منشورة بـ ${lang === 'ar' ? 'العربية' : 'English'} حالياً.</p>`;
+            }
+        } catch (e) { 
+            console.error("Newsroom Sync Error");
+        }
+    }
+
+    // دالة لعرض المقال كاملاً بجمالية
+    function viewFullArticle(title, content) {
+        const win = window.open("", "_blank", "width=800,height=900");
+        win.document.write(`
+            <html>
+                <head>
+                    <title>${title}</title>
+                    <style>
+                        body { background: #020617; color: white; font-family: 'Cairo', sans-serif; padding: 40px; line-height: 1.8; text-align: right; direction: rtl; }
+                        h1 { color: #3b82f6; font-weight: 900; border-bottom: 1px solid #333; padding-bottom: 20px; }
+                        p { font-size: 18px; color: #d1d5db; }
+                    </style>
+                    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+                </head>
+                <body>
+                    <h1>${title}</h1>
+                    <p>${content}</p>
+                </body>
+            </html>
+        `);
+    }
+
+    // التشغيل التلقائي
+    document.addEventListener("DOMContentLoaded", loadKAIAHomeContent);
+    document.getElementById("language-select").addEventListener("change", loadKAIAHomeContent);
+</script>
+<script>
+    async function loadArticles() {
+        const container = document.getElementById("articles-container");
+        const lang = document.getElementById("language-select")?.value || "ar";
+        try {
+            const res = await fetch(`/api/articles?lang=${lang}`);
+            const data = await res.json();
+            if (data.length > 0) {
+                container.innerHTML = data.map(art => `
+                    <div class="service-card" style="padding:0; overflow:hidden; border:1px solid rgba(59,130,246,0.1); background:#0b1222; text-align:right;">
+                        <img src="${art.image_url || '/static/logo.png'}" style="width:100%; height:180px; object-fit:cover;">
+                        <div style="padding:20px;">
+                            <h3 style="font-size:20px; color:var(--primary);">${art.title}</h3>
+                            <p style="font-size:14px; color:var(--muted); margin:10px 0;">${art.summary}</p>
+                            <button onclick="alert('${art.content.replace(/\n/g, "\\n").replace(/'/g, "\\'")}')" style="background:none; border:1px solid var(--primary); color:var(--primary); padding:5px 15px; border-radius:8px; cursor:pointer; font-weight:800; width:100%;">اقرأ التحليل</button>
+                        </div>
+                    </div>
+                `).join("");
+            } else {
+                container.innerHTML = "<p style='text-align:center; grid-column:1/-1; opacity:0.5;'>لا توجد مقالات منشورة حالياً.</p>";
+            }
+        } catch (e) { console.log("Error loading articles"); }
+    }
+    document.addEventListener("DOMContentLoaded", loadArticles);
+    if(document.getElementById("language-select")) document.getElementById("language-select").addEventListener("change", loadArticles);
+</script>
 </body>
 </html>
