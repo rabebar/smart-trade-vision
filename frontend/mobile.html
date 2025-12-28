@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KAIA AI | Mobile Institutional PRO</title>
 
-    <!-- PWA & Identity -->
+    <!-- PWA & Identity Config -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#050b14">
     <link rel="apple-touch-icon" href="/static/logo.png">
@@ -48,7 +48,7 @@
         
         .trader-journal { width: 100%; height: 120px; background: #000; color: #fff; border: 1px solid #222; border-radius: 12px; padding: 12px; font-family: inherit; resize: none; font-size: 14px; }
         
-        /* iOS Install Guide */
+        /* إرشاد الآيفون */
         #ios-guide { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:11000; align-items:center; justify-content:center; padding:30px; }
         .guide-box { background:#0b1222; border:2px solid var(--primary); border-radius:25px; padding:30px; text-align:center; }
     </style>
@@ -122,13 +122,17 @@
             </div>
         </section>
 
-        <!-- [ب] غرفة الحرب (Analyzer) -->
+       <!-- [ب] غرفة الحرب (Analyzer) -->
         <section id="tab-analysis" class="tab-content">
             <div class="mobile-card" style="padding:0; height: 450px; overflow: hidden; border: 1px solid var(--primary);"><div id="tv_chart_mobile" style="height: 100%;"></div></div>
             <div class="mobile-card">
                 <h3><i class="fa-solid fa-robot"></i> المحلل المؤسسي</h3>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px;">
-                    <select id="strategy" class="mobile-input" style="margin:0;"><option value="SMC">SMC Concepts 💎</option><option value="Elliott Wave">Elliott Wave 🌊</option></select>
+                    <select id="strategy" class="mobile-input" style="margin:0;">
+                        <option id="kaia-premium-opt" value="KAIA Master" style="display:none; color:var(--gold);">KAIA Master Vision 🛡️</option>
+                        <option value="SMC" selected>SMC Concepts 💎</option>
+                        <option value="Elliott Wave">Elliott Wave 🌊</option>
+                    </select>
                     <select id="timeframe" class="mobile-input" style="margin:0;">
                         <option value="1m">1 min</option><option value="5m">5 min</option><option value="15m" selected>15 min</option>
                         <option value="1H">1 hour</option><option value="4H">4 hours</option><option value="D">Daily</option>
@@ -144,11 +148,10 @@
                 </div>
             </div>
         </section>
-
+        
         <!-- [ج] الأدوات (Tools) -->
-         <section id="tab-tools" class="tab-content">
-    <p style="text-align:center; color:var(--gold); font-size:11px; margin-bottom:15px;"><i class="fa-solid fa-lock"></i> ميزات حصرية للمشتركين</p>
-    <!-- باقي محتوى الأدوات كما هو -->
+        <section id="tab-tools" class="tab-content">
+            <p style="text-align:center; color:var(--gold); font-size:11px; margin-bottom:15px;"><i class="fa-solid fa-lock"></i> ميزات حصرية للمشتركين</p>
             <div class="mobile-card"><h3><i class="fa-solid fa-pen-nib"></i> مفكرة المتداول</h3><textarea id="mob-journal" class="trader-journal" placeholder="سجل خطتك هنا.."></textarea></div>
             <div class="mobile-card" style="height: 480px; padding: 10px; overflow: hidden;">
                 <h3 style="margin-bottom: 10px;"><i class="fa-solid fa-bolt"></i> قوة العملات (Heatmap)</h3>
@@ -178,14 +181,13 @@
                 <h2 id="user-full-name" style="font-weight: 900; color:#fff;">تحميل...</h2>
                 <div id="user-badge-text" style="font-size:11px; font-weight:900; background:#1e293b; padding:4px 15px; border-radius:15px; display:inline-block; margin-top:10px;">Member</div>
                 <div style="margin-top:35px; display: grid; gap: 15px;">
-                    <!-- مصلح: الترقية في نافذة جديدة تماماً -->
                     <button class="core-analyze-btn" style="background:var(--gold); color:#000; height:65px; font-weight:900;" 
-        onclick="window.open('/upgrade#pricing-section', '_blank')">
-    <i class="fa-solid fa-crown"></i> ترقية الحساب (Upgrade Now)
-</button>
+                        onclick="window.open('/upgrade#pricing-section', '_blank')">
+                        <i class="fa-solid fa-crown"></i> ترقية الحساب (Upgrade Now)
+                    </button>
                     <button id="pwa-install-btn" class="core-analyze-btn" style="background:#1e293b; display:none;" onclick="installPWA()">تثبيت التطبيق على الهاتف 📲</button>
                     <button class="core-analyze-btn" style="background:#25d366; color:#fff;" onclick="window.open('https://wa.me/970594060648?text=Feedback', '_blank')">إرسال اقتراح 💬</button>
-                    <button class="nav-btn-logout" onclick="logout()">تسجيل الخروج</button>
+                    <button class="nav-btn-logout" onclick="logout()" style="height:50px; background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid #ef4444; border-radius:12px; font-weight:800;">تسجيل الخروج</button>
                 </div>
             </div>
         </section>
@@ -231,7 +233,6 @@
             const url = isRegister ? "/api/register" : "/api/login";
             let body;
             if(isRegister) {
-                // مصلح: إضافة phone و country لضمان قبول السيرفر للحساب
                 body = JSON.stringify({
                     email: email.trim().toLowerCase(), 
                     password: pass, 
@@ -260,14 +261,12 @@
 
         function checkAuth() { if(!token) document.getElementById("auth-screen").style.display="flex"; else { document.getElementById("app-main").style.display="block"; syncData(); } }
         
-       async function syncData() {
+        async function syncData() {
             try {
                 const res = await fetch("/api/me", { headers: {"Authorization":"Bearer "+token} });
                 const u = await res.json();
                 if(res.ok) {
-                    // حفظ الرتبة في ذاكرة المتصفح لاستخدامها في الحماية
                     localStorage.setItem("user_tier", u.tier); 
-
                     document.getElementById("user-credits").innerText = u.credits; 
                     document.getElementById("user-full-name").innerText = u.full_name;
                     document.getElementById("welcome-msg").innerText = "أهلاً، " + u.full_name.split(' ')[0];
@@ -275,10 +274,14 @@
                     document.getElementById("user-rank-header").innerText = icon; 
                     document.getElementById("user-avatar-big").innerText = icon;
                     document.getElementById("user-badge-text").innerText = u.tier + " MEMBER";
+                    
+                    const kaiaOpt = document.getElementById("kaia-premium-opt");
+                    if (kaiaOpt) { kaiaOpt.style.display = (u.tier !== "Trial") ? "block" : "none"; }
+                    
                     loadHistory();
                 } else logout();
             } catch(e) { logout(); }
-                }
+        }
 
         async function loadHistory() {
             const res = await fetch("/api/history", { headers: {"Authorization":"Bearer "+token} });
@@ -312,25 +315,18 @@
         }
 
         function switchTab(t, el) {
-            // [حقن حماية] منع حسابات التريال من دخول قسم الأدوات
             const userTier = localStorage.getItem("user_tier"); 
             if (t === 'tools' && userTier === "Trial") {
                 alert("عذراً، قسم الأدوات الاحترافية مخصص للمشتركين فقط. يرجى ترقية حسابك للوصول.");
-                // توجيهه تلقائياً لقسم الحساب ليرى زر الترقية
-                switchTab('account', document.querySelector('.nav-link i.fa-user-tie').parentElement);
+                switchTab('account', document.querySelector('.nav-link i.fa-user-shield').parentElement);
                 return;
             }
-
             document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none'); 
             document.getElementById('tab-' + t).style.display = 'block';
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active')); 
             el.classList.add('active');
-            
             if(t === 'analysis' && !window.tvWidget) {
-                window.tvWidget = new TradingView.widget({ 
-                    autosize: true, symbol: "FX:EURUSD", interval: "15", theme: "dark", locale: "ar", 
-                    container_id: "tv_chart_mobile", allow_symbol_change: true, hide_top_toolbar: false, save_image: true 
-                });
+                window.tvWidget = new TradingView.widget({ autosize: true, symbol: "FX:EURUSD", interval: "15", theme: "dark", locale: "ar", container_id: "tv_chart_mobile", allow_symbol_change: true, hide_top_toolbar: false, save_image: true, hide_side_toolbar: false });
             }
         }
 
@@ -340,7 +336,7 @@
         }
 
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('pwa-install-btn').style.display = 'block'; });
-        function installPWA() { if (/iPad|iPhone|iPod/.test(navigator.userAgent)) { document.getElementById('ios-guide').style.display = 'flex'; } else if (deferredPrompt) { deferredPrompt.prompt(); } }
+        function installPWA() { if (/iPad|iPhone|iPod/.test(navigator.userAgent)) { alert("اضغط على زر المشاركة ثم Add to Home Screen"); } else if (deferredPrompt) { deferredPrompt.prompt(); } }
         function logout() { localStorage.removeItem("token"); location.reload(); }
     </script>
 </body>
