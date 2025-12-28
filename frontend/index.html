@@ -300,10 +300,11 @@
         </div>
     </div>
 </div>
-<!-- شريط أخبار كايا (Breaking News) -->
+<!-- شريط أخبار كايا الهجين (أخبارك + أخبار العالم) -->
 <div style="background: #050b14; border-bottom: 1px solid rgba(59,130,246,0.2); padding: 8px 0; overflow: hidden; position: relative; z-index: 10;">
-    <div id="kaia-ticker" style="display: flex; align-items: center; white-space: nowrap; font-size: 13px; font-weight: 800; color: #3b82f6;">
-        <i class="fa-solid fa-bolt" style="margin: 0 15px; color: #ffd700;"></i> جاري جلب أحدث تقارير المحلل المؤسسي...
+    <div id="kaia-ticker-wrap">
+        <!-- هنا سيتم حقن الـ Marquee برمجياً لضمان تغيير الاتجاه واللغة فوراً -->
+        <p style="text-align: center; font-size: 13px; color: var(--primary); opacity: 0.5; margin: 0;">جاري جلب النبض العالمي...</p>
     </div>
 </div>
 
@@ -507,22 +508,22 @@
     async function syncKAIAWorld() {
         const lang = document.getElementById("language-select").value || "ar";
         const container = document.getElementById("articles-container");
-        const ticker = document.getElementById("kaia-ticker");
+        const tickerWrap = document.getElementById("kaia-ticker-wrap");
 
         try {
-            // 1. جلب مقالاتك الخاصة (المفلترة حسب اللغة)
+            // 1. جلب مقالاتك المفلترة
             const resArt = await fetch(`/api/articles?lang=${lang}`);
             const myArticles = await resArt.json();
 
-            // 2. جلب أخبار العالم الحية (من المحرك الذي برمجناه في السيرفر)
+            // 2. جلب أخبار العالم المفلترة (Investing.com)
             const resGlobal = await fetch(`/api/news?lang=${lang}`);
             const globalData = await resGlobal.json();
             const worldNews = globalData.news || "";
 
-            // --- تحديث صالة عرض المقالات ---
+            // --- تحديث صالة العرض ---
             if (myArticles.length > 0) {
                 container.innerHTML = myArticles.map(art => `
-                    <div class="service-card" style="padding: 0; overflow: hidden; border: 1px solid rgba(59, 130, 246, 0.1); background: #0b1222; text-align: right; display: flex; flex-direction: column; border-radius: 20px; transition: 0.3s;">
+                    <div class="service-card" style="padding: 0; overflow: hidden; border: 1px solid rgba(59, 130, 246, 0.1); background: #0b1222; text-align: right; display: flex; flex-direction: column; border-radius: 20px;">
                         <img src="${art.image_url || '/static/logo.png'}" style="width: 100%; height: 200px; object-fit: cover; border-bottom: 1px solid #1e293b;">
                         <div style="padding: 25px; flex-grow: 1;">
                             <h3 style="font-size: 20px; font-weight: 900; color: var(--primary); margin-bottom: 12px;">${art.title}</h3>
@@ -535,18 +536,18 @@
                     </div>
                 `).join("");
             } else {
-                container.innerHTML = `<p style="text-align: center; grid-column: 1/-1; opacity: 0.5;">بانتظار نشر أول تقرير مؤسسي بـ ${lang === 'ar' ? 'العربية' : 'English'}.</p>`;
+                container.innerHTML = `<p style="text-align: center; grid-column: 1/-1; opacity: 0.5;">بانتظار التقارير المؤسسية بلغة: ${lang === 'ar' ? 'العربية' : 'English'}.</p>`;
             }
 
-            // --- تحديث شريط الأخبار الهجين (أخبارك + أخبار العالم) ---
-            if (ticker) {
-                const myTitles = myArticles.map(a => ` 🔥 ${a.title}`).join(" ★ ");
-                const separator = myTitles ? " | 🌍 أخبار العالم: " : "🌍 أخبار العالم: ";
-                ticker.innerHTML = `<marquee scrollamount="5" onmouseover="this.stop();" onmouseout="this.start();">
-                    <span style="color:#ffd700; font-weight:900;">${myTitles}</span> 
-                    <span style="color:#fff;">${separator}${worldNews}</span>
+            // --- تحديث شريط الأخبار (تغيير المحتوى والاتجاه) ---
+            const myTitles = myArticles.map(a => ` 🔥 ${a.title}`).join(" ★ ");
+            const newsText = myTitles ? `${myTitles} | 🌍 أخبار العالم: ${worldNews}` : `🌍 أخبار العالم: ${worldNews}`;
+            
+            // ضبط الاتجاه ليكون من اليسار لليمين (direction="right")
+            tickerWrap.innerHTML = `
+                <marquee scrollamount="5" direction="right" onmouseover="this.stop();" onmouseout="this.start();" style="color: #fff; font-weight: 700; font-size: 13px;">
+                    <span style="color:#ffd700;">${newsText}</span>
                 </marquee>`;
-            }
 
         } catch (e) { console.error("Sync Error:", e); }
     }
