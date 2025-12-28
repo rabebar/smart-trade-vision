@@ -503,105 +503,85 @@
     })();
 </script>
 <script>
-    // محرك KAIA الإعلامي - جلب المقالات وتحديث الواجهة
-    async function loadKAIAHomeContent() {
+    // [المحرك الإعلامي الموحد لـ KAIA AI]
+    async function syncKAIAWorld() {
         const lang = document.getElementById("language-select").value || "ar";
         const container = document.getElementById("articles-container");
         const ticker = document.getElementById("kaia-ticker");
 
         try {
-            // 1. طلب المقالات من السيرفر بناءً على اللغة
-            const response = await fetch(`/api/articles?lang=${lang}`);
-            const data = await response.json();
+            // 1. جلب مقالاتك الخاصة (المفلترة حسب اللغة)
+            const resArt = await fetch(`/api/articles?lang=${lang}`);
+            const myArticles = await resArt.json();
 
-            if (data.length > 0) {
-                // 2. تحديث صالة عرض المقالات
-                container.innerHTML = data.map(art => `
-                    <div class="service-card" style="padding: 0; overflow: hidden; border: 1px solid rgba(59, 130, 246, 0.1); background: #0b1222; text-align: right; display: flex; flex-direction: column; transition: 0.3s; border-radius: 20px;">
-                        <img src="${art.image_url || '/static/logo.png'}" style="width: 100%; height: 200px; object-fit: cover; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            // 2. جلب أخبار العالم الحية (من المحرك الذي برمجناه في السيرفر)
+            const resGlobal = await fetch(`/api/news?lang=${lang}`);
+            const globalData = await resGlobal.json();
+            const worldNews = globalData.news || "";
+
+            // --- تحديث صالة عرض المقالات ---
+            if (myArticles.length > 0) {
+                container.innerHTML = myArticles.map(art => `
+                    <div class="service-card" style="padding: 0; overflow: hidden; border: 1px solid rgba(59, 130, 246, 0.1); background: #0b1222; text-align: right; display: flex; flex-direction: column; border-radius: 20px; transition: 0.3s;">
+                        <img src="${art.image_url || '/static/logo.png'}" style="width: 100%; height: 200px; object-fit: cover; border-bottom: 1px solid #1e293b;">
                         <div style="padding: 25px; flex-grow: 1;">
-                            <h3 style="font-size: 22px; font-weight: 900; color: var(--primary); margin-bottom: 15px;">${art.title}</h3>
-                            <p style="font-size: 15px; color: var(--muted); line-height: 1.6; margin-bottom: 25px;">${art.summary}</p>
-                            <button onclick="viewFullArticle('${art.title}', '${art.content.replace(/\n/g, "<br>").replace(/'/g, "\\'")}')" 
-                                    style="background: none; border: 1px solid var(--primary); color: var(--primary); padding: 10px 20px; border-radius: 10px; font-weight: 900; cursor: pointer; width: 100%;">
-                                اقرأ التحليل المؤسسي
+                            <h3 style="font-size: 20px; font-weight: 900; color: var(--primary); margin-bottom: 12px;">${art.title}</h3>
+                            <p style="font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 20px;">${art.summary}</p>
+                            <button onclick="openRoyalArticle('${art.title}', '${art.content.replace(/\n/g, "<br>").replace(/'/g, "\\'")}')" 
+                                    style="background: none; border: 1px solid var(--primary); color: var(--primary); padding: 8px 15px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%;">
+                                اقرأ التحليل الكامل
                             </button>
                         </div>
                     </div>
                 `).join("");
-
-                // 3. تحديث شريط الأخبار (Ticker) بعناوين المقالات
-                if (ticker) {
-                    ticker.innerHTML = data.map(art => `<span style="margin-left:40px;"><i class="fa-solid fa-bolt" style="color:#ffd700;"></i> ${art.title}</span>`).join("");
-                }
             } else {
-                container.innerHTML = `<p style="text-align: center; grid-column: 1/-1; opacity: 0.5;">لا توجد تقارير منشورة بـ ${lang === 'ar' ? 'العربية' : 'English'} حالياً.</p>`;
+                container.innerHTML = `<p style="text-align: center; grid-column: 1/-1; opacity: 0.5;">بانتظار نشر أول تقرير مؤسسي بـ ${lang === 'ar' ? 'العربية' : 'English'}.</p>`;
             }
-        } catch (e) { 
-            console.error("Newsroom Sync Error");
-        }
+
+            // --- تحديث شريط الأخبار الهجين (أخبارك + أخبار العالم) ---
+            if (ticker) {
+                const myTitles = myArticles.map(a => ` 🔥 ${a.title}`).join(" ★ ");
+                const separator = myTitles ? " | 🌍 أخبار العالم: " : "🌍 أخبار العالم: ";
+                ticker.innerHTML = `<marquee scrollamount="5" onmouseover="this.stop();" onmouseout="this.start();">
+                    <span style="color:#ffd700; font-weight:900;">${myTitles}</span> 
+                    <span style="color:#fff;">${separator}${worldNews}</span>
+                </marquee>`;
+            }
+
+        } catch (e) { console.error("Sync Error:", e); }
     }
 
-    // محرك عرض المقالات المؤسسي (بدون Alert)
-    function viewFullArticle(title, content) {
-        // إنشاء نافذة عرض فخمة ومنظمة
-        const modalHtml = `
+    // دالة عرض المقال في نافذة فخمة ومنظمة
+    function openRoyalArticle(title, content) {
+        const win = window.open("", "_blank");
+        win.document.write(`
             <html>
                 <head>
-                    <title>KAIA | ${title}</title>
+                    <title>${title}</title>
                     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
                     <style>
                         body { background: #020617; color: white; font-family: 'Cairo', sans-serif; padding: 50px; line-height: 2; text-align: right; direction: rtl; }
-                        .container { max-width: 800px; margin: 0 auto; background: #0b1222; padding: 40px; border-radius: 20px; border: 1px solid #1e293b; position: relative; }
-                        h1 { color: #3b82f6; font-weight: 900; border-bottom: 2px solid #1e293b; padding-bottom: 20px; margin-bottom: 30px; font-size: 32px; }
-                        p { font-size: 18px; color: #d1d5db; white-space: pre-wrap; }
-                        .back-btn { background: #3b82f6; color: #000; border: none; padding: 12px 30px; border-radius: 10px; font-weight: 900; cursor: pointer; margin-top: 40px; font-family: inherit; }
+                        .container { max-width: 850px; margin: 0 auto; background: #0b1222; padding: 40px; border-radius: 25px; border: 1px solid #1e293b; box-shadow: 0 0 50px #000; }
+                        h1 { color: #3b82f6; font-weight: 900; border-bottom: 2px solid #1e293b; padding-bottom: 20px; margin-bottom: 30px; }
+                        p { font-size: 19px; color: #d1d5db; white-space: pre-wrap; }
+                        .btn { background: #3b82f6; color: #000; border: none; padding: 12px 30px; border-radius: 12px; font-weight: 900; cursor: pointer; margin-top: 40px; font-family: inherit; }
                     </style>
                 </head>
                 <body>
                     <div class="container">
                         <h1>${title}</h1>
                         <p>${content}</p>
-                        <button class="back-btn" onclick="window.close()">إغلاق وقراءة باقي التقارير</button>
+                        <button class="btn" onclick="window.close()">إغلاق وقراءة المزيد</button>
                     </div>
                 </body>
             </html>
-        `;
-        
-        const win = window.open("", "_blank");
-        win.document.write(modalHtml);
+        `);
         win.document.close();
     }
 
-    // التشغيل التلقائي
-    document.addEventListener("DOMContentLoaded", loadKAIAHomeContent);
-    document.getElementById("language-select").addEventListener("change", loadKAIAHomeContent);
-</script>
-<script>
-    async function loadArticles() {
-        const container = document.getElementById("articles-container");
-        const lang = document.getElementById("language-select")?.value || "ar";
-        try {
-            const res = await fetch(`/api/articles?lang=${lang}`);
-            const data = await res.json();
-            if (data.length > 0) {
-                container.innerHTML = data.map(art => `
-                    <div class="service-card" style="padding:0; overflow:hidden; border:1px solid rgba(59,130,246,0.1); background:#0b1222; text-align:right;">
-                        <img src="${art.image_url || '/static/logo.png'}" style="width:100%; height:180px; object-fit:cover;">
-                        <div style="padding:20px;">
-                            <h3 style="font-size:20px; color:var(--primary);">${art.title}</h3>
-                            <p style="font-size:14px; color:var(--muted); margin:10px 0;">${art.summary}</p>
-                            <button onclick="alert('${art.content.replace(/\n/g, "\\n").replace(/'/g, "\\'")}')" style="background:none; border:1px solid var(--primary); color:var(--primary); padding:5px 15px; border-radius:8px; cursor:pointer; font-weight:800; width:100%;">اقرأ التحليل</button>
-                        </div>
-                    </div>
-                `).join("");
-            } else {
-                container.innerHTML = "<p style='text-align:center; grid-column:1/-1; opacity:0.5;'>لا توجد مقالات منشورة حالياً.</p>";
-            }
-        } catch (e) { console.log("Error loading articles"); }
-    }
-    document.addEventListener("DOMContentLoaded", loadArticles);
-    if(document.getElementById("language-select")) document.getElementById("language-select").addEventListener("change", loadArticles);
+    // التشغيل الموحد
+    document.addEventListener("DOMContentLoaded", syncKAIAWorld);
+    document.getElementById("language-select").addEventListener("change", syncKAIAWorld);
 </script>
 </body>
 </html>
