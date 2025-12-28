@@ -5,111 +5,278 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KAIA AI | Newsroom ✍️</title>
     
-    <!-- الروابط الأساسية -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- الروابط الأساسية للخطوط والأيقونات -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="/static/style.css">
     
     <style>
-        body { background: #020617; color: white; font-family: 'Cairo', sans-serif; padding: 40px 20px; }
-        .editor-container { max-width: 900px; margin: 0 auto; background: #0b1222; border: 2px solid var(--primary); border-radius: 30px; padding: 40px; box-shadow: 0 0 50px rgba(59, 130, 246, 0.2); }
-        .editor-header { text-align: center; margin-bottom: 40px; }
-        .editor-header h1 { font-weight: 900; color: var(--primary); font-size: 35px; margin-top: 15px; }
+        /* إعدادات الخلفية والخطوط المؤسسية */
+        body { 
+            background: #020617; 
+            color: white; 
+            font-family: 'Cairo', sans-serif; 
+            padding: 40px 20px; 
+            line-height: 1.6;
+        }
+
+        /* حاوية غرفة التحرير الزجاجية */
+        .editor-container { 
+            max-width: 950px; 
+            margin: 0 auto; 
+            background: #0b1222; 
+            border: 2px solid var(--primary); 
+            border-radius: 35px; 
+            padding: 45px; 
+            box-shadow: 0 0 60px rgba(59, 130, 246, 0.15); 
+        }
+
+        /* تنسيق الهيدر داخل الغرفة */
+        .editor-header { 
+            text-align: center; 
+            margin-bottom: 45px; 
+        }
+        .editor-header h1 { 
+            font-weight: 900; 
+            color: var(--primary); 
+            font-size: 38px; 
+            margin-top: 15px;
+            letter-spacing: 1px;
+        }
+        .editor-header p {
+            color: var(--muted);
+            font-weight: 600;
+            margin-top: 5px;
+        }
         
-        .input-group { margin-bottom: 25px; }
-        .input-group label { display: block; margin-bottom: 10px; font-weight: 700; color: var(--muted); font-size: 14px; }
+        /* مجموعات الإدخال */
+        .input-group { 
+            margin-bottom: 28px; 
+        }
+        .input-group label { 
+            display: block; 
+            margin-bottom: 12px; 
+            font-weight: 800; 
+            color: var(--muted); 
+            font-size: 15px; 
+        }
         
-        .editor-input { width: 100%; padding: 15px; background: #000; border: 1px solid #333; border-radius: 12px; color: #fff; font-family: inherit; font-size: 16px; outline: none; transition: 0.3s; }
-        .editor-input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(59, 130, 246, 0.3); }
-        .editor-textarea { height: 250px; resize: vertical; line-height: 1.8; }
+        /* تصميم الخانات */
+        .editor-input { 
+            width: 100%; 
+            padding: 16px; 
+            background: #000; 
+            border: 1px solid #222; 
+            border-radius: 15px; 
+            color: #fff; 
+            font-family: inherit; 
+            font-size: 16px; 
+            outline: none; 
+            transition: all 0.3s ease; 
+        }
+        .editor-input:focus { 
+            border-color: var(--primary); 
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); 
+        }
         
-        .publish-btn { width: 100%; height: 70px; background: var(--primary); color: #000; border: none; border-radius: 15px; font-size: 22px; font-weight: 900; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 15px; }
-        .publish-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4); }
-        .publish-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        /* منطقة المقال الطويلة */
+        .editor-textarea { 
+            height: 350px; 
+            resize: vertical; 
+            line-height: 1.8; 
+            font-size: 17px;
+        }
         
-        .status-msg { text-align: center; margin-top: 20px; font-weight: 800; padding: 15px; border-radius: 10px; display: none; }
+        /* زر النشر الملكي */
+        .publish-btn { 
+            width: 100%; 
+            height: 75px; 
+            background: var(--primary); 
+            color: #000; 
+            border: none; 
+            border-radius: 20px; 
+            font-size: 24px; 
+            font-weight: 900; 
+            cursor: pointer; 
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 15px; 
+        }
+        .publish-btn:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.4); 
+        }
+        .publish-btn:disabled { 
+            opacity: 0.5; 
+            cursor: not-allowed; 
+            transform: none;
+        }
+        
+        /* أزرار الملاحة العلوية */
+        .nav-top-box {
+            display: flex; 
+            justify-content: space-between; 
+            margin-bottom: 30px;
+        }
+        .nav-top-btn {
+            background: rgba(255,255,255,0.03); 
+            color: #fff; 
+            border: 1px solid #1e293b; 
+            padding: 12px 25px; 
+            border-radius: 12px; 
+            cursor: pointer;
+            font-weight: 700;
+            transition: 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .nav-top-btn:hover {
+            background: #1e293b;
+            border-color: var(--primary);
+        }
+
+        .status-msg { 
+            text-align: center; 
+            margin-top: 25px; 
+            font-weight: 900; 
+            padding: 18px; 
+            border-radius: 15px; 
+            display: none; 
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="editor-container">
-    <!-- أزرار الملاحة السريعة للملك -->
-<div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-    <button onclick="window.location.href='/admin'" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid #333; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 700;">
-        <i class="fa-solid fa-arrow-right"></i> العودة للوحة السيطرة
-    </button>
-    <button onclick="window.location.href='/'" style="background: rgba(59, 130, 246, 0.1); color: var(--primary); border: 1px solid var(--primary); padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 700;">
-        معاينة الموقع <i class="fa-solid fa-external-link"></i>
-    </button>
-</div>
-    <div class="editor-header">
-        <img src="/static/logo.png" alt="KAIA" style="height: 60px;">
-        <h1>غرفة التحرير والإعلام المؤسسي</h1>
-        <p style="color: var(--muted); font-weight: 600;">بوابة الملك ربيع البرغوثي لنشر الرؤية السيادية</p>
+    
+    <!-- 1. أزرار التنقل السريع -->
+    <div class="nav-top-box">
+        <button onclick="window.location.href='/admin'" class="nav-top-btn">
+            <i class="fa-solid fa-arrow-right"></i> لوحة السيطرة
+        </button>
+        <button onclick="window.location.href='/'" class="nav-top-btn" style="color: var(--primary);">
+            معاينة الموقع <i class="fa-solid fa-external-link"></i>
+        </button>
     </div>
 
-    <div id="editor-form">
-        <!-- 1. لغة المقال -->
+    <!-- 2. رأس الصفحة -->
+    <div class="editor-header">
+        <img src="/static/logo.png" alt="KAIA" style="height: 70px; filter: drop-shadow(0 0 10px var(--primary));">
+        <h1 id="main-editor-title">غرفة التحرير والنشر المؤسسي</h1>
+        <p>بوابة الملك لنشر الرؤى السيادية والتحليلات الفنية</p>
+    </div>
+
+    <div id="editor-form-wrapper">
+        
+        <!-- لغة المقال -->
         <div class="input-group">
-            <label><i class="fa-solid fa-language"></i> لغة النشر</label>
-            <select id="art-lang" class="editor-input" style="background:#1e293b">
-                <option value="ar">العربية 🇸🇦</option>
-                <option value="en">English 🇺🇸</option>
+            <label><i class="fa-solid fa-globe"></i> لغة النشر المستهدفة</label>
+            <select id="art-lang" class="editor-input" style="background-color: #0f172a; cursor: pointer;">
+                <option value="ar">اللغة العربية 🇸🇦 (تظهر للجمهور العربي)</option>
+                <option value="en">English Language 🇺🇸 (Global Audience)</option>
             </select>
         </div>
 
-        <!-- 2. العنوان -->
+        <!-- عنوان المقال -->
         <div class="input-group">
-            <label>عنوان المقال</label>
-            <input type="text" id="art-title" class="editor-input" placeholder="اكتب العنوان هنا...">
+            <label><i class="fa-solid fa-heading"></i> عنوان التقرير</label>
+            <input type="text" id="art-title" class="editor-input" placeholder="اكتب عنواناً قوياً وجذاباً...">
         </div>
 
-        <!-- 3. الملخص -->
+        <!-- ملخص المقال -->
         <div class="input-group">
-            <label>ملخص المقال (يظهر في الواجهة)</label>
-            <input type="text" id="art-summary" class="editor-input" placeholder="سطر واحد جذاب...">
+            <label><i class="fa-solid fa-align-right"></i> ملخص قصير (يظهر في صالة العرض الخارجية)</label>
+            <input type="text" id="art-summary" class="editor-input" placeholder="سطر واحد يلخص زبدة التحليل المؤسسي...">
         </div>
 
-        <!-- 4. رفع الصورة (النظام المصلح) -->
+        <!-- رفع الصورة -->
         <div class="input-group">
-            <label><i class="fa-solid fa-camera"></i> رفع صورة الغلاف</label>
-            <input type="file" id="art-image-file" class="editor-input" accept="image/*" onchange="uploadImageToServer()">
-            <input type="hidden" id="art-image-url"> <!-- هنا يُخزن الرابط القادم من السيرفر -->
-            <p id="upload-status" style="font-size: 12px; margin-top: 5px; font-weight: 800; display: none;"></p>
+            <label><i class="fa-solid fa-image"></i> صورة غلاف التقرير (شارت أو صورة تعبيرية)</label>
+            <input type="file" id="art-image-file" class="editor-input" accept="image/*" onchange="handleImageUpload()">
+            <input type="hidden" id="art-image-url"> <!-- مخزن الرابط السري -->
+            <p id="upload-status" style="font-size: 13px; margin-top: 8px; font-weight: 800; display: none;"></p>
         </div>
 
-        <!-- 5. المحتوى -->
+        <!-- المحتوى الكامل -->
         <div class="input-group">
-            <label>المحتوى الكامل</label>
-            <textarea id="art-content" class="editor-input editor-textarea" placeholder="اكتب التحليل هنا..."></textarea>
+            <label><i class="fa-solid fa-pen-nib"></i> محتوى التحليل والتقرير الكامل</label>
+            <textarea id="art-content" class="editor-input editor-textarea" placeholder="ابدأ بكتابة الرؤية الفنية، مناطق السيولة، والتوقعات المسارية..."></textarea>
         </div>
 
-        <!-- زر النشر -->
-        <button class="publish-btn" onclick="publishArticle()">
+        <!-- زر التنفيذ -->
+        <button class="publish-btn" onclick="processPublishing()" id="main-publish-btn">
             <i class="fa-solid fa-paper-plane"></i> 
-            <span>نشر المقال الآن</span>
+            <span>نشر التقرير في صالة العرض</span>
         </button>
 
         <!-- رسالة الحالة -->
-        <div id="status-text" class="status-msg"></div>
+        <div id="status-display" class="status-msg"></div>
+
     </div>
 </div>
 
 <script>
-    const token = localStorage.getItem("token");
+    const userToken = localStorage.getItem("token");
+    const params = new URLSearchParams(window.location.search);
+    const editArticleId = params.get('edit'); // جلب ID التعديل من الرابط
 
-    // 1. حماية الغرفة
-    async function checkAdminStatus() {
-        if (!token) { window.location.href = "/"; return; }
+    // 1. حماية الغرفة وفحص وضع التشغيل (نشر أم تعديل)
+    async function initializeEditor() {
+        if (!userToken) { window.location.href = "/"; return; }
+        
         try {
-            const res = await fetch("/api/me", { headers: {"Authorization": "Bearer " + token} });
-            const user = await res.json();
-            if (!user.is_admin) { window.location.href = "/"; }
+            const response = await fetch("/api/me", { headers: {"Authorization": "Bearer " + userToken} });
+            const user = await res = await response.json();
+            
+            if (!user.is_admin) {
+                alert("🔒 عذراً يا ملك، هذه الغرفة مخصصة للملك ربيع البرغوثي فقط.");
+                window.location.href = "/";
+                return;
+            }
+
+            // إذا دخلنا عبر زر التعديل
+            if (editArticleId) {
+                switchToEditMode();
+            }
         } catch (e) { window.location.href = "/"; }
     }
 
-    // 2. دالة رفع الصورة للسيرفر
-    async function uploadImageToServer() {
+    // 2. دالة تحويل الواجهة لوضع التعديل
+    async function switchToEditMode() {
+        document.getElementById("main-editor-title").innerText = "تعديل تقرير مؤسسي سابق";
+        document.getElementById("main-publish-btn").querySelector("span").innerText = "حفظ التعديلات النهائية";
+        
+        try {
+            const res = await fetch(`/api/admin/article/${editArticleId}`, { 
+                headers: {"Authorization": "Bearer " + userToken} 
+            });
+            const art = await res.json();
+            
+            if (res.ok) {
+                document.getElementById("art-title").value = art.title;
+                document.getElementById("art-summary").value = art.summary;
+                document.getElementById("art-content").value = art.content;
+                document.getElementById("art-lang").value = art.language;
+                document.getElementById("art-image-url").value = art.image_url;
+                
+                if (art.image_url) {
+                    const st = document.getElementById("upload-status");
+                    st.style.display = "block";
+                    st.innerText = "✅ الصورة الأصلية محفوظة وجاهزة.";
+                    st.style.color = "#10b981";
+                }
+            }
+        } catch (e) { console.log("Failed to load article data"); }
+    }
+
+    // 3. محرك رفع الصور للسيرفر (Image Upload Engine)
+    async function handleImageUpload() {
         const fileInput = document.getElementById("art-image-file");
         const status = document.getElementById("upload-status");
         const urlInput = document.getElementById("art-image-url");
@@ -117,8 +284,8 @@
         if (!fileInput.files[0]) return;
 
         status.style.display = "block";
-        status.innerText = "⏳ جاري الرفع...";
-        status.style.color = "var(--primary)";
+        status.innerText = "⏳ جاري إرسال الصورة لسيفرات KAIA...";
+        status.style.color = "#3b82f6";
 
         const formData = new FormData();
         formData.append("image", fileInput.files[0]);
@@ -126,72 +293,77 @@
         try {
             const res = await fetch("/api/admin/upload-article-image", {
                 method: "POST",
-                headers: { "Authorization": "Bearer " + token },
+                headers: { "Authorization": "Bearer " + userToken },
                 body: formData
             });
             const data = await res.json();
+            
             if (res.ok) {
                 urlInput.value = data.image_url;
-                status.innerText = "✅ تم الرفع بنجاح!";
+                status.innerText = "✅ تم رفع الصورة بنجاح وتوليد الرابط المؤسسي.";
                 status.style.color = "#10b981";
-            } else { alert("فشل الرفع"); }
-        } catch (e) { alert("خطأ في الاتصال"); }
+            } else {
+                alert("فشل رفع الصورة، يرجى المحاولة مرة أخرى.");
+            }
+        } catch (e) { alert("خطأ في الاتصال بالسيرفر أثناء الرفع"); }
     }
 
-    // 3. دالة النشر النهائية (مصلحة بالكامل)
-    async function publishArticle() {
-        const btn = document.querySelector(".publish-btn");
-        const status = document.getElementById("status-text");
+    // 4. دالة المعالجة النهائية (نشر جديد أو تحديث)
+    async function processPublishing() {
+        const btn = document.getElementById("main-publish-btn");
+        const status = document.getElementById("status-display");
 
         const articleData = {
             title: document.getElementById("art-title").value.trim(),
             summary: document.getElementById("art-summary").value.trim(),
             content: document.getElementById("art-content").value.trim(),
-            image_url: document.getElementById("art-image-url").value, // سحب الرابط من الخانة المخفية
+            image_url: document.getElementById("art-image-url").value,
             language: document.getElementById("art-lang").value
         };
 
         if (!articleData.title || !articleData.content) {
-            return alert("يرجى ملء العنوان والمحتوى");
+            return alert("يرجى إدخال العنوان والمحتوى لضمان جودة النشر.");
         }
 
         btn.disabled = true;
-        btn.innerText = "جاري النشر...";
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التنفيذ الملكي...';
+
+        // تحديد نوع العملية (POST للنشر | PUT للتعديل)
+        const method = editArticleId ? "PUT" : "POST";
+        const url = editArticleId ? `/api/admin/update_article/${editArticleId}` : "/api/admin/add_article";
 
         try {
-            const response = await fetch("/api/admin/add_article", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + token
+            const response = await fetch(url, {
+                method: method,
+                headers: { 
+                    "Content-Type": "application/json", 
+                    "Authorization": "Bearer " + userToken 
                 },
                 body: JSON.stringify(articleData)
             });
 
             if (response.ok) {
                 status.style.display = "block";
+                status.style.background = "rgba(16, 185, 129, 0.1)";
                 status.style.color = "#10b981";
-                status.innerText = "✅ تم النشر بنجاح! المقال متاح الآن للجمهور.";
+                status.style.border = "1px solid #10b981";
+                status.innerText = editArticleId ? "✅ تم تحديث التقرير بنجاح!" : "✅ تم نشر التقرير في صالة العرض بنجاح!";
                 
-                // مسح الخانات (بالمسميات الصحيحة 100%)
-                document.getElementById("art-title").value = "";
-                document.getElementById("art-summary").value = "";
-                document.getElementById("art-content").value = "";
-                document.getElementById("art-image-url").value = "";
-                document.getElementById("art-image-file").value = "";
-                document.getElementById("upload-status").style.display = "none";
+                // العودة للوحة التحكم بعد 2 ثانية لرؤية النتائج
+                setTimeout(() => { window.location.href = "/admin"; }, 2000);
             } else {
-                alert("فشل في النشر، تأكد من صلاحيات الآدمن.");
+                alert("فشل في معالجة الطلب، تأكد من الصلاحيات.");
             }
         } catch (error) {
-            alert("خطأ في الاتصال بالسيرفر.");
+            alert("خطأ في الاتصال: السيرفر لا يستجيب.");
         } finally {
             btn.disabled = false;
-            btn.innerText = "نشر مقال جديد";
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> نشر المقال الآن';
         }
     }
 
-    window.onload = checkAdminStatus;
+    // انطلاق النظام
+    window.onload = initializeEditor;
 </script>
 </body>
 </html>
