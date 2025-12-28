@@ -231,20 +231,22 @@
         if (!userToken) { window.location.href = "/"; return; }
         
         try {
-            const response = await fetch("/api/me", { headers: {"Authorization": "Bearer " + userToken} });
-            const user = await res = await response.json();
+            const response = await fetch("/api/me", { 
+                headers: {"Authorization": "Bearer " + userToken} 
+            });
+            const userData = await response.json(); // تم تصحيح الخطأ هنا
             
-            if (!user.is_admin) {
-                alert("🔒 عذراً يا ملك، هذه الغرفة مخصصة للملك ربيع البرغوثي فقط.");
+            if (!userData.is_admin) {
+                alert("🔒 منطقة محظورة.");
                 window.location.href = "/";
                 return;
             }
 
-            // إذا دخلنا عبر زر التعديل
+            // إذا وجد رقم مقال في الرابط، ابدأ عملية الجلب للتعديل
             if (editArticleId) {
                 switchToEditMode();
             }
-        } catch (e) { window.location.href = "/"; }
+        } catch (e) { console.error("Auth error"); window.location.href = "/"; }
     }
 
     // 2. دالة تحويل الواجهة لوضع التعديل
