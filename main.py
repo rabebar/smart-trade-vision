@@ -46,6 +46,7 @@ app.add_middleware(
 os.makedirs("images", exist_ok=True)
 app.mount("/images", StaticFiles(directory="images"), name="images")
 
+# ربط المجلد لضمان ظهور اللوجو والملفات الثابتة
 if os.path.exists("frontend"):
     app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
@@ -98,17 +99,16 @@ def get_news(lang: str = "ar"):
     except:
         err_msg = "Market news currently unavailable" if lang == "en" else "تعذر جلب الأخبار حالياً"
         return {"news": err_msg}
-    # =========================================================
-# جلب المقالات والإعلانات للجمهور (Public API)
+
+# =========================================================
+# جلب المقالات والإعلانات للجمهور (Media API)
 # =========================================================
 @app.get("/api/articles")
 def get_articles(lang: str = "ar", db: Session = Depends(get_db)):
-    # جلب آخر 6 مقالات متوافقة مع لغة المستخدم
     return db.query(Article).filter(Article.language == lang).order_by(Article.id.desc()).limit(6).all()
 
 @app.get("/api/sponsors")
 def get_sponsors(location: str = "main", db: Session = Depends(get_db)):
-    # جلب الإعلانات النشطة لمكان معين
     return db.query(Sponsor).filter(Sponsor.location == location, Sponsor.is_active == True).all()
 
 # =========================================================
@@ -155,7 +155,7 @@ def me(current_user: User = Depends(get_current_user)):
         return current_user
 
 # =========================================================
-# Admin Operations
+# Admin Operations (Users)
 # =========================================================
 @app.get("/api/admin/users")
 def admin_get_users(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -191,40 +191,53 @@ def admin_delete_user(user_id: int, current_user: User = Depends(get_current_use
         db.delete(user)
         db.commit()
     return {"status": "success"}
-# [حقن ملكي] دالة حذف المقالات من قاعدة البيانات
-@app.delete("/api/admin/delete_article/{art_id}")
-def admin_delete_article(art_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if not current_user.is_admin: 
-        raise HTTPException(status_code=403, detail="غير مسموح")
-    
-    # البحث عن المقال وحذفه
-    db.query(Article).filter(Article.id == art_id).delete()
-    db.commit()
-    return {"status": "success", "message": "تم حذف المقال نهائياً"}
+
 # =========================================================
-# أوامر غرفة التحرير - خاص بالآدمن (Editor API)
+# أوامر غرفة التحرير السيادية (Editor API)
 # =========================================================
+
 @app.post("/api/admin/add_article")
 def admin_add_article(data: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    # حماية ملكية: التأكد أن ربيع البرغوثي (الآدمن) هو من ينشر
-    if not current_user.is_admin:
-        raise HTTPException(status_code=403, detail="صلاحيات غير كافية")
-    
+    if not current_user.is_admin: 
+        raise HTTPException(status_code=403, detail="غير مسموح")
     new_art = Article(
-        title=data.get("title"),
-        summary=data.get("summary"),
-        content=data.get("content"),
-        image_url=data.get("image_url"),
+        title=data.get("title"), 
+        summary=data.get("summary"), 
+        content=data.get("content"), 
+        image_url=data.get("image_url"), 
         language=data.get("language", "ar")
     )
     db.add(new_art)
     db.commit()
-    return {"status": "success", "message": "تم نشر المقال في صالة العرض بنجاح"}
+    return {"status": "success", "message": "تم نشر المقال بنجاح"}
 
-@app.get("/editor")
-def editor_page():
-    # المسار السري لفتح واجهة التحرير الخاصة بك
-    return FileResponse("frontend/editor.html")
+@app.get("/api/admin/article/{art_id}")
+def admin_get_article(art_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if not current_user.is_admin: 
+        raise HTTPException(status_code=403)
+    return db.query(Article).filter(Article.id == art_id).first()
+
+@app.put("/api/admin/update_article/{art_id}")
+def admin_update_article(art_id: int, data: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if not current_user.is_admin: 
+        raise HTTPException(status_code=403)
+    db.query(Article).filter(Article.id == art_id).update({
+        "title": data.get("title"), 
+        "summary": data.get("summary"), 
+        "content": data.get("content"), 
+        "image_url": data.get("image_url"), 
+        "language": data.get("language")
+    })
+    db.commit()
+    return {"status": "success"}
+
+@app.delete("/api/admin/delete_article/{art_id}")
+def admin_delete_article(art_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if not current_user.is_admin: 
+        raise HTTPException(status_code=403)
+    db.query(Article).filter(Article.id == art_id).delete()
+    db.commit()
+    return {"status": "success"}
 
 # =========================================================
 # KAIA Descriptive Analysis Engine
@@ -263,7 +276,6 @@ async def analyze_chart(
 JSON ONLY: market_bias, market_phase, opportunity_context, analysis_text, risk_note, confidence
 Language: {target_lang}
 """
-
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -271,13 +283,14 @@ Language: {target_lang}
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": f"حلل هذا الشارت على الإطار {timeframe} باستخدام {analysis_type}."},
+                        {"type": "text", "text": f"Analyze this chart on {timeframe} using {analysis_type}."},
                         {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{base64_image}"}}
                     ]
                 }
             ],
             response_format={"type": "json_object"},
-            temperature=0.3
+            temperature=0.3,
+            timeout=60.0
         )
 
         result = json.loads(response.choices[0].message.content)
@@ -318,25 +331,17 @@ async def upload_chart(chart: UploadFile = File(...)):
     with open(f"images/{name}", "wb") as buffer:
         shutil.copyfileobj(chart.file, buffer)
     return {"filename": name}
-# [حقن ملكي] دالة رفع صور المقالات وحفظها في مجلد الـ static
+
 @app.post("/api/admin/upload-article-image")
 async def upload_article_image(image: UploadFile = File(...), current_user: User = Depends(get_current_user)):
-    # حماية: التأكد أنك الآدمن
     if not current_user.is_admin: 
-        raise HTTPException(status_code=403, detail="غير مسموح لغير الملك")
-    
-    # تحديد اسم فريد للصورة لعدم التكرار
-    ext = image.filename.split('.')[-1]
-    name = f"art_{uuid.uuid4()}.{ext}"
-    
-    # المسار الذي ستُحفظ فيه الصورة (بجانب اللوجو)
+        raise HTTPException(status_code=403)
+    name = f"art_{uuid.uuid4()}.png"
     save_path = os.path.join("frontend", name) 
-    
     with open(save_path, "wb") as buffer:
         shutil.copyfileobj(image.file, buffer)
-    
-    # إرجاع الرابط الذي سيفهمه المتصفح فوراً
     return {"image_url": f"/static/{name}"}
+
 @app.get("/api/history")
 def get_user_history(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     return db.query(Analysis).filter(Analysis.user_id == current_user.id).order_by(Analysis.id.desc()).all()
@@ -355,12 +360,9 @@ def get_sw(): return FileResponse("frontend/sw.js")
 # =========================================================
 @app.get("/")
 def home(request: Request): 
-    # فحص بصمة الجهاز
     user_agent = request.headers.get("user-agent", "").lower()
-    # إذا كان موبايل، أعطه واجهة العمل فوراً
     if "iphone" in user_agent or "android" in user_agent:
         return FileResponse("frontend/mobile.html")
-    # إذا كان كمبيوتر، أعطه الصفحة الرئيسية
     return FileResponse("frontend/index.html")
 
 @app.get("/dashboard")
@@ -369,15 +371,17 @@ def dashboard(): return FileResponse("frontend/dashboard.html")
 @app.get("/mobile")
 def mobile(): return FileResponse("frontend/mobile.html")
 
-@app.get("/history")
-def history(): return FileResponse("frontend/history.html")
+@app.get("/editor")
+def editor_page(): return FileResponse("frontend/editor.html")
 
 @app.get("/admin")
 def admin(): return FileResponse("frontend/admin.html")
 
 @app.get("/upgrade")
-def upgrade_page():
-    return FileResponse("frontend/index.html")
+def upgrade_page(): return FileResponse("frontend/index.html")
+
+@app.get("/history")
+def history(): return FileResponse("frontend/history.html")
 
 # =========================================================
 # Emergency Tools
