@@ -308,7 +308,25 @@ async def upload_chart(chart: UploadFile = File(...)):
     with open(f"images/{name}", "wb") as buffer:
         shutil.copyfileobj(chart.file, buffer)
     return {"filename": name}
-
+# [حقن ملكي] دالة رفع صور المقالات وحفظها في مجلد الـ static
+@app.post("/api/admin/upload-article-image")
+async def upload_article_image(image: UploadFile = File(...), current_user: User = Depends(get_current_user)):
+    # حماية: التأكد أنك الآدمن
+    if not current_user.is_admin: 
+        raise HTTPException(status_code=403, detail="غير مسموح لغير الملك")
+    
+    # تحديد اسم فريد للصورة لعدم التكرار
+    ext = image.filename.split('.')[-1]
+    name = f"art_{uuid.uuid4()}.{ext}"
+    
+    # المسار الذي ستُحفظ فيه الصورة (بجانب اللوجو)
+    save_path = os.path.join("frontend", name) 
+    
+    with open(save_path, "wb") as buffer:
+        shutil.copyfileobj(image.file, buffer)
+    
+    # إرجاع الرابط الذي سيفهمه المتصفح فوراً
+    return {"image_url": f"/static/{name}"}
 @app.get("/api/history")
 def get_user_history(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     return db.query(Analysis).filter(Analysis.user_id == current_user.id).order_by(Analysis.id.desc()).all()
