@@ -476,9 +476,11 @@
     </div>
 </footer>
 
+<!-- 1. استدعاء ملفات البرمجة والترجمة الأساسية -->
 <script src="/static/translations.js"></script>
 <script src="/static/script.js"></script>
 
+<!-- 2. تأثيرات الشتاء (طاقية سانتا والثلج) - مجهودك محفوظ -->
 <script id="seasonal-script">
     (function() {
         const now = new Date();
@@ -503,24 +505,25 @@
         }
     })();
 </script>
+
+<!-- 3. المحرك الإعلامي الملكي المطور (فلترة اللغات + اتجاه الشريط + أخبار العالم) -->
 <script>
-    // [المحرك الإعلامي الموحد لـ KAIA AI]
     async function syncKAIAWorld() {
         const lang = document.getElementById("language-select").value || "ar";
         const container = document.getElementById("articles-container");
         const tickerWrap = document.getElementById("kaia-ticker-wrap");
 
         try {
-            // 1. جلب مقالاتك المفلترة
+            // أ. جلب مقالات الملك (المفلترة حسب اللغة)
             const resArt = await fetch(`/api/articles?lang=${lang}`);
             const myArticles = await resArt.json();
 
-            // 2. جلب أخبار العالم المفلترة (Investing.com)
+            // ب. جلب أخبار العالم الحية (المفلترة حسب اللغة من Investing.com)
             const resGlobal = await fetch(`/api/news?lang=${lang}`);
             const globalData = await resGlobal.json();
             const worldNews = globalData.news || "";
 
-            // --- تحديث صالة العرض ---
+            // --- تحديث صالة العرض بالرؤى المؤسسية ---
             if (myArticles.length > 0) {
                 container.innerHTML = myArticles.map(art => `
                     <div class="service-card" style="padding: 0; overflow: hidden; border: 1px solid rgba(59, 130, 246, 0.1); background: #0b1222; text-align: right; display: flex; flex-direction: column; border-radius: 20px;">
@@ -536,18 +539,22 @@
                     </div>
                 `).join("");
             } else {
-                container.innerHTML = `<p style="text-align: center; grid-column: 1/-1; opacity: 0.5;">بانتظار التقارير المؤسسية بلغة: ${lang === 'ar' ? 'العربية' : 'English'}.</p>`;
+                container.innerHTML = `<p style="text-align: center; grid-column: 1/-1; opacity: 0.5;">بانتظار نشر أول تقرير مؤسسي باللغة: ${lang === 'ar' ? 'العربية' : 'English'}.</p>`;
             }
 
-            // --- تحديث شريط الأخبار (تغيير المحتوى والاتجاه) ---
+            // --- تحديث شريط الأخبار الذكي (ضبط الاتجاه والدمج) ---
             const myTitles = myArticles.map(a => ` 🔥 ${a.title}`).join(" ★ ");
             const newsText = myTitles ? `${myTitles} | 🌍 أخبار العالم: ${worldNews}` : `🌍 أخبار العالم: ${worldNews}`;
             
-            // ضبط الاتجاه ليكون من اليسار لليمين (direction="right")
-            tickerWrap.innerHTML = `
-                <marquee scrollamount="5" direction="right" onmouseover="this.stop();" onmouseout="this.start();" style="color: #fff; font-weight: 700; font-size: 13px;">
-                    <span style="color:#ffd700;">${newsText}</span>
-                </marquee>`;
+            // ضبط الاتجاه: للعربي يزحف لليمين (right) للأجنبي يزحف لليسار (left)
+            const moveDir = (lang === "ar") ? "right" : "left";
+            
+            if (tickerWrap) {
+                tickerWrap.innerHTML = `
+                    <marquee scrollamount="5" direction="${moveDir}" onmouseover="this.stop();" onmouseout="this.start();" style="color: #fff; font-weight: 700; font-size: 13px; cursor: pointer;">
+                        <span style="color:#ffd700;">${newsText}</span>
+                    </marquee>`;
+            }
 
         } catch (e) { console.error("Sync Error:", e); }
     }
@@ -565,14 +572,14 @@
                         .container { max-width: 850px; margin: 0 auto; background: #0b1222; padding: 40px; border-radius: 25px; border: 1px solid #1e293b; box-shadow: 0 0 50px #000; }
                         h1 { color: #3b82f6; font-weight: 900; border-bottom: 2px solid #1e293b; padding-bottom: 20px; margin-bottom: 30px; }
                         p { font-size: 19px; color: #d1d5db; white-space: pre-wrap; }
-                        .btn { background: #3b82f6; color: #000; border: none; padding: 12px 30px; border-radius: 12px; font-weight: 900; cursor: pointer; margin-top: 40px; font-family: inherit; }
+                        .btn { background: #3b82f6; color: #000; border: none; padding: 12px 30px; border-radius: 12px; font-weight: 900; cursor: pointer; margin-top: 40px; }
                     </style>
                 </head>
                 <body>
                     <div class="container">
                         <h1>${title}</h1>
                         <p>${content}</p>
-                        <button class="btn" onclick="window.close()">إغلاق وقراءة المزيد</button>
+                        <button class="btn" onclick="window.close()">إغلاق وقراءة باقي التقارير</button>
                     </div>
                 </body>
             </html>
@@ -580,7 +587,7 @@
         win.document.close();
     }
 
-    // التشغيل الموحد
+    // التشغيل عند التحميل وعند تغيير اللغة
     document.addEventListener("DOMContentLoaded", syncKAIAWorld);
     document.getElementById("language-select").addEventListener("change", syncKAIAWorld);
 </script>
