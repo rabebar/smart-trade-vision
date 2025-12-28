@@ -64,10 +64,12 @@
             <input type="text" id="art-summary" class="editor-input" placeholder="سطر واحد يلخص أهمية هذا التقرير...">
         </div>
 
-        <!-- 4. الصورة -->
+        <!-- منطقة رفع الصورة الجديدة -->
         <div class="input-group">
-            <label><i class="fa-solid fa-image"></i> رابط صورة الغلاف (URL)</label>
-            <input type="text" id="art-image" class="editor-input" placeholder="ضع رابط الصورة هنا (يفضل شارت أو صورة مؤسسية)">
+            <label><i class="fa-solid fa-camera"></i> رفع صورة غلاف المقال</label>
+            <input type="file" id="art-image-file" class="editor-input" accept="image/*" onchange="uploadImageToServer()">
+            <input type="hidden" id="art-image-url"> <!-- مخزن سري للرابط الذي سيرجعه السيرفر -->
+            <p id="upload-status" style="font-size: 12px; margin-top: 5px; font-weight: 800; display: none;"></p>
         </div>
 
         <!-- 5. المحتوى -->
@@ -110,7 +112,44 @@
         }
     }
 
-    // 2. دالة النشر المصلحة (تطابق اختبار Swagger بنسبة 100%)
+// دالة إرسال الصورة للسيرفر فور اختيارها من الجهاز
+    async function uploadImageToServer() {
+        const fileInput = document.getElementById("art-image-file");
+        const status = document.getElementById("upload-status");
+        const urlInput = document.getElementById("art-image-url");
+
+        if (!fileInput.files[0]) return;
+
+        status.style.display = "block";
+        status.innerText = "⏳ جاري رفع الصورة للسيرفر...";
+        status.style.color = "var(--primary)";
+
+        const formData = new FormData();
+        formData.append("image", fileInput.files[0]);
+
+        try {
+            const res = await fetch("/api/admin/upload-article-image", {
+                method: "POST",
+                headers: { "Authorization": "Bearer " + token },
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                // حفظ الرابط المرتجع من السيرفر في الخانة المخفية
+                urlInput.value = data.image_url; 
+                status.innerText = "✅ تم رفع الصورة بنجاح وتجهيز الرابط.";
+                status.style.color = "#10b981";
+            } else {
+                alert("فشل رفع الصورة: " + (data.detail || "خطأ غير معروف"));
+                status.style.display = "none";
+            }
+        } catch (e) {
+            alert("خطأ في الاتصال أثناء الرفع");
+            status.style.display = "none";
+        }
+    }    
     async function publishArticle() {
         const btn = document.querySelector(".publish-btn");
         const status = document.getElementById("status-text");
@@ -120,7 +159,7 @@
             title: document.getElementById("art-title").value.trim(),
             summary: document.getElementById("art-summary").value.trim(),
             content: document.getElementById("art-content").value.trim(),
-            image_url: document.getElementById("art-image").value.trim(),
+            image_url: document.getElementById("art-image-url").value,
             language: document.getElementById("art-lang").value
         };
 
