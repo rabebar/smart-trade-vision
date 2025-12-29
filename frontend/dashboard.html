@@ -358,6 +358,22 @@
     font-size: 13px;
 }
 /* ------------------------------- */
+/* --- [حقن التفعيل الذكي والألوان] --- */
+.verification-alert-bar {
+    display: none; background: linear-gradient(90deg, #1e293b, #0f172a);
+    border-bottom: 2px solid #3b82f6; padding: 15px; text-align: center;
+    position: relative; z-index: 1000;
+}
+.v-content { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
+.v-text { font-weight: 800; color: #fff; font-size: 14px; }
+.v-btn { background: #3b82f6; color: #000; padding: 8px 20px; border-radius: 8px; text-decoration: none; font-weight: 900; font-size: 13px; }
+
+.report-bullish { border: 2px solid #10b981 !important; box-shadow: 0 0 25px rgba(16, 185, 129, 0.2) !important; }
+.report-bearish { border: 2px solid #ef4444 !important; box-shadow: 0 0 25px rgba(239, 68, 68, 0.2) !important; }
+.report-neutral { border: 2px solid #3b82f6 !important; }
+.bias-text-bull { color: #10b981; font-weight: 900; text-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+.bias-text-bear { color: #ef4444; font-weight: 900; text-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+
     </style>
 
     <!-- أيقونات الموقع ومكتبة ضغط الصور -->
@@ -794,17 +810,51 @@ async function executeDesktopAnalysis() {if (document.getElementById("activation
         });
 
         const data = await res.json();
-        if (res.ok) {
+        if (res.ok) {const analysis = data.analysis;
+            const bias = (analysis.market_state.directional_bias || "Neutral").toLowerCase();
+            
+            // تحديد اللون (أخضر للصعود / أحمر للهبوط)
+            let colorClass = bias.includes("bull") ? "report-bullish" : (bias.includes("bear") ? "report-bearish" : "report-neutral");
+            let biasClass = bias.includes("bull") ? "bias-text-bull" : (bias.includes("bear") ? "bias-text-bear" : "");
+
             resBox.style.display = "block";
             resContent.innerHTML = `
-                <div style="background:rgba(59,130,246,0.1); padding:15px; border-radius:12px; border:1px solid var(--primary); line-height:1.6;">
-                    <p>${data.analysis.analysis_text}</p>
-                    <div style="margin-top:10px; font-weight:900; color:var(--primary); font-size:16px;">
-                        <i class="fa-solid fa-signal"></i> Bias: ${data.analysis.market_bias}
+                <div class="analysis-card ${colorClass}" style="background:rgba(11,18,34,0.95); padding:25px; border-radius:20px; line-height:1.8; position:relative;">
+                    <div style="text-align:center; margin-bottom:20px;">
+                        <h3 style="color:var(--primary); font-weight:900; letter-spacing:1px;">KAIA MASTER REPORT</h3>
+                        <div style="font-size:14px; color:var(--muted);">${analysis.market || 'Chart'} | ${analysis.timeframe || '15m'}</div>
+                    </div>
+
+                    <div style="margin-bottom:20px; background:rgba(0,0,0,0.3); padding:15px; border-radius:12px; border-right:4px solid var(--primary);">
+                        <strong style="display:block; color:var(--primary); margin-bottom:5px;">الخلاصة المؤسسية:</strong>
+                        <p style="font-size:15px; margin:0;">${analysis.market_state.notes}</p>
+                    </div>
+
+                    <div style="font-size:20px; text-align:center; margin:20px 0; padding:10px; background:rgba(255,255,255,0.03); border-radius:10px;">
+                        الاتجاه المتوقع: <span class="${biasClass}">${analysis.market_state.directional_bias}</span>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                        <div style="background:rgba(16,185,129,0.05); padding:12px; border-radius:10px; border:1px solid rgba(16,185,129,0.2);">
+                            <strong style="color:#10b981; font-size:12px;">مستويات المراقبة صعوداً:</strong>
+                            <div style="font-size:13px; font-family:monospace; margin-top:5px;">
+                                ${analysis.key_levels.upside.map(l => `<div>• ${l.price}</div>`).join("")}
+                            </div>
+                        </div>
+                        <div style="background:rgba(239,68,68,0.05); padding:12px; border-radius:10px; border:1px solid rgba(239,68,68,0.2);">
+                            <strong style="color:#ef4444; font-size:12px;">مستويات المراقبة هبوطاً:</strong>
+                            <div style="font-size:13px; font-family:monospace; margin-top:5px;">
+                                ${analysis.key_levels.downside.map(l => `<div>• ${l.price}</div>`).join("")}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:20px; font-size:11px; text-align:center; color:var(--muted); opacity:0.7;">
+                        ثقة المحرك: ${analysis.confidence_score}% | تعليمي فقط
                     </div>
                 </div>
             `;
-            syncDash(); // تحديث الرصيد والرتبة بعد التحليل
+            syncDash();// تحديث الرصيد والرتبة بعد التحليل
         } else {
             alert(data.detail || "حدث خطأ في المحرك");
         }
