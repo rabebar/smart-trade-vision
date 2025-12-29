@@ -495,6 +495,9 @@ def get_manifest():
 def get_sw():
     return FileResponse("frontend/sw.js")
 
+@app.get("/.well-known/assetlinks.json")
+async def get_assetlinks():
+    return FileResponse("frontend/.well-known/assetlinks.json")
 
 @app.get("/")
 def home(request: Request): 
