@@ -102,7 +102,6 @@
             align-items: center;
             justify-content: center;
         }
-
         .modal-box {
             background: var(--bg-panel);
             border: 2px solid var(--primary);
@@ -200,11 +199,9 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: #334155; /* لون الجلسة المغلقة */
+            background: #334155;
         }
-
         .session-active { color: #fff; }
-
         .session-active .session-dot {
             background: var(--success);
             box-shadow: 0 0 10px var(--success);
@@ -217,14 +214,13 @@
             font-size: 18px;
             transition: 0.3s;
         }
-
         .help-trigger:hover {
             color: var(--primary);
             transform: scale(1.1);
         }
 
         .instruction-box {
-            display: none; /* مخفي افتراضياً */
+            display: none;
             position: absolute;
             top: 60px;
             right: 25px;
@@ -237,77 +233,12 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             animation: slideIn 0.3s ease-out;
         }
-
-        .instruction-box h4 {
-            color: var(--primary);
-            margin-bottom: 15px;
-            font-weight: 900;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .instruction-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .instruction-list li {
-            font-size: 13px;
-            color: #d1d5db;
-            margin-bottom: 12px;
-            line-height: 1.6;
-            display: flex;
-            gap: 10px;
-        }
-
-        .instruction-list li i {
-            color: var(--primary);
-            margin-top: 3px;
-        }
-
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(-10px); }
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* تنسيق نصوص الشرح الصغيرة */
-        .field-helper {
-            display: block;
-            font-size: 10px;
-            color: var(--muted);
-            margin-top: 4px;
-            font-weight: 600;
-        }
-
-        /* إصلاح تداخل الشعار ومنع انقسام الاسم */
-        .logo-text {
-            white-space: nowrap !important;
-            font-size: 24px !important;
-            font-weight: 900;
-        }
-
-        .logo-main {
-            display: flex !important;
-            align-items: center !important;
-            gap: 10px !important;
-            min-width: max-content;
-        }
-
-        /* منع تداخل الأزرار مع معلومات المستخدم */
-        .top-navbar {
-            padding: 0 15px !important;
-            gap: 10px !important;
-            height: auto !important;
-            min-height: 70px;
-            flex-wrap: wrap;
-        }
-
-        .header-right { gap: 10px !important; }
-
-        /* تصغير كبسولة المستخدم قليلاً لمنع الزحام */
+        /* كبسولة المستخدم والرتب الملكية */
         .user-info-capsule {
             padding: 8px 15px !important;
             font-size: 13px !important;
@@ -318,83 +249,38 @@
             align-items: center;
             gap: 10px;
         }
-        /* [حقن] ألوان الرتب الملكية */
         .rank-icon { font-size: 20px; vertical-align: middle; margin: 0 5px; }
-        .tier-platinum { color: #3b82f6 !important; text-shadow: 0 0 10px #3b82f6; }
-        .tier-pro { color: #ffd700 !important; text-shadow: 0 0 10px #ffd700; }
+        .tier-platinum { color: #3b82f6 !important; }
+        .tier-pro { color: #ffd700 !important; }
         .tier-basic { color: #c0c0c0 !important; }
         .tier-trial { color: #8b4513 !important; }
 
-        /* تأثير النبض للشعار الذهبي */
-        .logo-main img { 
-            height: 45px; 
-            margin-right: 10px; 
-            filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.5));
-            animation: logo-glow 3s infinite;
+        /* --- [تنسيق التفعيل والألوان المؤسسية - نسخة نظيفة] --- */
+        .verification-alert-bar {
+            display: none; background: linear-gradient(90deg, #1e293b, #0f172a);
+            border-bottom: 2px solid #3b82f6; padding: 15px; text-align: center;
+            position: relative; z-index: 1000;
         }
-        @keyframes logo-glow {
-            0%, 100% { filter: drop-shadow(0 0 2px rgba(59, 130, 246, 0.2)); }
-            50% { filter: drop-shadow(0 0 10px #3b82f6); }
-        }
-        /* --- كود تنبيه التفعيل الجديد --- */
-.verification-alert-bar {
-    display: none; 
-    background: linear-gradient(90deg, #1e293b, #0f172a);
-    border-bottom: 2px solid #3b82f6;
-    padding: 15px;
-    text-align: center;
-    position: relative;
-    z-index: 1000;
-}
-.v-content { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
-.v-text { font-weight: 800; color: #fff; font-size: 14px; }
-.v-btn { 
-    background: #3b82f6; 
-    color: #000; 
-    padding: 8px 20px; 
-    border-radius: 8px; 
-    text-decoration: none; 
-    font-weight: 900; 
-    font-size: 13px;
-}
-/* ------------------------------- */
-/* --- [حقن التفعيل الذكي والألوان] --- */
-.verification-alert-bar {
-    display: none; background: linear-gradient(90deg, #1e293b, #0f172a);
-    border-bottom: 2px solid #3b82f6; padding: 15px; text-align: center;
-    position: relative; z-index: 1000;
-}
-.v-content { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
-.v-text { font-weight: 800; color: #fff; font-size: 14px; }
-.v-btn { background: #3b82f6; color: #000; padding: 8px 20px; border-radius: 8px; text-decoration: none; font-weight: 900; font-size: 13px; }
+        .v-content { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .v-text { font-weight: 800; color: #fff; font-size: 14px; }
+        .v-btn { background: #3b82f6; color: #000; padding: 8px 20px; border-radius: 8px; text-decoration: none; font-weight: 900; }
 
-.report-bullish { border: 2px solid #10b981 !important; box-shadow: 0 0 25px rgba(16, 185, 129, 0.2) !important; }
-.report-bearish { border: 2px solid #ef4444 !important; box-shadow: 0 0 25px rgba(239, 68, 68, 0.2) !important; }
-.report-neutral { border: 2px solid #3b82f6 !important; }
-.bias-text-bull { color: #10b981; font-weight: 900; text-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
-.bias-text-bear { color: #ef4444; font-weight: 900; text-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
-
+        .report-bullish { border: 2px solid #10b981 !important; box-shadow: 0 0 25px rgba(16, 185, 129, 0.2) !important; }
+        .report-bearish { border: 2px solid #ef4444 !important; box-shadow: 0 0 25px rgba(239, 68, 68, 0.2) !important; }
+        .report-neutral { border: 2px solid #3b82f6 !important; }
+        .bias-text-bull { color: #10b981; font-weight: 900; }
+        .bias-text-bear { color: #ef4444; font-weight: 900; }
     </style>
-
-    <!-- أيقونات الموقع ومكتبة ضغط الصور -->
-    <link rel="icon" type="image/png" href="/static/logo.png">
-    <link rel="apple-touch-icon" href="/static/logo.png">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/browser-image-compression/2.0.2/browser-image-compression.min.js"></script>
 </head>
-
 <body class="dashboard-root">
-    <!-- بار تنبيه التفعيل المؤسسي -->
-<div id="activation-banner" class="verification-alert-bar">
-    <div class="v-content">
-        <i class="fa-solid fa-shield-halved" style="color:#3b82f6; font-size: 20px;"></i>
-        <span class="v-text">حسابك قيد المراجعة المؤسسية حالياً.. لتفعيل كامل ميزات الذكاء الاصطناعي فوراً، يرجى التواصل مع المحلل.</span>
-        <a id="whatsapp-verify-link" href="#" target="_blank" class="v-btn">
-            <i class="fa-brands fa-whatsapp"></i> تفعيل عبر واتساب
-        </a>
+    <div id="activation-banner" class="verification-alert-bar">
+        <div class="v-content">
+            <i class="fa-solid fa-shield-halved" style="color:#3b82f6; font-size: 20px;"></i>
+            <span class="v-text">حسابك قيد المراجعة المؤسسية.. لتفعيل ميزات KAIA AI يرجى التواصل مع المحلل.</span>
+            <a id="whatsapp-verify-link" href="#" target="_blank" class="v-btn"><i class="fa-brands fa-whatsapp"></i> تفعيل عبر واتساب</a>
+        </div>
     </div>
-</div>
-
-<!-- ================= 1. الهيدر الملكي المطور لغرفة القيادة ================= -->
+    <!-- ================= 1. الهيدر الملكي المطور لغرفة القيادة ================= -->
 <header class="top-navbar">
 
     <div class="header-left" style="display: flex; align-items: center; gap: 12px;">
@@ -403,7 +289,7 @@
             <i class="fa-solid fa-power-off"></i>
         </button>
 
-        <!-- زر تحديث المنصة الجديد -->
+        <!-- زر تحديث المنصة -->
         <button class="tool-icon-btn" onclick="location.reload()" title="Refresh System">
             <div style="display: flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-arrows-rotate"></i>
@@ -424,7 +310,7 @@
             </div>
         </button>
 
-        <!-- زر فتح حاسبة البيبس الجديدة -->
+        <!-- زر فتح حاسبة البيبس -->
         <button class="tool-icon-btn" onclick="document.getElementById('pip-modal').style.display='flex'">
             <div style="display: flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-calculator"></i>
@@ -441,7 +327,7 @@
         </button>
 
         <div class="user-info-capsule">
-            <span id="rank-icon-place"></span> <!-- هذا السطر هو الذي سيُظهر رتبتك الملكية -->
+            <span id="rank-icon-place"></span>
             <span class="user-credits">
                 <i class="fa-solid fa-coins"></i>
                 <span id="dash-credits">0</span>
@@ -455,7 +341,6 @@
     </div>
 
     <div class="header-right" style="display: flex; align-items: center; gap: 20px;">
-
         <select class="lang-picker-dash" id="language-select">
             <option value="ar">العربية 🇸🇦</option>
             <option value="en">English 🇺🇸</option>
@@ -468,217 +353,152 @@
             <span class="logo-text">KAIA AI</span>
             <img src="/static/logo.png" alt="Logo" style="height:40px; margin-right:10px;">
         </div>
-
     </div>
 </header>
 
 <!-- ================= شريط الجلسات أسفل الهيدر مباشرةً ================= -->
 <div class="market-sessions-bar">
-    <div class="session-item" id="session-sydney">
-        <div class="session-dot"></div>
-        <span>SYDNEY</span>
-    </div>
-    <div class="session-item" id="session-tokyo">
-        <div class="session-dot"></div>
-        <span>TOKYO</span>
-    </div>
-    <div class="session-item" id="session-london">
-        <div class="session-dot"></div>
-        <span>LONDON</span>
-    </div>
-    <div class="session-item" id="session-newyork">
-        <div class="session-dot"></div>
-        <span>NEW YORK</span>
-    </div>
+    <div class="session-item" id="session-sydney"><div class="session-dot"></div><span>SYDNEY</span></div>
+    <div class="session-item" id="session-tokyo"><div class="session-dot"></div><span>TOKYO</span></div>
+    <div class="session-item" id="session-london"><div class="session-dot"></div><span>LONDON</span></div>
+    <div class="session-item" id="session-newyork"><div class="session-dot"></div><span>NEW YORK</span></div>
 </div>
-
 <!-- ================= 2. محطة العمل الرئيسية (الشارت والتحليل) ================= -->
 <main class="workspace-container">
 
     <!-- العمود الجانبي: أدوات التنفيذ -->
     <aside class="sidebar-tools">
 
-        <!-- صندوق التحليل المؤسسي -->
+        <!-- صندوق التحليل المؤسسي الذكي -->
         <div class="analysis-mini-core">
 
             <div style="margin-bottom: 20px; font-weight: 900; color: var(--primary); display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <span data-i18n="analysis_header">محرك KAIA AI</span>
-                    <i class="fa-solid fa-circle-question help-trigger" id="help-icon" title="تعليمات الاستخدام"></i>
+                    <i class="fa-solid fa-circle-question help-trigger" onclick="document.getElementById('help-box').style.display='block'" title="تعليمات الاستخدام"></i>
                 </div>
                 <i class="fa-solid fa-brain" style="font-size: 22px;"></i>
             </div>
 
-            <!-- نافذة التعليمات -->
+            <!-- نافذة التعليمات المدمجة -->
             <div class="instruction-box" id="help-box">
                 <h4 data-i18n="help_title"><i class="fa-solid fa-lightbulb"></i> دليل استخدام المحرك</h4>
                 <ul class="instruction-list">
-                    <li>
-                        <i class="fa-solid fa-1"></i>
-                        <span data-i18n="help_step_1">التقاط الشارت: قم بلصق صورة الشارت مباشرة (Paste) أو رفعها يدوياً من ملفات جهازك.</span>
-                    </li>
-                    <li>
-                        <i class="fa-solid fa-2"></i>
-                        <span data-i18n="help_step_2">تطابق الفريم: تأكد دائماً من مطابقة الفريم الزمني المختار في المحرك مع الفريم الظاهر داخل صورة الشارت لضمان أدق التحليلات.</span>
-                    </li>
-                    <li>
-                        <i class="fa-solid fa-3"></i>
-                        <span data-i18n="help_step_3">تصفير الذاكرة: عند الانتهاء، اضغط على "إخفاء النتيجة" لتنظيف ذاكرة المحرك وتجهيزه لعملية تحليل جديدة كلياً.</span>
-                    </li>
+                    <li><i class="fa-solid fa-1"></i><span data-i18n="help_step_1">التقاط الشارت: قم بلصق صورة الشارت مباشرة (Paste) أو ارفعها يدوياً.</span></li>
+                    <li><i class="fa-solid fa-2"></i><span data-i18n="help_step_2">تطابق الفريم: تأكد من اختيار الفريم الصحيح من القائمة لمطابقة الشارت.</span></li>
                 </ul>
                 <button onclick="document.getElementById('help-box').style.display='none'"
                         data-i18n="help_btn"
-                        style="width:100%; margin-top:10px; background:rgba(59,130,246,0.1); color:var(--primary); border:1px solid var(--primary); height:35px; border-radius:8px; cursor:pointer; font-weight:800; font-size:12px;">
+                        style="width:100%; margin-top:10px; background:rgba(59, 130, 246, 0.1); color:var(--primary); border:1px solid var(--primary); height:35px; border-radius:8px; cursor:pointer; font-weight:800; font-size:12px;">
                     فهمت ذلك
                 </button>
             </div>
 
-            <div class="drop-zone-v2" id="drop-zone" style="padding: 35px; border-radius: 15px; background: rgba(0,0,0,0.3);">
+            <!-- منطقة رفع الشارت -->
+            <div class="drop-zone-v2" id="drop-zone" onclick="document.getElementById('chartUpload').click()" style="padding: 35px; border-radius: 15px; background: rgba(0,0,0,0.3); text-align:center; cursor:pointer;">
                 <h4 id="status-text" data-i18n="drop_zone_text" style="font-size: 17px; font-weight: 900;">إلصق الشارت هنا 📸</h4>
                 <input type="file" id="chartUpload" style="display: none;" accept="image/*" onchange="handleDesktopImage(event)">
             </div>
 
-            <div class="core-inputs-grid" style="grid-template-columns: 1fr; gap: 12px; margin: 20px 0;">
+            <!-- خيارات الاستراتيجية والفريم -->
+            <div class="core-inputs-grid" style="display: grid; gap: 12px; margin: 20px 0;">
+                <select id="strategy" style="height: 50px; background: #000; color: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 0 15px; font-weight: 700;">
+                    <option value="SMC">Smart Money Concepts (SMC) 💎</option>
+                    <option value="Elliott Wave">Elliott Wave Theory 🌊</option>
+                    <option value="KAIA Master">KAIA Master Confluence 🔥</option>
+                </select>
 
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <label data-i18n="strategy_label" style="font-size: 12px; color: var(--muted); font-weight: 800;">الاستراتيجية</label>
-                    <select id="strategy" style="height: 50px; background: #000; color: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 0 15px; font-weight: 700;">
-                        <option value="SMC">Smart Money Concepts (SMC) 💎</option>
-                        <option value="Elliott Wave">Elliott Wave Theory 🌊</option>
-                        <option value="KAIA Master">KAIA Master Confluence 🔥</option>
-                    </select>
-                </div>
-
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <label data-i18n="timeframe_label" style="font-size: 12px; color: var(--muted); font-weight: 800;">الفريم</label>
-                    <select id="timeframe" style="height: 50px; background: #000; color: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 0 15px; font-weight: 700;">
-                        <option value="1m">1 Minute</option>
-                        <option value="3m">3 Minutes</option>
-                        <option value="5m">5 Minutes</option>
-                        <option value="15m" selected>15 Minutes</option>
-                        <option value="30m">30 Minutes</option>
-                        <option value="1H">1 Hour</option>
-                        <option value="4H">4 Hours</option>
-                        <option value="D">Daily Chart</option>
-                        <option value="W">Weekly Chart</option>
-                        <option value="M">Monthly Chart</option>
-                    </select>
-                </div>
-
+                <select id="timeframe" style="height: 50px; background: #000; color: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 0 15px; font-weight: 700;">
+                    <option value="1m">1m</option><option value="5m">5m</option><option value="15m" selected>15m</option>
+                    <option value="1H">1H</option><option value="4H">4H</option><option value="D">Daily</option>
+                </select>
             </div>
 
             <button class="core-analyze-btn" id="run-btn" data-i18n="analyze_btn" style="height: 65px; width: 100%; font-size: 18px; font-weight: 900;">بدء التحليل</button>
 
-            <!-- صندوق النتائج الديناميكي -->
+            <!-- صندوق النتائج الملون (المكان المخصص للحقن الملون) -->
             <div id="result-box" style="display: none; margin-top: 25px; border-top: 2px solid var(--border); padding-top: 20px;">
                 <div id="res-data-content"></div>
-                <button onclick="resetWorkspace()" data-i18n="analysis_hide_btn" style="width:100%; margin-top:15px; background:#1e293b; color:#fff; border:none; height:45px; border-radius:10px; cursor:pointer; font-weight: 800;">
-    إخفاء النتيجة | Clear & Close
-        </button> 
+                <button onclick="document.getElementById('result-box').style.display='none'" 
+                        data-i18n="analysis_hide_btn" 
+                        style="width:100%; margin-top:15px; background:#1e293b; color:#fff; border:none; height:45px; border-radius:10px; cursor:pointer; font-weight: 800;">
+                    إخفاء النتيجة | Clear & Close
+                </button>
             </div>
 
         </div>
-
-        <!-- الالة الحاسبة الجانبية -->
+        <!-- الالة الحاسبة الجانبية المتكاملة -->
         <div class="calc-mini">
             <div class="calc-box">
                 <div class="calc-screen" id="calc-display" style="height: 55px; font-size: 26px; border-radius: 10px; background: #000; border: 1px solid var(--border); display: flex; align-items: center; justify-content: flex-end; padding: 0 15px; color: var(--primary); font-family: monospace;">0</div>
                 <div class="calc-btns" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 15px;">
-                    <button onclick="clearCalc()" class="c-red" style="background: var(--danger); color: #fff;">C</button>
-                    <button onclick="inputCalc('/')">÷</button>
-                    <button onclick="inputCalc('*')">×</button>
-                    <button onclick="deleteCalc()">←</button>
-                    <button onclick="inputCalc('7')">7</button>
-                    <button onclick="inputCalc('8')">8</button>
-                    <button onclick="inputCalc('9')">9</button>
-                    <button onclick="inputCalc('-')">-</button>
-                    <button onclick="inputCalc('4')">4</button>
-                    <button onclick="inputCalc('5')">5</button>
-                    <button onclick="inputCalc('6')">6</button>
-                    <button onclick="inputCalc('+')">+</button>
-                    <button onclick="inputCalc('1')">1</button>
-                    <button onclick="inputCalc('2')">2</button>
-                    <button onclick="inputCalc('3')">3</button>
-                    <button onclick="resultCalc()" class="c-equal" style="background: var(--primary); color: #000; grid-row: span 2; height: auto;">=</button>
-                    <button onclick="inputCalc('0')" style="grid-column: span 2;">0</button>
-                    <button onclick="inputCalc('.')">.</button>
+                    <button onclick="clearCalc()" style="background: var(--danger); color: #fff; border:none; border-radius:8px; cursor:pointer; font-weight:900;">C</button>
+                    <button onclick="inputCalc('/')" style="background:#1e293b; color:#fff; border:none; border-radius:8px; cursor:pointer;">÷</button>
+                    <button onclick="inputCalc('*')" style="background:#1e293b; color:#fff; border:none; border-radius:8px; cursor:pointer;">×</button>
+                    <button onclick="deleteCalc()" style="background:#1e293b; color:#fff; border:none; border-radius:8px; cursor:pointer;">←</button>
+                    
+                    <button onclick="inputCalc('7')" style="background:#1e293b; color:#fff; border:none; border-radius:8px; cursor:pointer; padding:12px;">7</button>
+                    <button onclick="inputCalc('8')" style="background:#1e293b; color:#fff; border:none; border-radius:8px; cursor:pointer;">8</button>
+                    <button onclick="inputCalc('9')" style="background:#1e293b; color:#fff; border:none; border-radius:8px; cursor:pointer;">9</button>
+                    <button onclick="inputCalc('-')" style="background:#1e293b; color:#fff; border:none; border-radius:8px; cursor:pointer;">-</button>
+                    
+                    <button onclick="inputCalc('4')" style="background:#1e293b; color:#fff; border:none; border-radius:8px; cursor:pointer; padding:12px;">4</button>
+                    <button onclick="inputCalc('5')" style="background:#1e293b; color:#fff; border:none; border-radius:8px; cursor:pointer;">5</button>
+                    <button onclick="inputCalc('6')" style="background:#1e293b; color:#fff; border:none; border-radius:8px; cursor:pointer;">6</button>
+                    <button onclick="inputCalc('+')" style="background:#1e293b; color:#fff; border:none; border-radius:8px; cursor:pointer;">+</button>
+                    
+                    <button onclick="inputCalc('1')" style="background:#1e293b; color:#fff; border:none; border-radius:8px; cursor:pointer; padding:12px;">1</button>
+                    <button onclick="inputCalc('2')" style="background:#1e293b; color:#fff; border:none; border-radius:8px; cursor:pointer;">2</button>
+                    <button onclick="inputCalc('3')" style="background:#1e293b; color:#fff; border:none; border-radius:8px; cursor:pointer;">3</button>
+                    <button onclick="resultCalc()" style="background: var(--primary); color: #000; grid-row: span 2; border:none; border-radius:8px; cursor:pointer; font-weight:900;">=</button>
+                    
+                    <button onclick="inputCalc('0')" style="grid-column: span 2; background:#1e293b; color:#fff; border:none; border-radius:8px; cursor:pointer; padding:12px;">0</button>
+                    <button onclick="inputCalc('.')" style="background:#1e293b; color:#fff; border:none; border-radius:8px; cursor:pointer;">.</button>
                 </div>
             </div>
         </div>
 
     </aside>
 
-    <!-- الجانب الأيمن: منصة الشارت الكبرى -->
+    <!-- الجانب الأيمن: منصة الشارت الكبرى المتقدمة -->
     <section class="main-chart-area">
-
         <div class="tradingview-widget-container" style="height: 100%; width: 100%;">
             <div id="tradingview_advanced_core" style="height: 100%; width: 100%;"></div>
             <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
             <script type="text/javascript">
                 new TradingView.widget({
-                    "autosize": true,
-                    "symbol": "FX:EURUSD",
-                    "interval": "15",
-                    "timezone": "Etc/UTC",
-                    "theme": "dark",
-                    "style": "1",
-                    "locale": "ar",
-                    "toolbar_bg": "#f1f3f6",
-                    "enable_publishing": false,
-                    "withdateranges": true,
-                    "hide_side_toolbar": false,
-                    "allow_symbol_change": true,
-                    "details": true,
-                    "hotlist": true,
-                    "calendar": true,
-                    "container_id": "tradingview_advanced_core"
+                    "autosize": true, "symbol": "FX:EURUSD", "interval": "15", "timezone": "Etc/UTC", "theme": "dark",
+                    "style": "1", "locale": "ar", "toolbar_bg": "#f1f3f6", "enable_publishing": false,
+                    "allow_symbol_change": true, "container_id": "tradingview_advanced_core"
                 });
             </script>
         </div>
-
     </section>
 
 </main>
 
 <!-- ================= 3. البيانات المباشرة (Heatmap & Calendar) ================= -->
 <section class="dash-row market-section" style="display: flex; gap: 20px; padding: 0 20px; margin-top: 20px;">
-
-    <div class="dash-card" style="flex:1; background: var(--bg-panel); border-radius: 20px;">
-        <div class="card-header" data-i18n="dash_heatmap_title" style="padding: 15px; font-weight: 800; border-bottom: 1px solid var(--border);">خريطة قوة العملات</div>
+    <div class="dash-card" style="flex:1; background: var(--bg-panel); border-radius: 20px; border: 1px solid var(--border);">
+        <div class="card-header" style="padding: 15px; font-weight: 800; border-bottom: 1px solid var(--border);">خريطة قوة العملات</div>
         <div style="height: 350px;">
             <div class="tradingview-widget-container">
                 <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-forex-heat-map.js" async>
-                    {
-                        "width": "100%",
-                        "height": "350",
-                        "currencies": ["EUR","USD","GBP","JPY","AUD","CAD","CHF"],
-                        "isTransparent": true,
-                        "colorTheme": "dark",
-                        "locale": "ar"
-                    }
+                { "width": "100%", "height": "350", "currencies": ["EUR","USD","GBP","JPY","AUD","CAD","CHF"], "isTransparent": true, "colorTheme": "dark", "locale": "ar" }
                 </script>
             </div>
         </div>
     </div>
-
-    <div class="dash-card" style="flex:1; background: var(--bg-panel); border-radius: 20px;">
-        <div class="card-header" data-i18n="dash_calendar_title" style="padding: 15px; font-weight: 800; border-bottom: 1px solid var(--border);">الأجندة الاقتصادية</div>
+    <div class="dash-card" style="flex:1; background: var(--bg-panel); border-radius: 20px; border: 1px solid var(--border);">
+        <div class="card-header" style="padding: 15px; font-weight: 800; border-bottom: 1px solid var(--border);">الأجندة الاقتصادية</div>
         <div style="height: 350px;">
             <div class="tradingview-widget-container">
                 <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-events.js" async>
-                    {
-                        "width": "100%",
-                        "height": "350",
-                        "colorTheme": "dark",
-                        "isTransparent": true,
-                        "locale": "ar",
-                        "importanceFilter": "-1,0,1"
-                    }
+                { "width": "100%", "height": "350", "colorTheme": "dark", "isTransparent": true, "locale": "ar", "importanceFilter": "-1,0,1" }
                 </script>
             </div>
         </div>
     </div>
-
 </section>
 
 <!-- ================= 4. المفكرة الذكية (Smart Trader Journal) ================= -->
@@ -690,82 +510,48 @@
         </div>
         <div style="padding: 20px; background: #0b1222;">
             <textarea id="trader-notes" class="trader-journal-area" data-i18n-placeholder="dash_notes_placeholder"
-                      placeholder="سجل هنا تحليلاتك، خطط تداولك، وملاحظاتك الهامة لتبقى محفوظة في حسابك..."></textarea>
+                      placeholder="سجل هنا تحليلاتك، خطط تداولك، وملاحظاتك الهامة..."></textarea>
         </div>
     </div>
 </section>
 
 <!-- ================= 5. النوافذ المنبثقة (Modals) ================= -->
 
-<!-- نافذة إدارة المخاطر (المنطق الجديد) -->
+<!-- نافذة إدارة المخاطر -->
 <div id="risk-modal" class="floating-modal">
     <div class="modal-box">
         <h3 style="margin-bottom: 25px; color: var(--primary); font-weight: 900; text-align: center;">إدارة المخاطر</h3>
-
-        <div style="margin-top: 15px;">
-            <label style="font-size: 13px; font-weight: 800; color: #fff;">رأس المال (Balance)</label>
-            <input type="number" id="balance" placeholder="مثلاً 1000" class="modal-input">
-            <span class="field-helper">إجمالي المبلغ الموجود في محفظة التداول الخاصة بك حالياً.</span>
-        </div>
-
-        <div style="margin-top: 15px;">
-            <label style="font-size: 13px; font-weight: 800; color: #fff;">حجم اللوت (Lot Size)</label>
-            <input type="number" id="risk-lot" placeholder="مثلاً 0.10" class="modal-input">
-            <span class="field-helper">حجم العقد الذي تنوي فتحه لهذه الصفقة (مثال: 0.01 لوت ميكرو).</span>
-        </div>
-
-        <div style="margin-top: 15px;">
-            <label style="font-size: 13px; font-weight: 800; color: #fff;">وقف الخسارة (Stop Loss - Pips)</label>
-            <input type="number" id="sl-pips-input" placeholder="مثلاً 20" class="modal-input">
-            <span class="field-helper">عدد نقاط وقف الخسارة التي حددتها في تحليلك الفني.</span>
-        </div>
-
-        <button class="core-analyze-btn" onclick="calculateRiskPercent()" style="width: 100%; margin-top: 25px;" data-i18n="dash_calc_risk_btn">احسب نسبة المخاطرة</button>
-        <div id="risk-result" style="margin-top: 20px; text-align: center; font-weight: 900; font-size: 18px; color: var(--primary);"></div>
-
-        <button onclick="document.getElementById('risk-modal').style.display='none'" style="margin-top: 30px; background: none; border: none; color: var(--danger); cursor: pointer; font-weight: 900; width: 100%;">إغلاق [X]</button>
+        <input type="number" id="balance" placeholder="رأس المال (Balance)" class="modal-input" style="width:100%; background:#000; color:#fff; border:1px solid var(--border); padding:12px; border-radius:10px; margin-bottom:15px;">
+        <input type="number" id="risk-lot" placeholder="حجم اللوت (Lot Size)" class="modal-input" style="width:100%; background:#000; color:#fff; border:1px solid var(--border); padding:12px; border-radius:10px; margin-bottom:15px;">
+        <input type="number" id="sl-pips-input" placeholder="الستوب بالنقاط (Pips)" class="modal-input" style="width:100%; background:#000; color:#fff; border:1px solid var(--border); padding:12px; border-radius:10px;">
+        <button class="core-analyze-btn" onclick="calculateRiskPercent()" style="width: 100%; margin-top: 25px;">احسب نسبة المخاطرة</button>
+        <div id="risk-result" style="margin-top: 20px; text-align: center; font-weight: 900; color: var(--primary);"></div>
+        <button onclick="document.getElementById('risk-modal').style.display='none'" style="margin-top: 20px; background: none; border: none; color: var(--danger); cursor: pointer; font-weight: 900; width: 100%;">إغلاق [X]</button>
     </div>
 </div>
 
-<!-- نافذة حاسبة البيبس (النقاط) -->
+<!-- نافذة حاسبة النقاط -->
 <div id="pip-modal" class="floating-modal">
     <div class="modal-box" style="border-color: var(--success);">
-        <h3 style="margin-bottom: 25px; color: var(--success); font-weight: 900; text-align: center;">حاسبة الربح بالنقاط</h3>
-
-        <div style="margin-top: 15px;">
-            <label style="font-size: 13px; font-weight: 800; color: #fff;">حجم اللوت (Lot Size)</label>
-            <input type="number" id="pip-lot-size" placeholder="0.10" class="modal-input">
-            <span class="field-helper">حجم العقد المستخدم في حساب هذه الصفقة.</span>
-        </div>
-
-        <div style="margin-top: 15px;">
-            <label style="font-size: 13px; font-weight: 800; color: #fff;">عدد النقاط (Pips)</label>
-            <input type="number" id="pip-count" placeholder="50" class="modal-input">
-            <span class="field-helper">إجمالي عدد النقاط التي حققها السعر أو يستهدفها.</span>
-        </div>
-
-        <button class="core-analyze-btn" onclick="calculatePipProfit()" style="width: 100%; margin-top: 25px; background: var(--success);" data-i18n="dash_calc_profit_btn">حساب القيمة المالية ($)</button>
-        <div id="pip-result" style="margin-top: 20px; text-align: center; font-weight: 900; font-size: 18px; color: var(--success);"></div>
-
-        <button onclick="document.getElementById('pip-modal').style.display='none'" style="margin-top: 30px; background: none; border: none; color: var(--danger); cursor: pointer; font-weight: 900; width: 100%;">إغلاق [X]</button>
+        <h3 style="margin-bottom: 25px; color: var(--success); font-weight: 900; text-align: center;">حاسبة الأرباح بالنقاط</h3>
+        <input type="number" id="pip-lot-size" placeholder="حجم اللوت" class="modal-input" style="width:100%; background:#000; color:#fff; border:1px solid var(--border); padding:12px; border-radius:10px; margin-bottom:15px;">
+        <input type="number" id="pip-count" placeholder="عدد النقاط" class="modal-input" style="width:100%; background:#000; color:#fff; border:1px solid var(--border); padding:12px; border-radius:10px;">
+        <button class="core-analyze-btn" style="background: var(--success); width: 100%; margin-top: 25px;" onclick="calculatePipProfit()">احسب الربح ($)</button>
+        <div id="pip-result" style="margin-top: 20px; text-align: center; font-weight: 900; color: var(--success);"></div>
+        <button onclick="document.getElementById('pip-modal').style.display='none'" style="margin-top: 20px; background: none; border: none; color: var(--danger); cursor: pointer; font-weight: 900; width: 100%;">إغلاق [X]</button>
     </div>
 </div>
-
-<!-- استدعاء ملفات البرمجة والترجمة الأساسية -->
-<script src="/static/translations.js"></script>
-<script src="/static/dashboard.js"></script>
-
-<!-- [حقن ملكي] الدوال الجديدة ومنظم العمليات النهائي -->
 <script>
 let desktopFile = null;
 const userToken = localStorage.getItem("token");
+let isUserVerified = false;
 
-// 1. دالة معالجة وضغط الصورة (تمنع Lost Connection)
+// 1. دالة معالجة وضغط الصورة (لضمان السرعة ومنع انقطاع الاتصال)
 async function handleDesktopImage(event) {
     const file = event.target.files[0];
     if (!file) return;
     const statusLabel = document.getElementById("status-text");
-    statusLabel.innerText = "جاري معالجة الصورة مؤسسياً... ⏳";
+    statusLabel.innerText = "جاري معالجة الشارت مؤسسياً... ⏳";
     try {
         const options = { maxSizeMB: 0.7, maxWidthOrHeight: 1920, useWebWorker: true };
         desktopFile = await imageCompression(file, options);
@@ -777,11 +563,14 @@ async function handleDesktopImage(event) {
     }
 }
 
-// 2. دالة تشغيل التحليل الذكي المحدثة
-async function executeDesktopAnalysis() {if (document.getElementById("activation-banner") && document.getElementById("activation-banner").style.display === "block") {
-    alert("🔒 يرجى تفعيل الحساب أولاً عبر واتساب.");
-    return;
-}
+// 2. دالة تشغيل التحليل الذكي المحدثة (النسخة الاحترافية)
+async function executeDesktopAnalysis() {
+    // التحقق من حالة التفعيل
+    if (document.getElementById("activation-banner") && document.getElementById("activation-banner").style.display === "block") {
+        alert("🔒 يرجى تفعيل الحساب أولاً عبر واتساب لتتمكن من استخدام المحرك.");
+        return;
+    }
+
     if (!desktopFile) return alert("الرجاء اختيار أو لصق صورة الشارت أولاً");
 
     const btn = document.getElementById("run-btn");
@@ -792,11 +581,13 @@ async function executeDesktopAnalysis() {if (document.getElementById("activation
     btn.innerText = "جاري قراءة الشارت وتحليل السيولة... 🚀";
 
     try {
+        // أ. رفع الصورة للسيرفر
         const upFd = new FormData();
         upFd.append("chart", desktopFile);
         const upRes = await fetch("/api/upload-chart", { method: "POST", body: upFd });
         const { filename } = await upRes.json();
 
+        // ب. طلب التحليل الذكي باللغة المختارة
         const anFd = new FormData();
         anFd.append("filename", filename);
         anFd.append("timeframe", document.getElementById("timeframe").value);
@@ -810,10 +601,11 @@ async function executeDesktopAnalysis() {if (document.getElementById("activation
         });
 
         const data = await res.json();
-        if (res.ok) {const analysis = data.analysis;
+        if (res.ok) {
+            const analysis = data.analysis;
             const bias = (analysis.market_state.directional_bias || "Neutral").toLowerCase();
             
-            // تحديد اللون (أخضر للصعود / أحمر للهبوط)
+            // تحديد التلوين الذكي (أخضر للصعود / أحمر للهبوط)
             let colorClass = bias.includes("bull") ? "report-bullish" : (bias.includes("bear") ? "report-bearish" : "report-neutral");
             let biasClass = bias.includes("bull") ? "bias-text-bull" : (bias.includes("bear") ? "bias-text-bear" : "");
 
@@ -822,7 +614,7 @@ async function executeDesktopAnalysis() {if (document.getElementById("activation
                 <div class="analysis-card ${colorClass}" style="background:rgba(11,18,34,0.95); padding:25px; border-radius:20px; line-height:1.8; position:relative;">
                     <div style="text-align:center; margin-bottom:20px;">
                         <h3 style="color:var(--primary); font-weight:900; letter-spacing:1px;">KAIA MASTER REPORT</h3>
-                        <div style="font-size:14px; color:var(--muted);">${analysis.market || 'Chart'} | ${analysis.timeframe || '15m'}</div>
+                        <div style="font-size:14px; color:var(--muted);">${analysis.market || 'Market'} | ${analysis.timeframe || 'Active TF'}</div>
                     </div>
 
                     <div style="margin-bottom:20px; background:rgba(0,0,0,0.3); padding:15px; border-radius:12px; border-right:4px solid var(--primary);">
@@ -850,11 +642,11 @@ async function executeDesktopAnalysis() {if (document.getElementById("activation
                     </div>
 
                     <div style="margin-top:20px; font-size:11px; text-align:center; color:var(--muted); opacity:0.7;">
-                        ثقة المحرك: ${analysis.confidence_score}% | تعليمي فقط
+                        ثقة المحرك: ${analysis.confidence_score}% | تحليل تعليمي مؤسسي
                     </div>
                 </div>
             `;
-            syncDash();// تحديث الرصيد والرتبة بعد التحليل
+            syncDash(); // تحديث الرصيد بعد النجاح
         } else {
             alert(data.detail || "حدث خطأ في المحرك");
         }
@@ -866,6 +658,19 @@ async function executeDesktopAnalysis() {if (document.getElementById("activation
     }
 }
 
+// --- دوال الآلة الحاسبة ---
+function inputCalc(v) { 
+    const d = document.getElementById("calc-display");
+    if(d.innerText === "0") d.innerText = v;
+    else d.innerText += v; 
+}
+function resultCalc() { 
+    try { const d = document.getElementById("calc-display"); d.innerText = eval(d.innerText); }
+    catch(e) { document.getElementById("calc-display").innerText = "Error"; } 
+}
+function deleteCalc() { const d = document.getElementById("calc-display"); d.innerText = d.innerText.slice(0, -1) || "0"; }
+function clearCalc() { document.getElementById("calc-display").innerText = "0"; }
+
 // 3. دالة مزامنة الرتبة والبيانات (Identity Sync)
 async function syncDash() {
     if (!userToken) { window.location.href = "/"; return; }
@@ -874,38 +679,26 @@ async function syncDash() {
         const u = await res.json();
         if (res.ok) {
             document.getElementById("dash-user").innerText = u.full_name;
-            // --- كود كشف التفعيل الذكي ---
+            document.getElementById("dash-credits").innerText = u.credits;
+
+            isUserVerified = u.is_verified;
             if (!u.is_verified) {
-                // 1. إظهار بار التنبيه في الأعلى
-                const banner = document.getElementById("activation-banner");
-                if (banner) banner.style.display = "block";
-
-                // 2. تجهيز رابط الواتساب بإيميل المستخدم تلقائياً
-                const waLink = document.getElementById("whatsapp-verify-link");
-                if (waLink) {
-                    waLink.href = `https://wa.me/970594060648?text=مرحباً KAIA، لقد قمت بالتسجيل وأريد تفعيل حسابي: ${u.email}`;
-                }
-
-                // 3. تعطيل زر التحليل لكي لا يستهلك رصيدك وهو غير مفعل
+                document.getElementById("activation-banner").style.display = "block";
+                document.getElementById("whatsapp-verify-link").href = `https://wa.me/970594060648?text=مرحباً KAIA، لقد قمت بالتسجيل وأريد تفعيل حسابي: ${u.email}`;
                 const runBtn = document.getElementById("run-btn");
                 if (runBtn) {
                     runBtn.innerText = "بانتظار تفعيل الحساب ⏳";
                     runBtn.style.opacity = "0.5";
-                    runBtn.style.pointerEvents = "none"; // يجعله غير قابل للضغط
+                    runBtn.style.pointerEvents = "none";
                 }
             } else {
-                // إذا كان مفعل، نتأكد أن البار مخفي
-                const banner = document.getElementById("activation-banner");
-                if (banner) banner.style.display = "none";
+                document.getElementById("activation-banner").style.display = "none";
             }
-            // --------------------------
-            document.getElementById("dash-credits").innerText = u.credits;
 
             const iconPlace = document.getElementById("rank-icon-place");
-            if (u.tier === "Platinum") iconPlace.innerHTML = '<i class="fa-solid fa-whale rank-icon tier-platinum" title="Platinum Whale"></i>';
-            else if (u.tier === "Pro") iconPlace.innerHTML = '<i class="fa-solid fa-medal rank-icon tier-pro" title="Pro Gold"></i>';
-            else if (u.tier === "Basic") iconPlace.innerHTML = '<i class="fa-solid fa-medal rank-icon tier-basic" title="Basic Silver"></i>';
-            else iconPlace.innerHTML = '<i class="fa-solid fa-tree rank-icon tier-trial" title="Trial Wood"></i>';
+            if (u.tier === "Platinum") iconPlace.innerHTML = '<i class="fa-solid fa-whale rank-icon tier-platinum"></i>';
+            else if (u.tier === "Pro") iconPlace.innerHTML = '<i class="fa-solid fa-medal rank-icon tier-pro"></i>';
+            else iconPlace.innerHTML = '<i class="fa-solid fa-tree rank-icon"></i>';
 
             document.body.style.visibility = "visible";
             document.body.style.opacity = "1";
@@ -913,22 +706,17 @@ async function syncDash() {
     } catch(e) { window.location.href = "/"; }
 }
 
-// 4. الربط النهائي وتجاوز أي كود قديم (The Ultimate Glue)
+// 4. الربط النهائي
 document.addEventListener("DOMContentLoaded", () => {
-    // ربط زر التحليل بالدالة الجديدة حصراً
     const runBtn = document.getElementById("run-btn");
     if (runBtn) runBtn.onclick = executeDesktopAnalysis;
 
-    // ربط زر الخروج
     const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {
         logoutBtn.onclick = () => { localStorage.removeItem("token"); location.reload(); };
     }
-
-    // تشغيل المزامنة فور الدخول
     syncDash();
 });
 </script>
-
 </body>
 </html>

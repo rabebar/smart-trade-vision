@@ -392,10 +392,6 @@ async def upload_article_image(image: UploadFile = File(...), current_user: User
     return {"image_url": f"/images/{file_name}"}
 
 
-# -----------------------------------------------------------------
-# 11. محرك تحليل الشارت (KAIA Analysis Engine - High Integrity)
-# -----------------------------------------------------------------
-
 @app.post("/api/analyze-chart")
 async def analyze_chart(
     filename: str = Form(...),
@@ -405,27 +401,32 @@ async def analyze_chart(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """المحرك السيادي لقراءة الشارت وتحليله مؤسسياً عبر OpenAI"""
-    
     if current_user.credits <= 0 and not current_user.is_whale:
-        raise HTTPException(status_code=400, detail="الرصيد غير كافٍ، يرجى تجديد الاشتراك")
+        raise HTTPException(status_code=400, detail="الرصيد غير كافٍ، يرجى الترقية")
 
-    # تحديد مسار الصورة المؤمن في Render Disk
+    # تحديد مسار الصورة في القرص الدائم
     img_path = os.path.join(STORAGE_PATH, filename)
     
     if not os.path.exists(img_path):
-        raise HTTPException(status_code=404, detail="عذراً، الصورة لم تعد موجودة في السيرفر")
+        raise HTTPException(status_code=404, detail="الصورة غير موجودة")
 
     try:
-        # تحويل الصورة إلى كود Base64 للذكاء الاصطناعي
         with open(img_path, "rb") as image_file:
-            encoded_img = base64.b64encode(image_file.read()).decode()
+            encoded_string = base64.b64encode(image_file.read()).decode()
 
+        # [حقن البرومبت الملكي المطور]
         system_prompt = f"""
-أنت محلل أسواق مؤسسي محترف (SMC/Wave). مهمتك قراءة الشارت بدقة.
-JSON ONLY: market_bias, market_phase, opportunity_context, analysis_text, risk_note
-Language: {lang}
+أنت "KAIA AI Institutional Analyst" — مساعد تحليل سوق تعليمي (ليس نصيحة مالية).
+حلّل صورة الشارت بأسلوب المؤسسات (SMC/ICT) عبر تتبّع السيولة وبنية السوق.
+قدّم مستويات رقمية واضحة للمراقبة صعودًا وهبوطًا + تحذيرات من مناطق (Stop-hunt risk).
+
+القواعد الصارمة:
+- ممنوع إعطاء توصيات تنفيذية مباشرة. استخدم لغة مراقبة (يراقَب/يتفاعل).
+- مسموح ذكر مستويات (Prices) فقط كـ "Watch Levels".
+- صيغة الإخراج: JSON ONLY بنفس المفاتيح المطلوبة بدقة.
+اللغة المطلوبة للتحليل: {lang}
 """
+        
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -434,7 +435,7 @@ Language: {lang}
                     "role": "user",
                     "content": [
                         {"type": "text", "text": f"Analyze this {analysis_type} chart on {timeframe} timeframe."},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded_img}"}}
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded_string}"}}
                     ]
                 }
             ],
@@ -442,18 +443,20 @@ Language: {lang}
             temperature=0.3
         )
 
-        final_result = json.loads(response.choices[0].message.content)
+        result = json.loads(response.choices[0].message.content)
 
-        # تسجيل التحليل في السجل التاريخي
+        # ربط البيانات الجديدة مع قاعدة البيانات (للسجل التاريخي)
+        market_bias = result.get("market_state", {}).get("directional_bias", "Neutral")
+        summary_notes = result.get("market_state", {}).get("notes", "Analysis complete")
+
         db.add(Analysis(
             user_id=current_user.id,
-            symbol=analysis_type,
-            signal=final_result.get("market_bias"),
-            reason=final_result.get("analysis_text"),
-            timeframe=timeframe
+            symbol=result.get("market", analysis_type),
+            signal=market_bias,
+            reason=summary_notes,
+            timeframe=result.get("timeframe", timeframe)
         ))
 
-        # خصم رصيد لغير الحيتان
         if not current_user.is_whale:
             current_user.credits -= 1
 
@@ -461,7 +464,7 @@ Language: {lang}
 
         return {
             "status": "success",
-            "analysis": final_result,
+            "analysis": result,
             "remaining_credits": current_user.credits
         }
 
@@ -469,21 +472,8 @@ Language: {lang}
         raise HTTPException(status_code=500, detail=str(e))
         
     finally:
-        # تنظيف مجلد الصور بعد التحليل لتوفير المساحة
         if os.path.exists(img_path):
             os.remove(img_path)
-
-
-@app.post("/api/upload-chart")
-async def upload_chart(chart: UploadFile = File(...)):
-    """رفع صورة الشارت تمهيداً لتحليلها"""
-    unique_name = f"{uuid.uuid4()}.{chart.filename.split('.')[-1]}"
-    save_path = os.path.join(STORAGE_PATH, unique_name)
-    
-    with open(save_path, "wb") as buffer:
-        shutil.copyfileobj(chart.file, buffer)
-        
-    return {"filename": unique_name}
 
 
 @app.get("/api/history")
