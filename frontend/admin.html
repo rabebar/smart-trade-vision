@@ -16,6 +16,7 @@
             --success: #10b981;
             --text: #f3f4f6; 
             --gold: #ffd700;
+            --muted: #94a3b8;
         }
         body { 
             background: var(--bg); 
@@ -51,12 +52,15 @@
             box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         }
 
-        table { width: 100%; border-collapse: collapse; text-align: right; min-width: 1000px; }
+        table { width: 100%; border-collapse: collapse; text-align: right; min-width: 1100px; }
         th, td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 14px; }
         th { color: var(--primary); font-weight: 900; background: rgba(59, 130, 246, 0.05); }
         
+        /* تلوين الصفوف المشبوهة */
+        .row-flagged { background: rgba(239, 68, 68, 0.05) !important; }
+
         .btn { 
-            padding: 10px 18px; 
+            padding: 8px 14px; 
             border-radius: 8px; 
             cursor: pointer; 
             border: none; 
@@ -71,11 +75,14 @@
         .btn-save { background: var(--primary); color: white; }
         .btn-save:hover { background: #2563eb; transform: translateY(-2px); }
         
+        .btn-verify { background: var(--success); color: white; }
+        .btn-flag { background: #4b5563; color: white; }
+        .btn-flag.active { background: var(--danger); }
+
         .btn-delete { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
         .btn-delete:hover { background: var(--danger); color: white; }
 
         .btn-edit-alt { background: #1e293b; color: #fff; border: 1px solid var(--primary); }
-        .btn-edit-alt:hover { background: var(--primary); color: #000; }
         
         .btn-refresh { background: #1e293b; color: white; border: 1px solid var(--primary); }
         
@@ -87,21 +94,22 @@
             border-radius: 6px; 
             text-align: center; 
             font-family: inherit;
-            outline: none;
         }
-        input:focus, select:focus { border-color: var(--primary); }
         
-        .whatsapp-link { 
-            color: #25d366; 
-            text-decoration: none; 
-            font-weight: 900; 
-            background: rgba(37, 211, 102, 0.1);
-            padding: 5px 10px;
-            border-radius: 5px;
+        .ip-badge {
+            background: #1e293b;
+            color: var(--primary);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
         }
+
+        .whatsapp-link { color: #25d366; text-decoration: none; font-weight: 900; background: rgba(37, 211, 102, 0.1); padding: 5px 10px; border-radius: 5px; }
         .badge-premium { background: var(--success); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
-        .badge-verify { background: #3b82f6; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; margin-right: 5px; }
-        .badge-whale { background: var(--gold); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; margin-right: 5px; }
+        .badge-verify { background: #3b82f6; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
+        .badge-whale { background: var(--gold); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
     </style>
 </head>
 <body>
@@ -122,28 +130,25 @@
         <h2 style="margin: 0; font-size: 20px; font-weight: 900; color: var(--primary);">إدارة المحتوى والإعلام</h2>
         <p style="margin: 5px 0 0; font-size: 13px; color: var(--muted);">انشر رؤيتك الفنية، حدث شريط الأخبار، وتحكم في الإعلانات من هنا.</p>
     </div>
-    <button class="btn btn-editor" style="height: 50px; padding: 0 30px; font-size: 16px;" onclick="window.location.href='/editor'">
-        <i class="fa-solid fa-paper-plane"></i> دخول غرفة التحرير
-    </button>
 </div>
 
-<h2 style="margin-bottom: 20px; font-weight: 900;"><i class="fa-solid fa-users-gear"></i> إدارة أعضاء المنصة</h2>
+<h2 style="margin-bottom: 20px; font-weight: 900;"><i class="fa-solid fa-users-gear"></i> إدارة أعضاء المنصة والحماية</h2>
 <div class="admin-card">
     <table>
         <thead>
             <tr>
                 <th>المستخدم</th>
-                <th>الدولة</th>
                 <th>التواصل</th>
-                <th>البريد الإلكتروني</th>
+                <th>البصمة الرقمية (IP)</th>
                 <th>الحالة</th>
-                <th>الباقة (Tier)</th>
-                <th>الرصيد (Credits)</th>
+                <th>تفعيل</th>
+                <th>الباقة</th>
+                <th>الرصيد</th>
                 <th>إجراءات</th>
             </tr>
         </thead>
         <tbody id="users-list">
-            <tr><td colspan="8" style="text-align:center; padding: 50px;">جاري جلب بيانات المتداولين...</td></tr>
+            <tr><td colspan="8" style="text-align:center; padding: 50px;">جاري فحص رادار المتداولين...</td></tr>
         </tbody>
     </table>
 </div>
@@ -173,10 +178,8 @@
         try {
             const res = await fetch("/api/me", { headers: { "Authorization": "Bearer " + token } });
             const user = await res.json();
-            if (!res.ok || !user.is_admin) {
-                alert("🔒 منطقة محظورة: هذه الغرفة مخصصة للملك فقط!");
-                window.location.href = "/";
-            } else {
+            if (!res.ok || !user.is_admin) { window.location.href = "/"; }
+            else {
                 document.body.style.visibility = "visible";
                 document.body.style.opacity = "1";
                 loadUsers();
@@ -191,31 +194,90 @@
             const users = await res.json();
             const tbody = document.getElementById("users-list");
             tbody.innerHTML = users.map(u => `
-                <tr>
-                    <td><div style="font-weight:900;">${u.full_name}</div>${u.is_premium ? '<span class="badge-premium">PREMIUM</span>' : ''}</td>
-                    <td><span style="color:#94a3b8;">${u.country}</span></td>
-                    <td><a href="https://wa.me/${u.whatsapp}" target="_blank" class="whatsapp-link"><i class="fa-brands fa-whatsapp"></i> واتساب</a></td>
-                    <td style="color:#64748b; font-size:12px;">${u.email}</td>
+                <tr class="${u.is_flagged ? 'row-flagged' : ''}">
                     <td>
-                        ${u.is_verified ? '<span class="badge-verify">مفعل ✅</span>' : '<span class="badge-verify" style="background:#4b5563;">انتظار ⏳</span>'}
+                        <div style="font-weight:900;">${u.full_name}</div>
+                        <div style="font-size:11px; color:var(--muted);">${u.email}</div>
+                        ${u.is_premium ? '<span class="badge-premium">PREMIUM</span>' : ''}
                         ${u.is_whale ? '<span class="badge-whale">KING 👑</span>' : ''}
                     </td>
+                    <td><a href="https://wa.me/${u.whatsapp}" target="_blank" class="whatsapp-link"><i class="fa-brands fa-whatsapp"></i> واتساب</a></td>
+                    <td><span class="ip-badge">${u.registration_ip || '0.0.0.0'}</span></td>
                     <td>
-                        <select id="tier-${u.id}">
+                        ${u.is_verified ? '<span class="badge-verify">مفعل ✅</span>' : '<span class="badge-verify" style="background:#4b5563;">انتظار ⏳</span>'}
+                    </td>
+                    <td>
+                        <button class="btn btn-verify" onclick="toggleVerify(${u.id}, ${u.is_verified})" title="تغيير حالة التفعيل">
+                            <i class="fa-solid ${u.is_verified ? 'fa-user-xmark' : 'fa-user-check'}"></i>
+                        </button>
+                    </td>
+                    <td>
+                        <select id="tier-${u.id}" onchange="saveUser(${u.id})">
                             <option value="Trial" ${u.tier==='Trial'?'selected':''}>Trial</option>
                             <option value="Basic" ${u.tier==='Basic'?'selected':''}>Basic</option>
                             <option value="Pro" ${u.tier==='Pro'?'selected':''}>Pro</option>
                             <option value="Platinum" ${u.tier==='Platinum'?'selected':''}>Platinum</option>
                         </select>
                     </td>
-                    <td><input type="number" id="cred-${u.id}" value="${u.credits}" style="width: 70px;"></td>
+                    <td><input type="number" id="cred-${u.id}" value="${u.credits}" style="width: 70px;" onchange="saveUser(${u.id})"></td>
                     <td>
-                        <button class="btn btn-save" onclick="saveUser(${u.id})"><i class="fa-solid fa-floppy-disk"></i></button>
-                        <button class="btn btn-delete" onclick="deleteUser(${u.id}, '${u.full_name}')"><i class="fa-solid fa-trash-can"></i></button>
+                        <button class="btn btn-flag ${u.is_flagged ? 'active' : ''}" onclick="toggleFlag(${u.id}, ${u.is_flagged})" title="وسم كحساب مشبوه">
+                            <i class="fa-solid fa-flag"></i>
+                        </button>
+                        <button class="btn btn-delete" onclick="deleteUser(${u.id}, '${u.full_name}')"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `).join("");
         } catch (e) { console.error("Admin Users Error"); }
+    }
+
+    async function toggleVerify(userId, currentStatus) {
+        try {
+            const res = await fetch("/api/admin/update_user", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+                body: JSON.stringify({ user_id: userId, is_verified: !currentStatus })
+            });
+            if (res.ok) loadUsers();
+        } catch (e) { alert("خطأ في التفعيل"); }
+    }
+
+    async function toggleFlag(userId, currentStatus) {
+        try {
+            const res = await fetch("/api/admin/update_user", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+                body: JSON.stringify({ user_id: userId, is_flagged: !currentStatus })
+            });
+            if (res.ok) loadUsers();
+        } catch (e) { alert("خطأ في الوسم"); }
+    }
+
+    async function saveUser(userId) {
+        const credits = document.getElementById(`cred-${userId}`).value;
+        const tier = document.getElementById(`tier-${userId}`).value;
+        try {
+            await fetch("/api/admin/update_user", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+                body: JSON.stringify({ 
+                    user_id: userId, 
+                    credits: parseInt(credits), 
+                    tier: tier, 
+                    is_premium: (tier !== 'Trial'), 
+                    is_whale: (tier === 'Platinum') 
+                })
+            });
+            // تحديث صامت بدون تنبيهات مزعجة
+        } catch (e) { console.error("Save Error"); }
+    }
+
+    async function deleteUser(userId, name) {
+        if (!confirm(`هل تريد طرد (${name}) نهائياً من KAIA AI؟`)) return;
+        try {
+            const res = await fetch(`/api/admin/delete_user/${userId}`, { method: "DELETE", headers: { "Authorization": "Bearer " + token } });
+            if (res.ok) loadUsers();
+        } catch (e) { alert("خطأ اتصال"); }
     }
 
     async function loadArticlesForAdmin() {
@@ -225,68 +287,18 @@
             const artAr = await resAr.json();
             const artEn = await resEn.json();
             const allArts = [...artAr, ...artEn];
-
             const tbody = document.getElementById("admin-articles-list");
-            if (allArts.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">لا توجد مقالات منشورة حالياً.</td></tr>';
-                return;
-            }
-
             tbody.innerHTML = allArts.map(art => `
                 <tr>
                     <td style="font-weight:700; color:#fff;">${art.title}</td>
-                    <td>${art.language === 'ar' ? 'العربية 🇸🇦' : 'English 🇺🇸'}</td>
+                    <td>${art.language === 'ar' ? '🇸🇦' : '🇺🇸'}</td>
                     <td style="opacity:0.6;">${new Date(art.created_at).toLocaleDateString()}</td>
                     <td>
-                        <button class="btn btn-edit-alt" onclick="editArticle(${art.id})" style="margin-left:8px;">
-                            <i class="fa-solid fa-pen-to-square"></i> تعديل
-                        </button>
-                        <button class="btn btn-delete" onclick="deleteKAIAArticle(${art.id})">
-                            <i class="fa-solid fa-trash"></i> حذف
-                        </button>
+                        <button class="btn btn-edit-alt" onclick="window.location.href='/editor?edit=${art.id}'">تعديل</button>
                     </td>
                 </tr>
             `).join("");
-        } catch (e) { console.error("Admin Articles Error"); }
-    }
-
-    function editArticle(id) {
-        window.location.href = `/editor?edit=${id}`;
-    }
-
-    async function deleteKAIAArticle(id) {
-        if (!confirm("يا ملك، هل أنت متأكد من حذف هذا المقال نهائياً؟")) return;
-        try {
-            const res = await fetch(`/api/admin/delete_article/${id}`, {
-                method: "DELETE",
-                headers: { "Authorization": "Bearer " + token }
-            });
-            if (res.ok) {
-                alert("🗑️ تم المسح بنجاح.");
-                loadArticlesForAdmin();
-            }
-        } catch (e) { alert("خطأ في الاتصال"); }
-    }
-
-    async function saveUser(userId) {
-        const credits = document.getElementById(`cred-${userId}`).value;
-        const tier = document.getElementById(`tier-${userId}`).value;
-        try {
-            const res = await fetch("/api/admin/update_user", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-                body: JSON.stringify({ user_id: userId, credits: parseInt(credits), tier: tier, is_premium: (tier !== 'Trial'), is_whale: (tier === 'Platinum') })
-            });
-            if (res.ok) { alert("✅ تم التحديث"); loadUsers(); }
-        } catch (e) { alert("خطأ اتصال"); }
-    }
-
-    async function deleteUser(userId, name) {
-        if (!confirm(`حذف حساب (${name})؟`)) return;
-        try {
-            const res = await fetch(`/api/admin/delete_user/${userId}`, { method: "DELETE", headers: { "Authorization": "Bearer " + token } });
-            if (res.ok) { alert("🗑️ تم الحذف"); loadUsers(); }
-        } catch (e) { alert("خطأ اتصال"); }
+        } catch (e) { }
     }
 
     window.onload = checkAdminAuth;
