@@ -504,6 +504,9 @@ def home(request: Request):
         return FileResponse("frontend/mobile.html")
     return FileResponse("frontend/index.html")
 
+@app.get("/mobile")
+def mobile_page():
+    return FileResponse("frontend/mobile.html")
 
 @app.get("/dashboard")
 def dashboard_page():
