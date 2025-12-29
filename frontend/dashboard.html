@@ -548,6 +548,29 @@ let isUserVerified = false;
 
 // 1. دالة معالجة وضغط الصورة (لضمان السرعة ومنع انقطاع الاتصال)
 async function handleDesktopImage(event) {
+    // --- [إعادة تفعيل خاصية اللصق الذكية Ctrl+V] ---
+document.addEventListener('paste', async (e) => {
+    // البحث عن صورة في الحافظة (Clipboard)
+    const item = Array.from(e.clipboardData.items).find(x => x.type.indexOf("image") !== -1);
+    
+    if (item) {
+        const file = item.getAsFile();
+        const statusLabel = document.getElementById("status-text");
+        statusLabel.innerText = "جاري معالجة الشارت الملحق... ⏳";
+        
+        try {
+            // استخدام نفس محرك الضغط لضمان الأداء
+            const options = { maxSizeMB: 0.7, maxWidthOrHeight: 1920, useWebWorker: true };
+            desktopFile = await imageCompression(file, options);
+            
+            statusLabel.innerText = "تم لصق الشارت بنجاح ✅";
+            statusLabel.style.color = "var(--primary)";
+        } catch (err) {
+            statusLabel.innerText = "فشل معالجة الصورة الملحقة";
+        }
+    }
+});
+// --------------------------------------------
     const file = event.target.files[0];
     if (!file) return;
     const statusLabel = document.getElementById("status-text");
