@@ -25,7 +25,7 @@ class UserCreate(BaseModel):
 
 # ==========================================
 # 3. البيانات العائدة للمتصفح (User Profile Response)
-# هذا النموذج هو المحرك الأساسي لإظهار أزرار الإدارة في الواجهة
+# تم تحديثه ليشمل بصمة الأمان والحماية
 # ==========================================
 class UserOut(BaseModel):
     id: int
@@ -42,13 +42,20 @@ class UserOut(BaseModel):
     is_admin: bool
     is_premium: bool
     is_whale: bool
+    
+    # حقول الأمان الجديدة (ستظهر للأدمن)
+    is_verified: bool
+    registration_ip: Optional[str] = "0.0.0.0"
+    is_flagged: Optional[bool] = False
+    verified_at: Optional[datetime] = None
+    verification_method: Optional[str] = "None"
 
     class Config:
         from_attributes = True
 
 # ==========================================
 # 4. نموذج تحديث بيانات المستخدم من قبل الإدارة
-# يستخدم في لوحة التحكم (Admin Panel)
+# تم تحديثه للسماح بتغيير حالة التوثيق والحظر
 # ==========================================
 class AdminUpdateUser(BaseModel):
     user_id: int
@@ -56,6 +63,8 @@ class AdminUpdateUser(BaseModel):
     tier: Optional[str] = None
     is_premium: Optional[bool] = None
     is_admin: Optional[bool] = None
+    is_verified: Optional[bool] = None  # لتوثيق الحساب يدوياً
+    is_flagged: Optional[bool] = None   # لحظر/وسم الحساب مشبوه
 
 # ==========================================
 # 5. هيكل سجل التحليلات (Analysis History Response)
