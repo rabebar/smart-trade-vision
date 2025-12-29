@@ -306,20 +306,23 @@ async function runInstitutionalAnalysis() {
         const data = await analyzeRes.json();
         if (!analyzeRes.ok) throw new Error(data.detail || "Analysis error");
 
-        // [حقن تصحيح] ضمان قراءة البيانات بشكل صحيح من السيرفر
+        // [حقن التصحيح: قراءة البيانات بناءً على المفاتيح التي أصبحت ترسلها OpenAI الآن بدقة]
         const analysis = data.analysis;
 
         resBox.style.display = "block";
         $("res-data-content").innerHTML = `
-            <div class="analysis-result-card">
+            <div class="analysis-result-card" style="background:rgba(11,18,34,0.95); padding:20px; border-radius:15px; border:1px solid var(--primary);">
                 <h3 style="text-align:center;font-weight:900;">KAIA LIVE REPORT</h3>
-                <div class="res-data-grid">
-                    <div class="res-data-item"><small>Market Bias</small><span>${analysis.market_bias || '---'}</span></div>
-                    <div class="res-data-item"><small>Market Phase</small><span>${analysis.market_phase || '---'}</span></div>
-                    <div class="res-data-item"><small>Confidence</small><span>${analysis.confidence || '---'}</span></div>
+                <div class="res-data-grid" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:15px;">
+                    <div class="res-data-item" style="text-align:center;"><small style="display:block; color:var(--muted);">Bias</small><span>${analysis.market_bias || '---'}</span></div>
+                    <div class="res-data-item" style="text-align:center;"><small style="display:block; color:var(--muted);">Phase</small><span>${analysis.market_phase || '---'}</span></div>
+                    <div class="res-data-item" style="text-align:center;"><small style="display:block; color:var(--muted);">Conf.</small><span>${analysis.confidence || '---'}</span></div>
                 </div>
-                <div class="analysis-box"><strong>Institutional Analysis</strong><p>${analysis.analysis_text || ''}</p></div>
-                <div class="risk-note"><strong>Risk Note:</strong> ${analysis.risk_note || ''}</div>
+                <div class="analysis-box" style="margin-top:20px; border-top:1px solid var(--border); padding-top:10px;">
+                    <strong style="color:var(--primary);">Institutional Analysis:</strong>
+                    <p style="font-size:14px; line-height:1.6;">${analysis.analysis_text || ''}</p>
+                </div>
+                <div class="risk-note" style="margin-top:10px; color:var(--danger); font-size:12px;"><strong>Risk Note:</strong> ${analysis.risk_note || ''}</div>
             </div>
         `;
 
@@ -328,7 +331,7 @@ async function runInstitutionalAnalysis() {
 
     } catch (e) {
         console.error("Analysis Core Error:", e);
-        alert("Engine Connection Error");
+        alert(e.message || "Engine Connection Error");
     } finally {
         btn.innerText = currentLang === 'ar' ? "بدء التحليل" : "Analyze";
         btn.disabled = false;

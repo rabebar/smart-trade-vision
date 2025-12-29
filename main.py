@@ -414,17 +414,17 @@ async def analyze_chart(
         with open(img_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode()
 
-        # [حقن البرومبت الملكي المطور]
+        # [حقن التصحيح: توحيد المفاتيح مع dashboard.js لإنهاء خطأ Connection Error]
         system_prompt = f"""
-أنت "KAIA AI Institutional Analyst" — مساعد تحليل سوق تعليمي (ليس نصيحة مالية).
-حلّل صورة الشارت بأسلوب المؤسسات (SMC/ICT) عبر تتبّع السيولة وبنية السوق.
-قدّم مستويات رقمية واضحة للمراقبة صعودًا وهبوطًا + تحذيرات من مناطق (Stop-hunt risk).
-
-القواعد الصارمة:
-- ممنوع إعطاء توصيات تنفيذية مباشرة. استخدم لغة مراقبة (يراقَب/يتفاعل).
-- مسموح ذكر مستويات (Prices) فقط كـ "Watch Levels".
-- صيغة الإخراج: JSON ONLY بنفس المفاتيح المطلوبة بدقة.
-اللغة المطلوبة للتحليل: {lang}
+أنت "KAIA AI Institutional Analyst". حلّل الشارت بأسلوب (SMC/ICT).
+يجب أن يكون الرد بصيغة JSON حصراً وبالمفاتيح التالية حرفياً:
+1. market_bias: (اتجاه السوق)
+2. market_phase: (مرحلة السوق)
+3. confidence: (نسبة الثقة)
+4. analysis_text: (التحليل المفصل باللغة {lang})
+5. risk_note: (تنبيه المخاطرة باللغة {lang})
+6. market: (اسم الزوج)
+7. timeframe: (الفريم)
 """
         
         response = client.chat.completions.create(
@@ -446,8 +446,8 @@ async def analyze_chart(
         result = json.loads(response.choices[0].message.content)
 
         # ربط البيانات الجديدة مع قاعدة البيانات (للسجل التاريخي)
-        market_bias = result.get("market_state", {}).get("directional_bias", "Neutral")
-        summary_notes = result.get("market_state", {}).get("notes", "Analysis complete")
+        market_bias = result.get("market_bias", "Neutral")
+        summary_notes = result.get("analysis_text", "Analysis complete")
 
         db.add(Analysis(
             user_id=current_user.id,
@@ -524,6 +524,16 @@ def editor_page():
 def history_page():
     return FileResponse("frontend/history.html")
 
+# دالة رفع الشارتات (تمت إعادتها للعمل بشكل منفصل عن المقالات)
+@app.post("/api/upload-chart")
+async def upload_chart(chart: UploadFile = File(...)):
+    # التصحيح: يجب الحفظ في STORAGE_PATH لكي يجدها المحلل
+    name = f"{uuid.uuid4()}.{chart.filename.split('.')[-1]}"
+    save_path = os.path.join(STORAGE_PATH, name)
+    
+    with open(save_path, "wb") as buffer:
+        shutil.copyfileobj(chart.file, buffer)
+    return {"filename": name}
 
 # -----------------------------------------------------------------
 # 13. أدوات الصيانة الطارئة (Emergency Tools)
