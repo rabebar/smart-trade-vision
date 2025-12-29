@@ -497,16 +497,16 @@ def get_sw():
 
 @app.get("/.well-known/assetlinks.json")
 async def get_assetlinks():
-    return FileResponse("frontend/.well-known/assetlinks.json")
-
-@app.get("/")
-def home(request: Request): 
-    # توجيه تلقائي لمستخدمي الهواتف
-    u_agent = request.headers.get("user-agent", "").lower()
-    if "iphone" in u_agent or "android" in u_agent:
-        return FileResponse("frontend/mobile.html")
-    return FileResponse("frontend/index.html")
-
+    return [
+        {
+            "relation": ["delegate_permission/common.handle_all_urls"],
+            "target": {
+                "namespace": "android_app",
+                "package_name": "com.onrender.kaia_ai_app.twa",
+                "sha256_cert_fingerprints": ["73:70:D7:27:14:0D:C7:A2:F9:FC:D1:A1:21:B4:1D:18:99:7D:27:38:14:85:E3:40:57:FD:8B:5B:AB:36:3A:0C"]
+            }
+        }
+    ]
 @app.get("/mobile")
 def mobile_page():
     return FileResponse("frontend/mobile.html")
