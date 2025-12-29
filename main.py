@@ -76,49 +76,63 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise HTTPException(status_code=401, detail="انتهت الجلسة")
 
 # =========================================================
-# News (Bilingual Support: AR/EN)
+# News Engine (With High-Performance Caching)
 # =========================================================
+
+# مستودع البيانات المؤقتة لمنع تأخير شريط الأخبار
+NEWS_CACHE = {
+    "ar": {"data": "KAIA AI: نراقب تحركات السيولة والسياسة النقدية الحالية", "timestamp": None},
+    "en": {"data": "KAIA AI: Monitoring current liquidity and monetary policy", "timestamp": None}
+}
+
 @app.get("/api/news")
 def get_news(lang: str = "ar"):
+    global NEWS_CACHE
+    lang_key = "en" if lang == "en" else "ar"
+    
+    # التحقق إذا كانت البيانات المخزنة حديثة (أقل من 10 دقائق)
+    now = datetime.now()
+    cache_entry = NEWS_CACHE[lang_key]
+    
+    if cache_entry["timestamp"] and (now - cache_entry["timestamp"]).seconds < 600:
+        return {"news": cache_entry["data"]}
+
     try:
         # تحديد الرابط بناءً على اللغة
-        if lang == "en":
+        if lang_key == "en":
             rss = "https://www.investing.com/rss/news_285.rss" 
         else:
             rss = "https://sa.investing.com/rss/news_1.rss"
             
-        # إضافة هوية متصفح كاملة لمنع الحظر
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept": "application/xml, text/xml, */*",
-            "Referer": "https://www.google.com/"
+            "Accept": "application/xml, text/xml, */*"
         }
         
-        res = requests.get(rss, timeout=10, headers=headers)
+        # طلب خارجي سريع مع مهلة انتظار قصيرة جداً لضمان عدم تعليق السيرفر
+        res = requests.get(rss, timeout=5, headers=headers)
         
-        # التأكد من نجاح الطلب
-        if res.status_code != 200:
-            return {"news": "نبض السوق حالياً: استقرار حذر في التداولات العالمية"}
-
-        soup = BeautifulSoup(res.content, "xml")
-        items = soup.find_all("item")
-        
-        # استخراج العناوين وتصفيتها من الرموز الغريبة
-        titles = []
-        for i in items[:15]:
-            if i.title:
-                clean_title = i.title.text.strip().replace("'", "").replace('"', "")
-                titles.append(clean_title)
-        
-        if titles:
-            return {"news": " ★ ".join(titles)}
-        else:
-            # رسالة بديلة في حال كان الـ RSS فارغاً
-            return {"news": "KAIA AI: نراقب تحركات السيولة والسياسة النقدية الحالية"}
+        if res.status_code == 200:
+            soup = BeautifulSoup(res.content, "xml")
+            items = soup.find_all("item")
             
+            titles = []
+            for i in items[:15]:
+                if i.title:
+                    clean_title = i.title.text.strip().replace("'", "").replace('"', "")
+                    titles.append(clean_title)
+            
+            if titles:
+                # تحديث الذاكرة المؤقتة بالبيانات الجديدة
+                NEWS_CACHE[lang_key]["data"] = " ★ ".join(titles)
+                NEWS_CACHE[lang_key]["timestamp"] = now
+                return {"news": NEWS_CACHE[lang_key]["data"]}
+                
     except Exception as e:
-        print(f"News Error: {e}")
-        return {"news": "جاري تحديث موجز الأخبار المؤسسية... انتظر قليلاً"}
+        print(f"News Refresh Silent Error: {e}")
+        # في حال حدوث أي خطأ، سنعيد البيانات القديمة المخزنة فوراً ليبقى الشريط يعمل
+    
+    return {"news": NEWS_CACHE[lang_key]["data"]}
 
 # =========================================================
 # جلب المقالات والإعلانات للجمهور (Media API)

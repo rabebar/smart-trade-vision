@@ -468,11 +468,11 @@
         }
     })();
 </script>
-<!-- المحرك الإعلامي الملكي المطور (الإصدار النهائي المستقر) -->
+
+<!-- المحرك الإعلامي الملكي المطور (الإصدار النهائي المستقر والمحسن) -->
 <script>
-    // [1] دالة السيطرة على الإظهار والإخفاء (تعمل فوراً بناءً على اختيار اللغة)
+    // [1] دالة السيطرة على الإظهار والإخفاء (تأثير فوري)
     function forceShowTicker() {
-        // نحدد اللغة من القائمة المنسدلة مباشرة لضمان الاستجابة اللحظية
         const langSelect = document.getElementById("language-select");
         const lang = langSelect ? langSelect.value : (localStorage.getItem("kaia_lang") || "ar");
         
@@ -488,9 +488,9 @@
         }
     }
 
-    // [2] دالة جلب البيانات وتحديث المحتوى
+    // [2] دالة جلب البيانات بنظام التدفق السريع (Articles First then News)
     async function syncKAIAWorld() {
-        forceShowTicker(); // تأكيد الحالة (إظهار أو إخفاء) قبل البدء
+        forceShowTicker(); 
 
         const langSelect = document.getElementById("language-select");
         const lang = langSelect ? langSelect.value : (localStorage.getItem("kaia_lang") || "ar");
@@ -498,47 +498,52 @@
         if (lang !== "ar") return;
 
         const tickerWrap = document.getElementById("kaia-ticker-wrap");
+        const artBox = document.getElementById("articles-container");
         
+        // أ. جلب المقالات فوراً (أسرع لأنها محلية)
         try {
-            if (tickerWrap) tickerWrap.innerHTML = `<p style="text-align:center; color:var(--primary); font-size:12px; margin:0; opacity:0.8;">جاري تحديث النبض العالمي المؤسسي...</p>`;
-
+            const resArt = await fetch('/api/articles?lang=ar');
+            const articles = await resArt.json();
             let myTitles = "";
-            let worldNews = "جاري جلب النبض العالمي...";
 
-            const [resArt, resNews] = await Promise.allSettled([
-                fetch('/api/articles?lang=ar').then(r => r.json()),
-                fetch('/api/news?lang=ar').then(r => r.json())
-            ]);
-
-            if (resArt.status === 'fulfilled' && Array.isArray(resArt.value)) {
-                myTitles = resArt.value.map(a => ` 🔥 ${a.title}`).join(" ★ ");
-                const artBox = document.getElementById("articles-container");
-                if (artBox && resArt.value.length > 0) {
-                    artBox.innerHTML = resArt.value.map(art => `
-                        <div class="service-card" style="padding: 0; overflow: hidden; border: 1px solid rgba(59, 130, 246, 0.1); background: #0b1222; text-align: right; display: flex; flex-direction: column; border-radius: 20px;">
-                            <img src="${art.image_url || '/static/logo.png'}" style="width: 100%; height: 200px; object-fit: cover;">
-                            <div style="padding: 25px; flex-grow: 1;">
-                                <h3 style="font-size: 18px; font-weight: 900; color: var(--primary);">${art.title}</h3>
-                                <p style="font-size: 13px; color: var(--muted);">${art.summary}</p>
-                                <button onclick="openRoyalArticle('${art.title}', '${art.content.replace(/\n/g, "<br>").replace(/'/g, "\\'")}')" 
-                                        style="border: 1px solid var(--primary); color: var(--primary); padding: 8px 15px; border-radius: 8px; cursor: pointer; width: 100%; background:none; font-family:inherit; font-weight:800;">اقرأ التحليل</button>
-                            </div>
-                        </div>`).join("");
-                }
-            }
-
-            if (resNews.status === 'fulfilled') {
-                worldNews = resNews.value.news || worldNews;
-            }
-
-            if (tickerWrap) {
-                const separator = myTitles ? " | " : "";
+            if (Array.isArray(articles) && articles.length > 0) {
+                myTitles = articles.map(a => ` 🔥 ${a.title}`).join(" ★ ");
+                
+                // تحديث شريط الماركي مبدئياً بالمقالات فقط لضمان الظهور الفوري
                 tickerWrap.innerHTML = `
-                    <marquee scrollamount="5" direction="right" onmouseover="this.stop();" onmouseout="this.start();" style="color: #fff; font-weight: 700; font-size: 13px; cursor:pointer;">
-                        <span style="color:#ffd700;">${myTitles}</span>${separator}<span style="color:#fff;">🌍 أخبار العالم: ${worldNews}</span>
+                    <marquee id="kaia-main-marquee" scrollamount="5" direction="right" onmouseover="this.stop();" onmouseout="this.start();" style="color: #fff; font-weight: 700; font-size: 13px; cursor:pointer;">
+                        <span style="color:#ffd700;">${myTitles}</span>
                     </marquee>`;
+
+                // تحديث قسم المقالات في الصفحة
+                artBox.innerHTML = articles.map(art => `
+                    <div class="service-card" style="padding: 0; overflow: hidden; border: 1px solid rgba(59, 130, 246, 0.1); background: #0b1222; text-align: right; display: flex; flex-direction: column; border-radius: 20px;">
+                        <img src="${art.image_url || '/static/logo.png'}" style="width: 100%; height: 200px; object-fit: cover;">
+                        <div style="padding: 25px; flex-grow: 1;">
+                            <h3 style="font-size: 18px; font-weight: 900; color: var(--primary);">${art.title}</h3>
+                            <p style="font-size: 13px; color: var(--muted);">${art.summary}</p>
+                            <button onclick="openRoyalArticle('${art.title}', '${art.content.replace(/\n/g, "<br>").replace(/'/g, "\\'")}')" 
+                                    style="border: 1px solid var(--primary); color: var(--primary); padding: 8px 15px; border-radius: 8px; cursor: pointer; width: 100%; background:none; font-family:inherit; font-weight:800;">اقرأ التحليل</button>
+                        </div>
+                    </div>`).join("");
             }
-        } catch (e) { console.error("Ticker Sync Error"); }
+
+            // ب. جلب الأخبار العالمية (قد تتأخر قليلاً لذا نضيفها بعد وصولها)
+            fetch('/api/news?lang=ar')
+                .then(r => r.json())
+                .then(newsData => {
+                    const marquee = document.getElementById("kaia-main-marquee");
+                    if (marquee && newsData.news) {
+                        const separator = myTitles ? " <span style='color:rgba(255,255,255,0.3)'> | </span> " : "";
+                        marquee.innerHTML += `${separator}<span style="color:#fff;">🌍 أخبار العالم: ${newsData.news}</span>`;
+                    }
+                })
+                .catch(e => console.log("Global News delay or error"));
+
+        } catch (e) { 
+            console.error("Critical Ticker Error");
+            if (tickerWrap) tickerWrap.innerHTML = `<p style="text-align:center; color:var(--primary); font-size:12px; margin:0;">نراقب تحركات الأسواق حالياً...</p>`;
+        }
     }
 
     function openRoyalArticle(title, content) {
@@ -547,18 +552,24 @@
         win.document.close();
     }
 
-    // التنفيذ الفوري والحماية عند التحميل
-    forceShowTicker(); 
-    window.addEventListener("load", () => setTimeout(syncKAIAWorld, 150));
+    // [3] إدارة التشغيل الفوري والذكي
+    document.addEventListener("DOMContentLoaded", () => {
+        forceShowTicker(); // التحقق من اللغة فوراً
+        syncKAIAWorld();   // البدء بجلب البيانات
+    });
 
-    // مراقبة تغيير اللغة فوراً عند الضغط
+    // تأكيد إضافي لضمان تحديث البيانات في حال وجود تأخير في السيرفر
+    setTimeout(syncKAIAWorld, 500);
+
+    // مراقبة تغيير اللغة يدوياً من قبل المستخدم
     const selector = document.getElementById("language-select");
     if (selector) {
         selector.addEventListener("change", () => {
-            forceShowTicker(); // إخفاء أو إظهار فوري
+            forceShowTicker(); 
             setTimeout(syncKAIAWorld, 100); 
         });
     }
 </script>
+
 </body>
 </html>
