@@ -49,7 +49,13 @@ class User(Base):
     status = Column(String, default="Active")
     credits = Column(Integer, default=3)
     
-    is_verified = Column(Boolean, default=False) # حالة تفعيل الإيميل
+    # حقول الحماية والتوثيق الجديدة
+    is_verified = Column(Boolean, default=False) 
+    verified_at = Column(DateTime, nullable=True)        # تاريخ التوثيق
+    verification_method = Column(String, default="None") # (Manual / WhatsApp / System)
+    registration_ip = Column(String, default="0.0.0.0")  # بصمة الجهاز لمنع البوتات
+    is_flagged = Column(Boolean, default=False)          # وسم الحسابات المشبوهة
+    
     is_admin = Column(Boolean, default=False)
     is_premium = Column(Boolean, default=False)
     is_whale = Column(Boolean, default=False) 
@@ -77,18 +83,19 @@ class Analysis(Base):
     
     user_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="analyses")
-    # =========================================================
+
+# =========================================================
 # 3. جدول غرفة التحرير (Articles Table)
 # =========================================================
 class Article(Base):
     __tablename__ = "articles"
 
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True)         # عنوان المقال
-    summary = Column(Text)                    # ملخص يظهر في الكرت
-    content = Column(Text)                    # محتوى المقال الكامل
-    image_url = Column(String)                # رابط صورة الغلاف
-    language = Column(String, default="ar")    # لغة المقال (ar / en)
+    title = Column(String, index=True)
+    summary = Column(Text)
+    content = Column(Text)
+    image_url = Column(String)
+    language = Column(String, default="ar")
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 # =========================================================
@@ -98,33 +105,43 @@ class Sponsor(Base):
     __tablename__ = "sponsors"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)                     # اسم الشركة المعلنة
-    image_url = Column(String)                # رابط صورة البانر
-    link_url = Column(String)                 # رابط الموقع (Affiliate Link)
-    location = Column(String, default="main") # مكان الظهور (main / dash / mobile)
-    is_active = Column(Boolean, default=True) # حالة الإعلان
+    name = Column(String)
+    image_url = Column(String)
+    link_url = Column(String)
+    location = Column(String, default="main")
+    is_active = Column(Boolean, default=True)
 
 # =========================================================
 # 3. محرك الهجرة التلقائية (Auto-Migration Engine)
 # =========================================================
 def migrate_database():
     """
-    وظيفة التطهير: تقوم بتفعيل كافة الحسابات تلقائياً 
-    لحل مشكلة القيود السابقة.
+    وظيفة ذكية: تضيف الأعمدة الجديدة لقاعدة البيانات إذا لم تكن موجودة
+    لضمان عدم حدوث أخطاء عند تحديث السيرفر.
     """
+    inspector = inspect(engine)
+    columns = [col['name'] for col in inspector.get_columns("users")]
+    
     try:
         with engine.begin() as conn:
-            # [حقن التطهير] تفعيل جميع الحسابات فوراً وكسر القفل
-            conn.execute(text("UPDATE users SET is_verified = TRUE WHERE is_verified = FALSE"))
-            
-            # توحيد الإيميلات لضمان عدم حدوث تعارض
+            # 1. إضافة أعمدة الحماية إذا نقصت (متوافق مع PostgreSQL و SQLite)
+            if "registration_ip" not in columns:
+                conn.execute(text("ALTER TABLE users ADD COLUMN registration_ip VARCHAR DEFAULT '0.0.0.0'"))
+            if "is_flagged" not in columns:
+                conn.execute(text("ALTER TABLE users ADD COLUMN is_flagged BOOLEAN DEFAULT FALSE"))
+            if "verified_at" not in columns:
+                conn.execute(text("ALTER TABLE users ADD COLUMN verified_at TIMESTAMP NULL"))
+            if "verification_method" not in columns:
+                conn.execute(text("ALTER TABLE users ADD COLUMN verification_method VARCHAR DEFAULT 'None'"))
+
+            # 2. توحيد الإيميلات لضمان الدقة
             if not SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
                 conn.execute(text("UPDATE users SET email = LOWER(TRIM(email))"))
                 
-            print("✅ تم تطهير قاعدة البيانات وفتح أقفال جميع الحسابات بنجاح")
+            print("✅ تم تحديث بنية قاعدة البيانات وإضافة حقول الحماية بنجاح")
     except Exception as e:
-        print(f"⚠️ ملاحظة أثناء التطهير: {e}")
+        print(f"⚠️ تنبيه أثناء التحديث: {e}")
 
-# تشغيل المهاجر التلقائي الآمن
+# تشغيل المهاجر
 Base.metadata.create_all(bind=engine)
 migrate_database()

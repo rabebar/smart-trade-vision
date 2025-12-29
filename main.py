@@ -149,12 +149,18 @@ def get_sponsors(location: str = "main", db: Session = Depends(get_db)):
 # Auth System
 # =========================================================
 @app.post("/api/register", response_model=schemas.UserOut)
-def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
+def register(user: schemas.UserCreate, request: Request, db: Session = Depends(get_db)):
     clean_email = user.email.lower().strip()
+    
+    # [1] التقاط عنوان الـ IP الخاص بالمستخدم
+    client_ip = request.client.host or "0.0.0.0"
+    
     if db.query(User).filter(User.email == clean_email).first():
         raise HTTPException(status_code=400, detail="البريد مستخدم")
 
     credits_map = {"Trial": 3, "Basic": 20, "Pro": 40, "Platinum": 200}
+    
+    # [2] إنشاء المستخدم مع إضافة بصمة الـ IP وحالة التوثيق الابتدائية
     new_user = User(
         email=clean_email,
         password_hash=pwd_context.hash(user.password),
@@ -165,7 +171,8 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
         tier=user.tier,
         credits=credits_map.get(user.tier, 3),
         status="Active",
-        is_verified=True,  
+        is_verified=False,      # يبقى غير موثق حتى يتم التأكيد يدوياً أو لاحقاً
+        registration_ip=client_ip, # حفظ بصمة الجهاز هنا
         is_admin=False,
         is_premium=(user.tier != "Trial"),
         is_whale=(user.tier == "Platinum")
@@ -174,7 +181,6 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     return new_user
-
 @app.post("/api/login")
 def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     clean_email = form.username.lower().strip()
