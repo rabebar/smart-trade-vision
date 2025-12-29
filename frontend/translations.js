@@ -118,6 +118,7 @@ const translations = {
         "bank_whatsapp_btn": "إرسال إيصال التحويل عبر واتساب",
         "bank_notice": "سيتم تفعيل حسابك فور مراجعة التحويل من قبل فريق الإدارة.",
         "auth_pass_confirm": "تأكيد كلمة المرور",
+        "analysis_hide_btn": "إخفاء النتيجة | Clear & Close",
     },
     "en": {
         "intro_loading": "Starting KAIA AI Engine...",
@@ -239,6 +240,7 @@ const translations = {
         "bank_whatsapp_btn": "Send Receipt via WhatsApp",
         "bank_notice": "Your account will be activated immediately after the management team reviews the transfer.",
         "auth_pass_confirm": "Confirm Password",
+        "analysis_hide_btn": "Clear & Close Result",
     },
     "fr": {
         "intro_loading": "Démarrage du moteur KAIA AI...",
