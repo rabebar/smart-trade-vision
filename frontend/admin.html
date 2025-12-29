@@ -52,11 +52,10 @@
             box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         }
 
-        table { width: 100%; border-collapse: collapse; text-align: right; min-width: 1100px; }
-        th, td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; text-align: right; min-width: 1200px; }
+        th, td { padding: 15px; border-bottom: 1px solid var(--border); font-size: 13px; }
         th { color: var(--primary); font-weight: 900; background: rgba(59, 130, 246, 0.05); }
         
-        /* تلوين الصفوف المشبوهة */
         .row-flagged { background: rgba(239, 68, 68, 0.05) !important; }
 
         .btn { 
@@ -78,6 +77,7 @@
         .btn-verify { background: var(--success); color: white; }
         .btn-flag { background: #4b5563; color: white; }
         .btn-flag.active { background: var(--danger); }
+        .btn-renew { background: var(--gold); color: #000; font-size: 10px; padding: 5px 10px; }
 
         .btn-delete { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
         .btn-delete:hover { background: var(--danger); color: white; }
@@ -90,7 +90,7 @@
             background: #000; 
             color: #fff; 
             border: 1px solid var(--border); 
-            padding: 8px; 
+            padding: 6px; 
             border-radius: 6px; 
             text-align: center; 
             font-family: inherit;
@@ -102,7 +102,7 @@
             padding: 4px 8px;
             border-radius: 6px;
             font-family: monospace;
-            font-size: 12px;
+            font-size: 11px;
             border: 1px solid rgba(59, 130, 246, 0.3);
         }
 
@@ -110,6 +110,8 @@
         .badge-premium { background: var(--success); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
         .badge-verify { background: #3b82f6; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
         .badge-whale { background: var(--gold); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; }
+        
+        .expiry-date { color: var(--gold); font-weight: 800; font-size: 11px; display: block; margin-bottom: 4px; }
     </style>
 </head>
 <body>
@@ -125,30 +127,28 @@
     </div>
 </div>
 
-<div style="margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; background: rgba(59, 130, 246, 0.05); padding: 20px; border-radius: 15px; border: 1px dashed var(--primary);">
-    <div>
-        <h2 style="margin: 0; font-size: 20px; font-weight: 900; color: var(--primary);">إدارة المحتوى والإعلام</h2>
-        <p style="margin: 5px 0 0; font-size: 13px; color: var(--muted);">انشر رؤيتك الفنية، حدث شريط الأخبار، وتحكم في الإعلانات من هنا.</p>
-    </div>
+<div style="margin-bottom: 25px; background: rgba(59, 130, 246, 0.05); padding: 20px; border-radius: 15px; border: 1px dashed var(--primary);">
+    <h2 style="margin: 0; font-size: 20px; font-weight: 900; color: var(--primary);">نظام إدارة الاشتراكات والأمان</h2>
+    <p style="margin: 5px 0 0; font-size: 13px; color: var(--muted);">تحكم في تفعيل الحسابات، تمديد الاشتراكات، ومراقبة البصمات الرقمية.</p>
 </div>
 
-<h2 style="margin-bottom: 20px; font-weight: 900;"><i class="fa-solid fa-users-gear"></i> إدارة أعضاء المنصة والحماية</h2>
 <div class="admin-card">
     <table>
         <thead>
             <tr>
                 <th>المستخدم</th>
                 <th>التواصل</th>
-                <th>البصمة الرقمية (IP)</th>
+                <th>بصمة الـ IP</th>
                 <th>الحالة</th>
                 <th>تفعيل</th>
                 <th>الباقة</th>
                 <th>الرصيد</th>
+                <th>تاريخ الانتهاء</th>
                 <th>إجراءات</th>
             </tr>
         </thead>
         <tbody id="users-list">
-            <tr><td colspan="8" style="text-align:center; padding: 50px;">جاري فحص رادار المتداولين...</td></tr>
+            <tr><td colspan="9" style="text-align:center; padding: 50px;">جاري فحص رادار المتداولين...</td></tr>
         </tbody>
     </table>
 </div>
@@ -193,11 +193,13 @@
             const res = await fetch("/api/admin/users", { headers: { "Authorization": "Bearer " + token } });
             const users = await res.json();
             const tbody = document.getElementById("users-list");
-            tbody.innerHTML = users.map(u => `
+            tbody.innerHTML = users.map(u => {
+                const expiry = u.subscription_end ? new Date(u.subscription_end).toLocaleDateString() : "غير محدد";
+                return `
                 <tr class="${u.is_flagged ? 'row-flagged' : ''}">
                     <td>
                         <div style="font-weight:900;">${u.full_name}</div>
-                        <div style="font-size:11px; color:var(--muted);">${u.email}</div>
+                        <div style="font-size:10px; color:var(--muted);">${u.email}</div>
                         ${u.is_premium ? '<span class="badge-premium">PREMIUM</span>' : ''}
                         ${u.is_whale ? '<span class="badge-whale">KING 👑</span>' : ''}
                     </td>
@@ -219,16 +221,32 @@
                             <option value="Platinum" ${u.tier==='Platinum'?'selected':''}>Platinum</option>
                         </select>
                     </td>
-                    <td><input type="number" id="cred-${u.id}" value="${u.credits}" style="width: 70px;" onchange="saveUser(${u.id})"></td>
+                    <td><input type="number" id="cred-${u.id}" value="${u.credits}" style="width: 60px;" onchange="saveUser(${u.id})"></td>
                     <td>
-                        <button class="btn btn-flag ${u.is_flagged ? 'active' : ''}" onclick="toggleFlag(${u.id}, ${u.is_flagged})" title="وسم كحساب مشبوه">
+                        <span class="expiry-date">${expiry}</span>
+                        <button class="btn btn-renew" onclick="renewUser(${u.id})"><i class="fa-solid fa-clock-rotate-left"></i> تجديد 30 يوم</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-flag ${u.is_flagged ? 'active' : ''}" onclick="toggleFlag(${u.id}, ${u.is_flagged})" title="وسم مشبوه">
                             <i class="fa-solid fa-flag"></i>
                         </button>
                         <button class="btn btn-delete" onclick="deleteUser(${u.id}, '${u.full_name}')"><i class="fa-solid fa-trash"></i></button>
                     </td>
-                </tr>
-            `).join("");
+                </tr>`;
+            }).join("");
         } catch (e) { console.error("Admin Users Error"); }
+    }
+
+    async function renewUser(userId) {
+        if(!confirm("تجديد الاشتراك لمدة 30 يوماً إضافية؟")) return;
+        try {
+            const res = await fetch("/api/admin/update_user", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+                body: JSON.stringify({ user_id: userId, renew_subscription: true })
+            });
+            if (res.ok) loadUsers();
+        } catch (e) { alert("خطأ في الاتصال بالسيرفر"); }
     }
 
     async function toggleVerify(userId, currentStatus) {
@@ -239,7 +257,7 @@
                 body: JSON.stringify({ user_id: userId, is_verified: !currentStatus })
             });
             if (res.ok) loadUsers();
-        } catch (e) { alert("خطأ في التفعيل"); }
+        } catch (e) { }
     }
 
     async function toggleFlag(userId, currentStatus) {
@@ -250,7 +268,7 @@
                 body: JSON.stringify({ user_id: userId, is_flagged: !currentStatus })
             });
             if (res.ok) loadUsers();
-        } catch (e) { alert("خطأ في الوسم"); }
+        } catch (e) { }
     }
 
     async function saveUser(userId) {
@@ -261,23 +279,21 @@
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
                 body: JSON.stringify({ 
-                    user_id: userId, 
-                    credits: parseInt(credits), 
-                    tier: tier, 
-                    is_premium: (tier !== 'Trial'), 
-                    is_whale: (tier === 'Platinum') 
+                    user_id: userId, credits: parseInt(credits), tier: tier, 
+                    is_premium: (tier !== 'Trial'), is_whale: (tier === 'Platinum') 
                 })
             });
-            // تحديث صامت بدون تنبيهات مزعجة
-        } catch (e) { console.error("Save Error"); }
+        } catch (e) { }
     }
 
     async function deleteUser(userId, name) {
-        if (!confirm(`هل تريد طرد (${name}) نهائياً من KAIA AI؟`)) return;
+        if (!confirm(`حذف حساب (${name})؟`)) return;
         try {
-            const res = await fetch(`/api/admin/delete_user/${userId}`, { method: "DELETE", headers: { "Authorization": "Bearer " + token } });
+            const res = await fetch(`/api/admin/delete_user/${userId}`, { 
+                method: "DELETE", headers: { "Authorization": "Bearer " + token } 
+            });
             if (res.ok) loadUsers();
-        } catch (e) { alert("خطأ اتصال"); }
+        } catch (e) { }
     }
 
     async function loadArticlesForAdmin() {
@@ -296,8 +312,7 @@
                     <td>
                         <button class="btn btn-edit-alt" onclick="window.location.href='/editor?edit=${art.id}'">تعديل</button>
                     </td>
-                </tr>
-            `).join("");
+                </tr>`).join("");
         } catch (e) { }
     }
 

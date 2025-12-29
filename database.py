@@ -10,13 +10,11 @@ from datetime import datetime, timezone
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# تصحيح الرابط ليتوافق مع السيرفرات السحابية
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 SQLALCHEMY_DATABASE_URL = DATABASE_URL or "sqlite:///./sql_app.db"
 
-# إعداد المحرك (استخدام pool_pre_ping لضمان عدم انقطاع الاتصال في ريندر)
 if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
     engine = create_engine(
         SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
@@ -49,13 +47,16 @@ class User(Base):
     status = Column(String, default="Active")
     credits = Column(Integer, default=3)
     
-    # حقول الحماية والتوثيق الجديدة
     is_verified = Column(Boolean, default=False) 
-    verified_at = Column(DateTime, nullable=True)        # تاريخ التوثيق
-    verification_method = Column(String, default="None") # (Manual / WhatsApp / System)
-    registration_ip = Column(String, default="0.0.0.0")  # بصمة الجهاز لمنع البوتات
-    is_flagged = Column(Boolean, default=False)          # وسم الحسابات المشبوهة
+    verified_at = Column(DateTime, nullable=True)        
+    verification_method = Column(String, default="None") 
+    registration_ip = Column(String, default="0.0.0.0")  
+    is_flagged = Column(Boolean, default=False)          
     
+    # [حقن المرحلة الأولى] - تعريف حقول الاشتراك في الجدول
+    subscription_start = Column(DateTime, nullable=True)
+    subscription_end = Column(DateTime, nullable=True)
+
     is_admin = Column(Boolean, default=False)
     is_premium = Column(Boolean, default=False)
     is_whale = Column(Boolean, default=False) 
@@ -115,16 +116,12 @@ class Sponsor(Base):
 # 3. محرك الهجرة التلقائية (Auto-Migration Engine)
 # =========================================================
 def migrate_database():
-    """
-    وظيفة ذكية: تضيف الأعمدة الجديدة لقاعدة البيانات إذا لم تكن موجودة
-    لضمان عدم حدوث أخطاء عند تحديث السيرفر.
-    """
     inspector = inspect(engine)
     columns = [col['name'] for col in inspector.get_columns("users")]
     
     try:
         with engine.begin() as conn:
-            # 1. إضافة أعمدة الحماية إذا نقصت (متوافق مع PostgreSQL و SQLite)
+            # 1. إضافة أعمدة الحماية
             if "registration_ip" not in columns:
                 conn.execute(text("ALTER TABLE users ADD COLUMN registration_ip VARCHAR DEFAULT '0.0.0.0'"))
             if "is_flagged" not in columns:
@@ -134,11 +131,17 @@ def migrate_database():
             if "verification_method" not in columns:
                 conn.execute(text("ALTER TABLE users ADD COLUMN verification_method VARCHAR DEFAULT 'None'"))
 
-            # 2. توحيد الإيميلات لضمان الدقة
+            # 2. [حقن المرحلة الأولى] إضافة حقول تاريخ الاشتراك لقاعدة البيانات
+            if "subscription_start" not in columns:
+                conn.execute(text("ALTER TABLE users ADD COLUMN subscription_start TIMESTAMP NULL"))
+            if "subscription_end" not in columns:
+                conn.execute(text("ALTER TABLE users ADD COLUMN subscription_end TIMESTAMP NULL"))
+
+            # 3. توحيد الإيميلات
             if not SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
                 conn.execute(text("UPDATE users SET email = LOWER(TRIM(email))"))
                 
-            print("✅ تم تحديث بنية قاعدة البيانات وإضافة حقول الحماية بنجاح")
+            print("✅ تم تحديث بنية قاعدة البيانات وإضافة حقول الحماية والاشتراكات بنجاح")
     except Exception as e:
         print(f"⚠️ تنبيه أثناء التحديث: {e}")
 

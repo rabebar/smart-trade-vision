@@ -212,20 +212,34 @@ def admin_update_user(data: dict, current_user: User = Depends(get_current_user)
     if not user:
         raise HTTPException(status_code=404, detail="المستخدم غير موجود")
     
-    # تحديث البيانات الأساسية (الرصيد والباقة)
+    # 1. تحديث الرصيد والباقة
     user.credits = data.get("credits", user.credits)
     user.tier = data.get("tier", user.tier)
     user.is_premium = data.get("is_premium", user.is_premium)
     user.is_whale = data.get("is_whale", user.is_whale)
     
-    # [تحديث جديد] معالجة أمر التفعيل (Verification)
+    # 2. منطق التفعيل (يمنح 30 يوماً تلقائياً عند أول تفعيل)
     if "is_verified" in data:
         user.is_verified = data["is_verified"]
         if user.is_verified:
             user.verified_at = datetime.now(timezone.utc)
             user.verification_method = "Manual Admin"
+            # إذا كان أول تفعيل له، نحدد تاريخ البداية والنهاية (30 يوم)
+            if not user.subscription_start:
+                user.subscription_start = datetime.now(timezone.utc)
+                user.subscription_end = datetime.now(timezone.utc) + timedelta(days=30)
 
-    # [تحديث جديد] معالجة أمر الوسم/الحظر (Flagging)
+    # 3. [جديد] منطق التجديد (إضافة 30 يوماً إضافية)
+    if data.get("renew_subscription") == True:
+        now_utc = datetime.now(timezone.utc)
+        # إذا كان اشتراكه الحالي لا يزال سارياً، نضيف 30 يوماً على تاريخ النهاية القديم
+        if user.subscription_end and user.subscription_end > now_utc:
+            user.subscription_end = user.subscription_end + timedelta(days=30)
+        else:
+            # إذا كان اشتراكه منتهياً، نبدأ الـ 30 يوماً من لحظة التجديد الآن
+            user.subscription_end = now_utc + timedelta(days=30)
+    
+    # 4. منطق الوسم (Flag)
     if "is_flagged" in data:
         user.is_flagged = data["is_flagged"]
     
