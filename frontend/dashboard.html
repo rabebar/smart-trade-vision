@@ -336,6 +336,28 @@
             0%, 100% { filter: drop-shadow(0 0 2px rgba(59, 130, 246, 0.2)); }
             50% { filter: drop-shadow(0 0 10px #3b82f6); }
         }
+        /* --- كود تنبيه التفعيل الجديد --- */
+.verification-alert-bar {
+    display: none; 
+    background: linear-gradient(90deg, #1e293b, #0f172a);
+    border-bottom: 2px solid #3b82f6;
+    padding: 15px;
+    text-align: center;
+    position: relative;
+    z-index: 1000;
+}
+.v-content { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
+.v-text { font-weight: 800; color: #fff; font-size: 14px; }
+.v-btn { 
+    background: #3b82f6; 
+    color: #000; 
+    padding: 8px 20px; 
+    border-radius: 8px; 
+    text-decoration: none; 
+    font-weight: 900; 
+    font-size: 13px;
+}
+/* ------------------------------- */
     </style>
 
     <!-- أيقونات الموقع ومكتبة ضغط الصور -->
@@ -345,6 +367,16 @@
 </head>
 
 <body class="dashboard-root">
+    <!-- بار تنبيه التفعيل المؤسسي -->
+<div id="activation-banner" class="verification-alert-bar">
+    <div class="v-content">
+        <i class="fa-solid fa-shield-halved" style="color:#3b82f6; font-size: 20px;"></i>
+        <span class="v-text">حسابك قيد المراجعة المؤسسية حالياً.. لتفعيل كامل ميزات الذكاء الاصطناعي فوراً، يرجى التواصل مع المحلل.</span>
+        <a id="whatsapp-verify-link" href="#" target="_blank" class="v-btn">
+            <i class="fa-brands fa-whatsapp"></i> تفعيل عبر واتساب
+        </a>
+    </div>
+</div>
 
 <!-- ================= 1. الهيدر الملكي المطور لغرفة القيادة ================= -->
 <header class="top-navbar">
@@ -730,7 +762,10 @@ async function handleDesktopImage(event) {
 }
 
 // 2. دالة تشغيل التحليل الذكي المحدثة
-async function executeDesktopAnalysis() {
+async function executeDesktopAnalysis() {if (document.getElementById("activation-banner") && document.getElementById("activation-banner").style.display === "block") {
+    alert("🔒 يرجى تفعيل الحساب أولاً عبر واتساب.");
+    return;
+}
     if (!desktopFile) return alert("الرجاء اختيار أو لصق صورة الشارت أولاً");
 
     const btn = document.getElementById("run-btn");
@@ -789,6 +824,31 @@ async function syncDash() {
         const u = await res.json();
         if (res.ok) {
             document.getElementById("dash-user").innerText = u.full_name;
+            // --- كود كشف التفعيل الذكي ---
+            if (!u.is_verified) {
+                // 1. إظهار بار التنبيه في الأعلى
+                const banner = document.getElementById("activation-banner");
+                if (banner) banner.style.display = "block";
+
+                // 2. تجهيز رابط الواتساب بإيميل المستخدم تلقائياً
+                const waLink = document.getElementById("whatsapp-verify-link");
+                if (waLink) {
+                    waLink.href = `https://wa.me/970594060648?text=مرحباً KAIA، لقد قمت بالتسجيل وأريد تفعيل حسابي: ${u.email}`;
+                }
+
+                // 3. تعطيل زر التحليل لكي لا يستهلك رصيدك وهو غير مفعل
+                const runBtn = document.getElementById("run-btn");
+                if (runBtn) {
+                    runBtn.innerText = "بانتظار تفعيل الحساب ⏳";
+                    runBtn.style.opacity = "0.5";
+                    runBtn.style.pointerEvents = "none"; // يجعله غير قابل للضغط
+                }
+            } else {
+                // إذا كان مفعل، نتأكد أن البار مخفي
+                const banner = document.getElementById("activation-banner");
+                if (banner) banner.style.display = "none";
+            }
+            // --------------------------
             document.getElementById("dash-credits").innerText = u.credits;
 
             const iconPlace = document.getElementById("rank-icon-place");
