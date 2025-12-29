@@ -212,10 +212,22 @@ def admin_update_user(data: dict, current_user: User = Depends(get_current_user)
     if not user:
         raise HTTPException(status_code=404, detail="المستخدم غير موجود")
     
+    # تحديث البيانات الأساسية (الرصيد والباقة)
     user.credits = data.get("credits", user.credits)
     user.tier = data.get("tier", user.tier)
     user.is_premium = data.get("is_premium", user.is_premium)
     user.is_whale = data.get("is_whale", user.is_whale)
+    
+    # [تحديث جديد] معالجة أمر التفعيل (Verification)
+    if "is_verified" in data:
+        user.is_verified = data["is_verified"]
+        if user.is_verified:
+            user.verified_at = datetime.now(timezone.utc)
+            user.verification_method = "Manual Admin"
+
+    # [تحديث جديد] معالجة أمر الوسم/الحظر (Flagging)
+    if "is_flagged" in data:
+        user.is_flagged = data["is_flagged"]
     
     db.commit()
     return {"status": "success"}
