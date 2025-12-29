@@ -98,6 +98,34 @@ async function updateUIBasedOnAuth() {
             
             if (res.ok) {
                 currentUserData = await res.json();
+                // --- نظام كشف التفعيل الذكي (الصفحة الرئيسية) ---
+                const banner = document.getElementById("activation-banner");
+                if (banner) {
+                    if (!currentUserData.is_verified) {
+                        // 1. إظهار التنبيه فوراً
+                        banner.style.display = "block";
+                        document.body.classList.add("has-banner");
+                        
+                        // 2. تحديث رابط الواتساب
+                        const waLink = document.getElementById("whatsapp-verify-link");
+                        if (waLink) {
+                            waLink.href = `https://wa.me/970594060648?text=مرحباً KAIA، لقد سجلت وأريد تفعيل حسابي: ${currentUserData.email}`;
+                        }
+
+                        // 3. حماية إضافية: تعطيل زر تجربة المحرك (Demo) في الصفحة الرئيسية
+                        const demoBtn = document.getElementById("run-btn");
+                        if (demoBtn) {
+                            demoBtn.innerText = "بانتظار تفعيل الحساب ⏳";
+                            demoBtn.style.opacity = "0.5";
+                            demoBtn.style.pointerEvents = "none";
+                        }
+                    } else {
+                        // إذا كان الحساب مفعلاً، نخفي التنبيه تماماً
+                        banner.style.display = "none";
+                        document.body.classList.remove("has-banner");
+                    }
+                }
+                // -----------------------------------------------
                 
                 if (demoArea) {
                     if (currentUserData.tier === "Trial") {
