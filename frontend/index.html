@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>KAIA AI | Future of Institutional Trading</title>
     
     <!-- وسوم تطبيق الجوال PWA -->
@@ -21,6 +21,13 @@
     <link rel="stylesheet" href="/static/style.css">
 
     <style>
+        html, body { 
+    overflow-x: hidden; 
+    overflow-y: auto !important; 
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+
+}
         /* تعريف المتغيرات اللونية الأساسية للباقات */
         :root {
             --trial-color: #10b981;
