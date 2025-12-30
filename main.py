@@ -482,28 +482,40 @@ async def analyze_chart(
             temperature=0.3
         )
 
-        # --- بداية الكود السليم والمؤمّن ---
+        # --- بداية الكود المنقذ النهائي (إصلاح خطأ 'str' object) ---
         raw_output = response.choices[0].message.content
-        try:
-            # محاولة تحويل الرد إلى JSON
-            result = json.loads(raw_output)
-            if isinstance(result, str):
-                result = json.loads(result)
-        except:
-            # إذا فشل، نصنع قاموساً يدوياً لكي لا ينهار السيرفر
-            result = {"market_bias": "Neutral", "analysis_text": str(raw_output)}
+        result = {}
 
-        # استخراج البيانات بأمان (سواء كان الرد بلاتيني أو عادي)
+        try:
+            # 1. محاولة تحويل النص إلى قاموس (JSON)
+            temp_result = json.loads(raw_output)
+            
+            # 2. فحص إضافي: لو كان الناتج لا يزال نصاً، نقوم بتحويله مرة أخرى (إصلاح Double Encoding)
+            if isinstance(temp_result, str):
+                result = json.loads(temp_result)
+            else:
+                result = temp_result
+        except:
+            # 3. خطة الطوارئ: لو فشل كل شيء، نصنع نحن قاموساً لكي لا ينهار السيرفر
+            result = {
+                "market_bias": "Neutral",
+                "analysis_text": str(raw_output),
+                "market": "Unknown",
+                "timeframe": timeframe
+            }
+
+        # 4. استخراج البيانات "بأمان تام" (لا يمكن أن يظهر خطأ get هنا)
         if isinstance(result, dict):
             final_bias = result.get("market_bias") or result.get("market_state", {}).get("directional_bias", "Neutral")
             final_notes = result.get("analysis_text") or str(result.get("market_state", {}).get("notes", "Analysis complete"))
             final_market = result.get("market") or "Unknown"
         else:
+            # لو فشل الفحص النوعي رغم كل شيء
             final_bias = "Neutral"
-            final_notes = str(result)
+            final_notes = str(raw_output)
             final_market = "Unknown"
 
-        # حفظ السجل التاريخي في قاعدة البيانات
+        # 5. حفظ السجل التاريخي في قاعدة البيانات
         db.add(Analysis(
             user_id=current_user.id,
             symbol=str(final_market),
@@ -511,7 +523,7 @@ async def analyze_chart(
             reason=str(final_notes),
             timeframe=timeframe
         ))
-        # --- نهاية الكود السليم ---
+        # --- نهاية الكود المنقذ ---
 
         if not current_user.is_whale:
             current_user.credits -= 1
