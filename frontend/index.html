@@ -608,13 +608,20 @@ body.has-banner .top-navbar { margin-top: 50px; }
         });
     }
     function resetAnalyzerFull() {
-    // إخفاء الصندوق
+    // 1. إخفاء النتائج
     document.getElementById("result-box").style.display = "none";
-    // مسح الصورة تماماً
+    
+    // 2. مسح بيانات الملف
     document.getElementById("chartUpload").value = "";
-    // إعادة النص للوضع الأصلي
+    
+    // 3. (السطر المنقذ) مسح الصورة المرئية من صندوق الرفع
+    const dz = document.getElementById("drop-zone");
+    if(dz) dz.style.backgroundImage = "none"; 
+
+    // 4. إعادة النص الأصلي
     const st = document.getElementById("status-text");
     if(st) st.innerText = "قم بلصق صورة الشارت هنا 📸";
+
 }
 </script>
 
