@@ -178,28 +178,35 @@ function setupHelpSystem() {
 }
 
 /* =======================
-   6. التصفير البصري (المعدل للإصلاح فقط)
+   6. التصفير البصري (المعدل للإصلاح الفوري)
    ======================= */
 window.resetWorkspace = function() {
+    // 1. إخفاء صندوق النتائج وتصفير مدخلات الملفات
     if ($("result-box")) $("result-box").style.display = "none";
     if ($("chartUpload")) $("chartUpload").value = ""; 
 
-    // إصلاح الممحاة: مسح خلفية الصورة بصرياً
-    if ($("drop-zone")) {
-        $("drop-zone").style.backgroundImage = "none";
-        $("drop-zone").style.backgroundColor = "";
-        $("drop-zone").style.removeProperty("background-image");
+    // 2. إصلاح الممحاة: مسح خلفية الصورة بصرياً وبالقوة (إزالة Inline Styles)
+    const dropZone = $("drop-zone");
+    if (dropZone) {
+        dropZone.style.backgroundImage = "none";
+        dropZone.style.backgroundColor = "";
+        dropZone.style.removeProperty("background-image");
+        dropZone.classList.remove("has-image"); // إزالة أي كلاس قد يكون مضافاً
     }
 
-    if ($("status-text")) {
+    // 3. إعادة النص التوضيحي الأصلي
+    const statusText = $("status-text");
+    if (statusText) {
         const dict = translations?.[currentLang];
-        $("status-text").innerText = dict?.drop_zone_text || "إلصق الشارت هنا 📸";
-        $("status-text").style.color = ""; 
+        statusText.innerText = dict?.drop_zone_text || (currentLang === 'ar' ? "إلصق الشارت هنا 📸" : "Paste Chart Here 📸");
+        statusText.style.color = ""; 
     }
+    
+    console.log("🧹 Workspace Reset Successfully");
 };
 
 /* =======================
-   7. منطق الجلسات والعطلات (المستعاد بالكامل)
+   7. منطق الجلسات والعطلات (أصلي)
    ======================= */
 async function updateMarketSessions() {
     const now = new Date();
@@ -208,7 +215,6 @@ async function updateMarketSessions() {
     const year = now.getFullYear();
     const todayISO = now.toISOString().split('T')[0];
 
-    // جلب العطلات من API عالمي
     let holidays = JSON.parse(localStorage.getItem('kaia_holidays') || '[]');
     const lastFetch = localStorage.getItem('kaia_holiday_last_fetch');
 
@@ -261,7 +267,7 @@ async function updateMarketSessions() {
 }
 
 /* =======================
-   8. محرك التحليل (المعدل للإصلاح والتزامن)
+   8. محرك التحليل (المعدل لدعم Whale Vision ودرع JSON)
    ======================= */
 async function runInstitutionalAnalysis() {
     const strategy = $("strategy")?.value || "SMC";
@@ -277,7 +283,7 @@ async function runInstitutionalAnalysis() {
     const resBox = $("result-box");
     const resContent = $("res-data-content");
 
-    btn.innerText = "KAIA ANALYZING...";
+    btn.innerText = currentLang === 'ar' ? "KAIA تدرس السيولة..." : "KAIA ANALYZING...";
     btn.disabled = true;
 
     try {
@@ -302,54 +308,64 @@ async function runInstitutionalAnalysis() {
 
         if (!analyzeRes.ok) throw new Error("ANALYSIS_FAIL");
         const data = await analyzeRes.json();
-        const analysis = data.analysis;
         
+        if (data.status === "error") throw new Error(data.detail);
+
+        const analysis = data.analysis;
         resBox.style.display = "block";
 
         if (data.tier_mode === "Platinum") {
-            // استعادة العرض البلاتيني الفخم (Whale Vision)
+            // استعادة وعرض Whale Vision (رؤية الحيتان)
             resContent.innerHTML = `
                 <div class="analysis-result-card" style="border:2px solid var(--gold); padding:25px; border-radius:20px; background:rgba(255,215,0,0.03);">
-                    <h3 style="text-align:center; color:var(--gold); font-weight:900;">KAIA MASTER VISION</h3>
+                    <h3 style="text-align:center; color:var(--gold); font-weight:900; margin-bottom:20px;">KAIA MASTER VISION</h3>
                     
                     <div style="background:rgba(239,68,68,0.1); padding:15px; border-radius:15px; margin:15px 0; border:1px dashed #ef4444;">
                         <strong style="color:#ef4444;"><i class="fa-solid fa-bullseye"></i> مناطق مصائد الحيتان (Stop-Hunt):</strong>
-                        ${analysis.stop_hunt_risk_zones?.map(z => `<div style="font-size:13px; margin-top:5px;">• <b>${z.zone_price_hint}:</b> ${z.why_risky}</div>`).join('') || 'No data'}
+                        ${(analysis.stop_hunt_risk_zones || []).map(z => `
+                            <div style="font-size:13px; margin-top:8px; border-bottom:1px solid rgba(239,68,68,0.2); padding-bottom:5px;">
+                                <b style="color:#ef4444;">📍 ${z.zone_price_hint}:</b> ${z.why_risky}
+                            </div>
+                        `).join('') || (currentLang === 'ar' ? 'لا توجد مصائد واضحة حالياً' : 'No traps detected')}
                     </div>
 
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
                         <div style="background:#050b14; padding:15px; border-radius:15px; border-right:4px solid var(--success);">
                             <small style="color:var(--success)">Upside Watch</small>
-                            ${analysis.key_levels?.upside?.map(l => `<div style="font-family:monospace; font-weight:900; font-size:16px;">${l.price}</div>`).join('') || '---'}
+                            ${(analysis.key_levels?.upside || []).map(l => `<div style="font-family:monospace; font-weight:900; font-size:16px; margin-top:5px;">${l.price}</div>`).join('') || '---'}
                         </div>
                         <div style="background:#050b14; padding:15px; border-radius:15px; border-right:4px solid #ef4444;">
                             <small style="color:#ef4444">Downside Watch</small>
-                            ${analysis.key_levels?.downside?.map(l => `<div style="font-family:monospace; font-weight:900; font-size:16px;">${l.price}</div>`).join('') || '---'}
+                            ${(analysis.key_levels?.downside || []).map(l => `<div style="font-family:monospace; font-weight:900; font-size:16px; margin-top:5px;">${l.price}</div>`).join('') || '---'}
                         </div>
                     </div>
 
-                    <div style="padding:15px; background:rgba(255,255,255,0.03); border-radius:15px;">
-                        <strong>بصمة المؤسسات:</strong> ${analysis.market_state?.notes || analysis.analysis_text}
+                    <div style="padding:15px; background:rgba(255,255,255,0.03); border-radius:15px; border:1px solid rgba(255,255,255,0.1);">
+                        <strong>📝 البصمة المؤسسية:</strong> 
+                        <p style="margin-top:8px; line-height:1.6; font-size:14px;">${analysis.analysis_text || analysis.market_state?.notes || 'Analysis complete.'}</p>
                     </div>
                 </div>
             `;
         } else {
-            // العرض العادي
+            // العرض العادي للباقات الأخرى
             const bias = analysis.market_bias || "Neutral";
             resContent.innerHTML = `
-                <div class="analysis-result-card" style="padding:20px; border-right:5px solid var(--primary);">
+                <div class="analysis-result-card" style="padding:20px; border-right:5px solid var(--primary); background:rgba(255,255,255,0.02); border-radius:10px;">
                     <h3>KAIA ANALYSIS</h3>
-                    <div style="font-size:18px; font-weight:900; color:var(--primary);">Bias: ${bias}</div>
-                    <p style="margin-top:10px; line-height:1.6;">${analysis.analysis_text || ''}</p>
+                    <div style="font-size:18px; font-weight:900; color:var(--primary); margin:10px 0;">Bias: ${bias}</div>
+                    <p style="margin-top:10px; line-height:1.6; font-size:15px;">${analysis.analysis_text || ''}</p>
+                    ${analysis.risk_note ? `<div style="margin-top:15px; font-size:12px; color:#ef4444;">⚠️ ${analysis.risk_note}</div>` : ''}
                 </div>
             `;
         }
 
         currentUserData.credits = data.remaining_credits;
         syncUserData();
+        resBox.scrollIntoView({ behavior: 'smooth' });
 
     } catch (e) {
-        alert(currentLang === 'ar' ? "⚠️ حدث خطأ، يرجى إعادة رفع الشارت والمحاولة." : "⚠️ Error, please re-upload.");
+        console.error("Analysis Error:", e);
+        alert(currentLang === 'ar' ? `⚠️ فشل التحليل: ${e.message}` : `⚠️ Analysis Failed: ${e.message}`);
         resetWorkspace();
     } finally {
         btn.innerText = currentLang === 'ar' ? "بدء التحليل" : "Analyze";

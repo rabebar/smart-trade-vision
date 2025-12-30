@@ -18,6 +18,7 @@ import base64
 import json
 import requests
 import uuid
+import re
 from bs4 import BeautifulSoup
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -386,42 +387,29 @@ async def analyze_chart(
         with open(img_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode()
 
-        # --- إعادة البرومبتات الأصلية حرفياً كما كانت في أول رسالة لك ---
         if analysis_type == "KAIA Master" and current_user.tier == "Platinum":
             system_prompt = f"""
-أنت "KAIA AI Institutional Analyst" — مساعد تحليل سوق تعليمي (ليس نصيحة مالية).
-حلّل صورة الشارت بأسلوب المؤسسات (SMC/ICT) عبر تتبّع السيولة وبنية السوق،
-ثم قدّم مستويات رقمية واضحة للمراقبة صعودًا وهبوطًا + تحذيرات من مناطق محتملة لاصطياد السيولة (Stop-hunt risk).
+أنت "KAIA AI Institutional Analyst" — مساعد تحليل سوق تعليمي.
+حلّل صورة الشارت بأسلوب المؤسسات (SMC/ICT) عبر تتبّع السيولة وبنية السوق.
 
-قواعد صارمة (Legal-Safe):
-- لغة الرد: يجب أن يكون الرد كاملاً باللغة ({lang}).
-- ممنوع إعطاء توصيات تنفيذية مباشرة (اشترِ/بِع). استخدم لغة مراقبة: (يراقَب/قد يتفاعل).
-- مسموح ذكر أرقام مستويات (Prices) كـ "Watch Levels" مع سبب واضح.
-
-منهج التحليل المؤسّسي:
-1) حدّد السوق والفريم {timeframe} + حالة السوق.
-2) استخرج BOS/CHOCH.
-3) حدّد تجمعات السيولة و Liquidity Sweep.
-4) حدّد بصمات مؤسسية: Order Block / FVG / Breaker.
-5) قدّم المستويات القادمة (Near/Mid/Far) بأرقام واضحة.
-6) أضف قسم تحذير Stop-hunt risk zones.
-7) قدم سيناريوهين (صعود/هبوط) مع مستوى الإلغاء (Invalidation level).
-
-صيغة الإخراج: أعد ONLY JSON صالح وبنفس المفاتيح التالية حرفياً، وبدون أي نص خارجي:
+صيغة الإخراج: أعد ONLY JSON صالح وبدون أي نص خارجي بالمفاتيح التالية:
 (market, timeframe, session_context, market_state, institutional_evidence, key_levels, stop_hunt_risk_zones, scenarios, confidence_score, disclaimer)
+
+ملاحظة هامة للمفاتيح:
+- stop_hunt_risk_zones: مصفوفة من الأجسام بهذا الشكل: {{"zone_price_hint": "السعر", "why_risky": "السبب"}}
+- key_levels: جسم يحتوي على مصفوفتين (upside, downside) وكل عنصر فيهما هو جسم يحتوي مفتاح "price".
+
+لغة الرد: ({lang}).
 """
         elif analysis_type == "Elliott Waves":
             system_prompt = f"""
-أنت خبير "KAIA AI Elliott Waves". حلل الشارت المرفق بناءً على نظرية موجات إليوت.
-حدد الموجة الحالية (1-5 أو A-C) والأهداف المتوقعة.
-يجب أن يكون الرد باللغة ({lang}) وبصيغة JSON حصراً.
-المفاتيح المطلوبة: (market_bias, wave_count, analysis_text, risk_note, market, timeframe, confidence)
+أنت خبير "KAIA AI Elliott Waves". حلل الشارت بناءً على نظرية موجات إليوت.
+الرد باللغة ({lang}) وبصيغة JSON حصراً بالمفاتيح: (market_bias, wave_count, analysis_text, risk_note, market, timeframe, confidence)
 """
         else:
             system_prompt = f"""
 أنت "KAIA AI Institutional Analyst". حلّل الشارت بأسلوب (SMC/ICT).
-يجب أن يكون الرد باللغة ({lang}) وبصيغة JSON حصراً وبالمفاتيح التالية حرفياً:
-(market_bias, market_phase, confidence, analysis_text, risk_note, market, timeframe)
+الرد باللغة ({lang}) وبصيغة JSON حصراً بالمفاتيح: (market_bias, market_phase, confidence, analysis_text, risk_note, market, timeframe)
 """
 
         response = client.chat.completions.create(
@@ -441,9 +429,20 @@ async def analyze_chart(
         )
 
         raw_output = response.choices[0].message.content
-        result = json.loads(raw_output)
+        
+        # --- نظام درع التنظيف (Parsing Guard) لضمان JSON سليم ---
+        try:
+            # البحث عن أول { وآخر } لتجنب علامات Markdown
+            json_match = re.search(r"(\{.*\})", raw_output, re.DOTALL)
+            if json_match:
+                result = json.loads(json_match.group(1))
+            else:
+                result = json.loads(raw_output)
+        except Exception:
+            # في حال الفشل الذريع، استرجاع النص كتحليل بسيط
+            result = {"analysis_text": raw_output, "market_bias": "Neutral"}
 
-        # --- بداية درع حماية التزامن (هذا الجزء لا يلمس البرومبت، بل يعالج النتيجة فقط) ---
+        # --- حماية تزامن البيانات ---
         if "market_bias" not in result:
             m_state = result.get("market_state", {})
             if isinstance(m_state, dict):
@@ -483,10 +482,12 @@ async def analyze_chart(
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # منع إرسال HTML للواجهة، إرسال JSON خطأ دائماً
+        return {"status": "error", "detail": str(e)}
     finally:
         if os.path.exists(img_path):
-            os.remove(img_path)
+            try: os.remove(img_path)
+            except: pass
 
 # -----------------------------------------------------------------
 # 12. توجيه الصفحات ودعم PWA (المستعادة بالكامل)
