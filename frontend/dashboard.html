@@ -467,7 +467,7 @@
 
             <div id="result-box" style="display: none; margin-top: 25px; border-top: 2px solid var(--border); padding-top: 20px;">
                 <div id="res-data-content"></div>
-                <button onclick="document.getElementById('result-box').style.display='none'" data-i18n="analysis_hide_btn" style="width:100%; margin-top:15px; background:#1e293b; color:#fff; border:none; height:45px; border-radius:10px; cursor:pointer; font-weight: 800;">إخفاء النتيجة | Clear & Close</button>
+                <button onclick="resetWorkspace()" data-i18n="analysis_hide_btn" style="width:100%; margin-top:15px; background:#1e293b; color:#fff; border:none; height:45px; border-radius:10px; cursor:pointer; font-weight: 800;">إخفاء النتيجة | Clear & Close</button>
             </div>
         </div>
 
@@ -583,116 +583,9 @@
 <script src="/static/translations.js"></script>
 <script src="/static/dashboard.js"></script>
 <script>
-let desktopFile = null;
+// توحيد القيادة: الاعتماد على dashboard.js الخارجي لضمان مسح الصورة وعرض النتائج
 const userToken = localStorage.getItem("token");
-let isUserVerified = false;
 
-// 1. معالجة الصور (رفع + لصق)
-async function processKAIAImage(file) {
-    const statusLabel = document.getElementById("status-text");
-    statusLabel.innerText = "جاري استلام الشارت... ⏳";
-    try {
-        if (typeof imageCompression !== 'undefined') {
-            const options = { maxSizeMB: 0.8, maxWidthOrHeight: 1920 };
-            desktopFile = await imageCompression(file, options);
-        } else { desktopFile = file; }
-        statusLabel.innerText = "تم استلام الشارت بنجاح ✅";
-        statusLabel.style.color = "var(--primary)";
-    } catch (e) {
-        desktopFile = file; statusLabel.innerText = "تم الاستلام ✅";
-    }
-}
-
-async function handleDesktopImage(event) {
-    const file = event.target.files[0];
-    if (file) await processKAIAImage(file);
-}
-
-document.addEventListener('paste', async (e) => {
-    const item = Array.from(e.clipboardData.items).find(x => x.type.indexOf("image") !== -1);
-    if (item) { await processKAIAImage(item.getAsFile()); }
-});
-
-// 2. التحليل الذكي الملون
-async function executeDesktopAnalysis() {
-    if (document.getElementById("activation-banner") && document.getElementById("activation-banner").style.display === "block") {
-        alert("🔒 يرجى تفعيل الحساب أولاً عبر واتساب."); return;
-    }
-    if (!desktopFile) return alert("الرجاء اختيار صورة الشارت أولاً");
-
-    const btn = document.getElementById("run-btn");
-    const resBox = document.getElementById("result-box");
-    const resContent = document.getElementById("res-data-content");
-
-    btn.disabled = true; btn.innerText = "جاري التحليل المؤسسي... 🚀";
-
-    try {
-        const upFd = new FormData(); upFd.append("chart", desktopFile);
-        const upRes = await fetch("/api/upload-chart", { method: "POST", body: upFd });
-        const { filename } = await upRes.json();
-
-        const anFd = new FormData();
-        anFd.append("filename", filename);
-        anFd.append("timeframe", document.getElementById("timeframe").value);
-        anFd.append("analysis_type", document.getElementById("strategy").value);
-        anFd.append("lang", document.getElementById("language-select").value);
-
-        const res = await fetch("/api/analyze-chart", {
-            method: "POST", headers: { "Authorization": "Bearer " + userToken }, body: anFd
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-            const analysis = data.analysis;
-            
-            // 1. استخراج البيانات بذكاء (سواء كانت بلاتينية أو عادية)
-            const bias = analysis.market_bias || (analysis.market_state ? analysis.market_state.directional_bias : "Neutral");
-            const notes = analysis.analysis_text || (analysis.market_state ? analysis.market_state.notes : "Institutional analysis complete.");
-            const market = analysis.market || "Asset";
-            const timeframe = analysis.timeframe || document.getElementById("timeframe").value;
-
-            // 2. تحديد الألوان بناءً على الاتجاه
-            let colorClass = bias.toLowerCase().includes("bull") ? "report-bullish" : (bias.toLowerCase().includes("bear") ? "report-bearish" : "report-neutral");
-            let biasClass = bias.toLowerCase().includes("bull") ? "bias-text-bull" : (bias.toLowerCase().includes("bear") ? "bias-text-bear" : "");
-
-            resBox.style.display = "block";
-            
-            // 3. بناء واجهة العرض الموحدة (التي تدعم الجداول)
-            let contentHtml = `
-                <div class="analysis-card ${colorClass}" style="background:rgba(11,18,34,0.95); padding:25px; border-radius:20px; line-height:1.8;">
-                    <h3 style="color:var(--primary); text-align:center; font-weight:900;">KAIA MASTER REPORT</h3>
-                    <div style="text-align:center; font-size:12px; color:var(--muted); margin-bottom:15px;">${market} | ${timeframe}</div>
-                    <p style="font-size:15px; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:10px;">${notes}</p>
-                    <div style="font-size:18px; text-align:center; margin-bottom:15px;">الاتجاه المؤسسي: <span class="${biasClass}">${bias}</span></div>
-            `;
-
-            // 4. إضافة جداول الأهداف (تظهر فقط في خيار البلاتينيوم/ماستر)
-            if (analysis.key_levels) {
-                contentHtml += `
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
-                        <div style="background:rgba(16,185,129,0.05); padding:10px; border-radius:10px; border:1px solid rgba(16,185,129,0.2);">
-                            <strong style="color:#10b981; font-size:11px;">Upside Watch:</strong>
-                            <div style="font-size:12px; font-family:monospace; margin-top:5px;">${analysis.key_levels.upside.map(l => `• ${l.price}`).join("<br>")}</div>
-                        </div>
-                        <div style="background:rgba(239,68,68,0.05); padding:10px; border-radius:10px; border:1px solid rgba(239,68,68,0.2);">
-                            <strong style="color:#ef4444; font-size:11px;">Downside Watch:</strong>
-                            <div style="font-size:12px; font-family:monospace; margin-top:5px;">${analysis.key_levels.downside.map(l => `• ${l.price}`).join("<br>")}</div>
-                        </div>
-                    </div>`;
-            }
-            
-            contentHtml += `</div>`;
-            resContent.innerHTML = contentHtml;
-            
-            // تحديث الرصيد في الهيدر
-            syncDash();
-        
-        } else { alert(data.detail || "خطأ في المحرك"); }
-    } catch (e) { alert("فشل الاتصال بالمحرك"); }
-    finally { btn.disabled = false; btn.innerText = "بدء التحليل"; }
-}
-
-// 3. التزامن والرتب
 async function syncDash() {
     if (!userToken) return;
     try {
@@ -701,31 +594,28 @@ async function syncDash() {
         if (res.ok) {
             document.getElementById("dash-user").innerText = u.full_name;
             document.getElementById("dash-credits").innerText = u.credits;
-            isUserVerified = u.is_verified;
             if (!u.is_verified) {
                 document.getElementById("activation-banner").style.display = "block";
                 document.getElementById("whatsapp-verify-link").href = `https://wa.me/970594060648?text=مرحباً، أريد تفعيل حسابي: ${u.email}`;
                 const runBtn = document.getElementById("run-btn");
                 if (runBtn) { runBtn.innerText = "بانتظار التفعيل ⏳"; runBtn.style.opacity = "0.5"; runBtn.style.pointerEvents = "none"; }
             } else { document.getElementById("activation-banner").style.display = "none"; }
+            
             const iconPlace = document.getElementById("rank-icon-place");
             if (u.tier === "Platinum") iconPlace.innerHTML = '<i class="fa-solid fa-whale rank-icon tier-platinum"></i>';
             else if (u.tier === "Pro") iconPlace.innerHTML = '<i class="fa-solid fa-medal rank-icon tier-pro"></i>';
             else iconPlace.innerHTML = '<i class="fa-solid fa-tree rank-icon"></i>';
+            
             document.body.style.visibility = "visible"; document.body.style.opacity = "1";
         }
     } catch(e) {}
 }
 
-// 4. الحساب والربط
-function inputCalc(v) { const d = document.getElementById("calc-display"); d.innerText = d.innerText === "0" ? v : d.innerText + v; }
-function resultCalc() { try { const d = document.getElementById("calc-display"); d.innerText = eval(d.innerText); } catch(e) { d.innerText = "Error"; } }
-function deleteCalc() { const d = document.getElementById("calc-display"); d.innerText = d.innerText.slice(0, -1) || "0"; }
-function clearCalc() { document.getElementById("calc-display").innerText = "0"; }
-
 document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("run-btn").onclick = executeDesktopAnalysis;
-    document.getElementById("logout-btn").onclick = () => { localStorage.removeItem("token"); location.reload(); };
+    // ربط زر التحليل بالمحرك الأصلي في dashboard.js
+    if(typeof runInstitutionalAnalysis === 'function') {
+        document.getElementById("run-btn").onclick = runInstitutionalAnalysis;
+    }
     syncDash();
 });
 </script>
