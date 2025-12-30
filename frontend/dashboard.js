@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   KAIA AI × KAIA - COMMAND CENTER ENGINE (Version 7.0 UPDATED)
+   KAIA AI × KAIA - COMMAND CENTER ENGINE (Version 7.1 UPDATED)
    ============================================================ */
 
 const $ = (id) => document.getElementById(id);
@@ -104,7 +104,6 @@ window.deleteCalc = () => {
 
 window.resultCalc = () => {
     try {
-        // حساب المعادلة وتحويل النتيجة لنص
         calcExpression = eval(calcExpression).toString();
         $("calc-display").innerText = calcExpression;
     } catch (e) {
@@ -126,9 +125,7 @@ window.calculateRiskPercent = () => {
         return;
     }
 
-    // المخاطرة بالدولار = حجم اللوت * عدد النقاط * 10 (لأزواج الدولار الأساسية)
     const riskAmount = lot * slPips * 10;
-    // نسبة المخاطرة = (المبلغ المخاطر به / رأس المال) * 100
     const riskPercent = (riskAmount / balance) * 100;
 
     const resultDiv = $("risk-result");
@@ -184,12 +181,22 @@ function setupHelpSystem() {
 }
 
 /* =======================
-   تصفير بيئة العمل (Cleanup Logic)
+   تصفير بيئة العمل (Cleanup Logic - UPDATED)
    ======================= */
 window.resetWorkspace = function() {
+    // 1. إخفاء صندوق النتيجة
     if ($("result-box")) $("result-box").style.display = "none";
+    
+    // 2. تصفير مدخل الملف
     if ($("chartUpload")) $("chartUpload").value = ""; 
 
+    // 3. تصفير خلفية الصورة بصرياً (إزالة الشارت القديم من العين)
+    if ($("drop-zone")) {
+        $("drop-zone").style.backgroundImage = "none";
+        $("drop-zone").style.borderColor = ""; // إعادة لون الحدود الأصلي
+    }
+
+    // 4. إعادة النص الأصلي
     if ($("status-text")) {
         const dict = translations?.[currentLang];
         $("status-text").innerText = dict?.drop_zone_text || "إلصق الشارت هنا 📸";
@@ -198,16 +205,15 @@ window.resetWorkspace = function() {
 };
 
 /* =======================
-   منطق جلسات التداول الذكي (ربط تلقائي بأجندة العطلات العالمية API)
+   منطق جلسات التداول الذكي
    ======================= */
 async function updateMarketSessions() {
     const now = new Date();
     const utcHour = now.getUTCHours();
     const utcDay = now.getUTCDay();
     const year = now.getFullYear();
-    const todayISO = now.toISOString().split('T')[0]; // صيغة YYYY-MM-DD
+    const todayISO = now.toISOString().split('T')[0];
 
-    // 1. جلب العطلات من API عالمي (مرة واحدة يومياً وتخزينها في المتصفح)
     let holidays = JSON.parse(localStorage.getItem('kaia_holidays') || '[]');
     const lastFetch = localStorage.getItem('kaia_holiday_last_fetch');
 
@@ -215,7 +221,6 @@ async function updateMarketSessions() {
         try {
             const countryCodes = ['AU', 'JP', 'GB', 'US'];
             let fetchedHolidays = [];
-
             for (let code of countryCodes) {
                 const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${code}`);
                 const data = await res.json();
@@ -224,7 +229,7 @@ async function updateMarketSessions() {
             localStorage.setItem('kaia_holidays', JSON.stringify(fetchedHolidays));
             localStorage.setItem('kaia_holiday_last_fetch', todayISO);
             holidays = fetchedHolidays;
-        } catch (e) { console.error("Holiday API Link Error"); }
+        } catch (e) { console.error("Holiday API Error"); }
     }
 
     const sessions = [
@@ -239,29 +244,18 @@ async function updateMarketSessions() {
     sessions.forEach(s => {
         const el = $(s.id);
         if (!el) return;
-
-        // [الذكاء] التحقق إذا كان اليوم عطلة رسمية "في دولة البورصة المحددة فقط"
-        const isTodayHoliday = holidays.some(h => h.date === todayISO && h.country === s.country);
-        
         let isOpen = false;
         if (!isWeekend) {
-            if (s.start < s.end) {
-                isOpen = utcHour >= s.start && utcHour < s.end;
-            } else {
-                isOpen = utcHour >= s.start || utcHour < s.end;
-            }
+            if (s.start < s.end) { isOpen = utcHour >= s.start && utcHour < s.end; }
+            else { isOpen = utcHour >= s.start || utcHour < s.end; }
         }
-
-        if (isOpen) {
-            el.classList.add("session-active");
-        } else {
-            el.classList.remove("session-active");
-        }
+        if (isOpen) { el.classList.add("session-active"); }
+        else { el.classList.remove("session-active"); }
     });
 }
 
 /* =======================
-   ANALYSIS ENGINE (FIXED)
+   ANALYSIS ENGINE (SYNCHRONIZED)
    ======================= */
 async function runInstitutionalAnalysis() {
     const strategy = $("strategy")?.value || "SMC";
@@ -275,6 +269,7 @@ async function runInstitutionalAnalysis() {
 
     const btn = $("run-btn");
     const resBox = $("result-box");
+    const resContent = $("res-data-content");
 
     btn.innerText = "KAIA ANALYZING...";
     btn.disabled = true;
@@ -283,11 +278,7 @@ async function runInstitutionalAnalysis() {
         const uploadFd = new FormData();
         uploadFd.append("chart", fileInput.files[0]);
 
-        const uploadRes = await fetch("/api/upload-chart", {
-            method: "POST",
-            body: uploadFd
-        });
-
+        const uploadRes = await fetch("/api/upload-chart", { method: "POST", body: uploadFd });
         const uploadData = await uploadRes.json();
         if (!uploadData.filename) throw new Error("Upload failed");
 
@@ -306,23 +297,26 @@ async function runInstitutionalAnalysis() {
         const data = await analyzeRes.json();
         if (!analyzeRes.ok) throw new Error(data.detail || "Analysis error");
 
-        // [حقن التصحيح: قراءة البيانات بناءً على المفاتيح التي أصبحت ترسلها OpenAI الآن بدقة]
         const analysis = data.analysis;
-
         resBox.style.display = "block";
-        $("res-data-content").innerHTML = `
+
+        // بناء تقرير التحليل مع دعم الألوان بناءً على الاتجاه
+        const bias = analysis.market_bias || "Neutral";
+        const colorStyle = bias.toLowerCase().includes("bull") ? "color:#10b981" : (bias.toLowerCase().includes("bear") ? "color:#ef4444" : "color:#3b82f6");
+
+        resContent.innerHTML = `
             <div class="analysis-result-card" style="background:rgba(11,18,34,0.95); padding:20px; border-radius:15px; border:1px solid var(--primary);">
-                <h3 style="text-align:center;font-weight:900;">KAIA LIVE REPORT</h3>
+                <h3 style="text-align:center;font-weight:900; margin-bottom:15px;">KAIA LIVE REPORT</h3>
                 <div class="res-data-grid" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:15px;">
-                    <div class="res-data-item" style="text-align:center;"><small style="display:block; color:var(--muted);">Bias</small><span>${analysis.market_bias || '---'}</span></div>
+                    <div class="res-data-item" style="text-align:center;"><small style="display:block; color:var(--muted);">Bias</small><span style="${colorStyle}">${bias}</span></div>
                     <div class="res-data-item" style="text-align:center;"><small style="display:block; color:var(--muted);">Phase</small><span>${analysis.market_phase || '---'}</span></div>
-                    <div class="res-data-item" style="text-align:center;"><small style="display:block; color:var(--muted);">Conf.</small><span>${analysis.confidence || '---'}</span></div>
+                    <div class="res-data-item" style="text-align:center;"><small style="display:block; color:var(--muted);">Conf.</small><span>${analysis.confidence || analysis.confidence_score || '---'}</span></div>
                 </div>
                 <div class="analysis-box" style="margin-top:20px; border-top:1px solid var(--border); padding-top:10px;">
-                    <strong style="color:var(--primary);">Institutional Analysis:</strong>
-                    <p style="font-size:14px; line-height:1.6;">${analysis.analysis_text || ''}</p>
+                    <strong style="color:var(--primary);">Institutional Narrative:</strong>
+                    <p style="font-size:14px; line-height:1.6; margin-top:5px;">${analysis.analysis_text || ''}</p>
                 </div>
-                <div class="risk-note" style="margin-top:10px; color:var(--danger); font-size:12px;"><strong>Risk Note:</strong> ${analysis.risk_note || ''}</div>
+                ${analysis.risk_note ? `<div style="margin-top:10px; color:#ef4444; font-size:12px;"><strong>Risk Note:</strong> ${analysis.risk_note}</div>` : ''}
             </div>
         `;
 
@@ -330,8 +324,8 @@ async function runInstitutionalAnalysis() {
         syncUserData();
 
     } catch (e) {
-        console.error("Analysis Core Error:", e);
-        alert(e.message || "Engine Connection Error");
+        console.error("Analysis Error:", e);
+        alert(e.message || "Engine Error");
     } finally {
         btn.innerText = currentLang === 'ar' ? "بدء التحليل" : "Analyze";
         btn.disabled = false;
@@ -346,6 +340,17 @@ function setupWorkspaceUtilities() {
         const item = [...e.clipboardData.items].find(x => x.type.includes("image"));
         if (item) {
             const blob = item.getAsFile();
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                if ($("drop-zone")) {
+                    $("drop-zone").style.backgroundImage = `url(${event.target.result})`;
+                    $("drop-zone").style.backgroundSize = "contain";
+                    $("drop-zone").style.backgroundRepeat = "no-repeat";
+                    $("drop-zone").style.backgroundPosition = "center";
+                }
+            };
+            reader.readAsDataURL(blob);
+
             const dt = new DataTransfer();
             dt.items.add(blob);
             $("chartUpload").files = dt.files;
@@ -359,7 +364,15 @@ function setupWorkspaceUtilities() {
     const fileInput = $("chartUpload");
     if (fileInput) {
         fileInput.onchange = () => {
-            if (fileInput.files[0] && $("status-text")) {
+            if (fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    $("drop-zone").style.backgroundImage = `url(${e.target.result})`;
+                    $("drop-zone").style.backgroundSize = "contain";
+                    $("drop-zone").style.backgroundRepeat = "no-repeat";
+                    $("drop-zone").style.backgroundPosition = "center";
+                };
+                reader.readAsDataURL(fileInput.files[0]);
                 $("status-text").innerText = fileInput.files[0].name;
                 $("status-text").style.color = "var(--success)";
             }
@@ -378,18 +391,14 @@ window.onload = () => {
     checkAccessAndInit();
     setupWorkspaceUtilities();
     setupHelpSystem();
-    
     if ($("language-select")) {
         $("language-select").onchange = (e) => {
-            const newLang = e.target.value;
-            localStorage.setItem("kaia_lang", newLang);
+            localStorage.setItem("kaia_lang", e.target.value);
             location.reload(); 
         };
     }
-
     updateMarketSessions();
     setInterval(updateMarketSessions, 60000);
-
     if ($("run-btn")) $("run-btn").onclick = runInstitutionalAnalysis;
     if ($("drop-zone")) $("drop-zone").onclick = () => $("chartUpload").click();
 };

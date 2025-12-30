@@ -1,6 +1,6 @@
 # =================================================================
 # 🛰️ KAIA AI – THE ULTIMATE INSTITUTIONAL ANALYST ENGINE
-# 🛡️ VERSION: 2025.12.29 - FULL EXPANDED RECOVERY EDITION
+# 🛡️ VERSION: 2025.12.30 - RESTORED PROMPTS EDITION
 # =================================================================
 
 from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Request
@@ -49,7 +49,6 @@ app = FastAPI(title="KAIA AI – Institutional Analyst Engine")
 # 3. إعداد مخزن الصور الدائم (Render Disk Persistent Storage)
 # -----------------------------------------------------------------
 
-# المجلد images هو الخزنة الدائمة التي لا تُمحى عند تحديث الكود
 STORAGE_PATH = os.getenv("RENDER_DISK_MOUNT_PATH", "images")
 
 if not os.path.exists(STORAGE_PATH):
@@ -68,10 +67,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ربط رابط الصور /images بالخزنة الدائمة (Render Disk)
 app.mount("/images", StaticFiles(directory=STORAGE_PATH), name="images")
 
-# ربط مجلد الفرونتيند (الملفات الثابتة)
 if os.path.exists("frontend"):
     app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
@@ -81,7 +78,6 @@ if os.path.exists("frontend"):
 # -----------------------------------------------------------------
 
 def get_db():
-    """فتح وإغلاق جلسة قاعدة البيانات بشكل آمن"""
     db = SessionLocal()
     try:
         yield db
@@ -90,7 +86,6 @@ def get_db():
 
 
 def create_access_token(data: dict):
-    """إنشاء مفتاح دخول رقمي (JWT) صالح لمدة 30 يوماً"""
     expire = datetime.now(timezone.utc) + timedelta(days=30)
     to_encode = data.copy()
     to_encode.update({"exp": expire})
@@ -98,7 +93,6 @@ def create_access_token(data: dict):
 
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    """التحقق من هوية المستخدم ومعالجة انتهاء الجلسة"""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email = payload.get("sub")
@@ -130,19 +124,15 @@ NEWS_CACHE = {
 
 @app.get("/api/news")
 def get_news(lang: str = "ar"):
-    """جلب الأخبار العالمية بنظام Caching لضمان سرعة رد السيرفر"""
     global NEWS_CACHE
     lang_key = "en" if lang == "en" else "ar"
-    
     now = datetime.now()
     cache_entry = NEWS_CACHE[lang_key]
     
-    # الرد من الذاكرة إذا لم يمر أكثر من 10 دقائق
     if cache_entry["timestamp"]:
         if (now - cache_entry["timestamp"]).seconds < 600:
             return {"news": cache_entry["data"]}
 
-    # جلب أخبار طازجة من Investing.com
     try:
         if lang_key == "en":
             rss_url = "https://www.investing.com/rss/news_285.rss" 
@@ -178,13 +168,11 @@ def get_news(lang: str = "ar"):
 
 @app.get("/api/articles")
 def get_articles(lang: str = "ar", db: Session = Depends(get_db)):
-    """عرض أحدث 6 مقالات للجمهور حسب اللغة المختار"""
     return db.query(Article).filter(Article.language == lang).order_by(Article.id.desc()).limit(6).all()
 
 
 @app.get("/api/sponsors")
 def get_sponsors(location: str = "main", db: Session = Depends(get_db)):
-    """عرض المساحات الإعلانية النشطة"""
     return db.query(Sponsor).filter(Sponsor.location == location, Sponsor.is_active == True).all()
 
 
@@ -194,16 +182,12 @@ def get_sponsors(location: str = "main", db: Session = Depends(get_db)):
 
 @app.post("/api/register", response_model=schemas.UserOut)
 def register(user: schemas.UserCreate, request: Request, db: Session = Depends(get_db)):
-    """إنشاء حساب جديد مع تسجيل عنوان الـ IP لمنع هجمات البوتات"""
-    
     clean_email = user.email.lower().strip()
     client_ip = request.client.host or "0.0.0.0"
     
-    # منع تكرار الحسابات
     if db.query(User).filter(User.email == clean_email).first():
         raise HTTPException(status_code=400, detail="البريد الإلكتروني مسجل لدينا بالفعل")
 
-    # رصيد الباقات الافتراضي
     credits_map = {"Trial": 3, "Basic": 20, "Pro": 40, "Platinum": 200}
     
     new_user = User(
@@ -216,7 +200,7 @@ def register(user: schemas.UserCreate, request: Request, db: Session = Depends(g
         tier=user.tier,
         credits=credits_map.get(user.tier, 3),
         status="Active",
-        is_verified=False,      # يحتاج مراجعة بشرية لتفعيل الميزات
+        is_verified=False,
         registration_ip=client_ip,
         is_admin=False,
         is_premium=(user.tier != "Trial"),
@@ -232,7 +216,6 @@ def register(user: schemas.UserCreate, request: Request, db: Session = Depends(g
 
 @app.post("/api/login")
 def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    """التحقق من صحة الدخول وإصدار مفتاح الولوج"""
     clean_email = form.username.lower().strip()
     user = db.query(User).filter(User.email == clean_email).first()
     
@@ -244,7 +227,6 @@ def login(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get
 
 @app.get("/api/me", response_model=schemas.UserOut)
 def me(current_user: User = Depends(get_current_user)):
-    """جلب بيانات الملف الشخصي للمستخدم الحالي"""
     return current_user
 
 
@@ -254,7 +236,6 @@ def me(current_user: User = Depends(get_current_user)):
 
 @app.get("/api/admin/users")
 def admin_get_users(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """عرض كافة الأعضاء للأدمن فقط"""
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="صلاحيات غير كافية")
     return db.query(User).all()
@@ -262,8 +243,6 @@ def admin_get_users(current_user: User = Depends(get_current_user), db: Session 
 
 @app.post("/api/admin/update_user")
 def admin_update_user(data: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """تحديث بيانات المشتركين وإدارة التفعيل والاشتراكات"""
-    
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="صلاحيات غير كافية")
     
@@ -271,31 +250,25 @@ def admin_update_user(data: dict, current_user: User = Depends(get_current_user)
     if not user:
         raise HTTPException(status_code=404, detail="المستخدم غير موجود")
     
-    # تحديث البيانات الأساسية
     user.credits = data.get("credits", user.credits)
     user.tier = data.get("tier", user.tier)
     user.is_premium = (data.get("tier") != "Trial")
     user.is_whale = (data.get("tier") == "Platinum")
     
-    # منطق التفعيل التلقائي (30 يوماً)
     if "is_verified" in data:
         user.is_verified = data["is_verified"]
         if user.is_verified:
             user.verified_at = datetime.now(timezone.utc)
             user.verification_method = "Manual Admin"
-            # إذا لم يكن له تاريخ اشتراك سابق، نبدأ له 30 يوم من الآن
             if not user.subscription_start:
                 user.subscription_start = datetime.now(timezone.utc)
                 user.subscription_end = datetime.now(timezone.utc) + timedelta(days=30)
 
-    # منطق التجديد التراكمي (+30 يوماً إضافية)
     if data.get("renew_subscription") == True:
         now_utc = datetime.now(timezone.utc)
-        # إذا كان اشتراكه الحالي لا يزال سارياً، نضيف فوقه
         if user.subscription_end and user.subscription_end > now_utc:
             user.subscription_end = user.subscription_end + timedelta(days=30)
         else:
-            # إذا كان منتهياً، نبدأ من اليوم
             user.subscription_end = now_utc + timedelta(days=30)
     
     if "is_flagged" in data:
@@ -307,7 +280,6 @@ def admin_update_user(data: dict, current_user: User = Depends(get_current_user)
 
 @app.delete("/api/admin/delete_user/{user_id}")
 def admin_delete_user(user_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """حذف حساب مستخدم نهائياً"""
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="صلاحيات غير كافية")
     
@@ -320,12 +292,11 @@ def admin_delete_user(user_id: int, current_user: User = Depends(get_current_use
 
 
 # -----------------------------------------------------------------
-# 10. غرفة التحرير المؤسسية (Editorial Room - Fully Restored)
+# 10. غرفة التحرير المؤسسية (Editorial Room)
 # -----------------------------------------------------------------
 
 @app.post("/api/admin/add_article")
 def admin_add_article(data: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """نشر تقرير فني جديد"""
     if not current_user.is_admin: 
         raise HTTPException(status_code=403, detail="غير مسموح")
     
@@ -343,7 +314,6 @@ def admin_add_article(data: dict, current_user: User = Depends(get_current_user)
 
 @app.get("/api/admin/article/{art_id}")
 def admin_get_article(art_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """جلب بيانات مقال واحد لملء صناديق التعديل (هنا كان الخلل وحللناه)"""
     if not current_user.is_admin: 
         raise HTTPException(status_code=403)
     return db.query(Article).filter(Article.id == art_id).first()
@@ -351,7 +321,6 @@ def admin_get_article(art_id: int, current_user: User = Depends(get_current_user
 
 @app.put("/api/admin/update_article/{art_id}")
 def admin_update_article(art_id: int, data: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """تحديث بيانات مقال موجود مسبقاً"""
     if not current_user.is_admin: 
         raise HTTPException(status_code=403)
     
@@ -368,7 +337,6 @@ def admin_update_article(art_id: int, data: dict, current_user: User = Depends(g
 
 @app.delete("/api/admin/delete_article/{art_id}")
 def admin_delete_article(art_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """حذف مقال نهائياً من قاعدة البيانات"""
     if not current_user.is_admin: 
         raise HTTPException(status_code=403)
     
@@ -379,7 +347,6 @@ def admin_delete_article(art_id: int, current_user: User = Depends(get_current_u
 
 @app.post("/api/admin/upload-article-image")
 async def upload_article_image(image: UploadFile = File(...), current_user: User = Depends(get_current_user)):
-    """رفع صورة التقرير وحفظها في القرص الدائم (Render Disk) لضمان عدم ضياعها"""
     if not current_user.is_admin: 
         raise HTTPException(status_code=403)
     
@@ -405,16 +372,11 @@ async def analyze_chart(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # 1. فحص الرصيد
     if current_user.credits <= 0 and not current_user.is_whale:
         raise HTTPException(status_code=400, detail="الرصيد غير كافٍ، يرجى الترقية")
 
-    # 2. حماية باقة البلاتينيوم حصرياً لـ KAIA Master
     if analysis_type == "KAIA Master" and current_user.tier != "Platinum":
-        raise HTTPException(
-            status_code=403, 
-            detail="عذراً، استراتيجية KAIA Master Vision مخصصة حصرياً لمشتركي الباقة البلاتينية."
-        )
+        raise HTTPException(status_code=403, detail="عذراً، استراتيجية KAIA Master Vision مخصصة حصرياً لمشتركي الباقة البلاتينية.")
 
     img_path = os.path.join(STORAGE_PATH, filename)
     if not os.path.exists(img_path):
@@ -424,9 +386,8 @@ async def analyze_chart(
         with open(img_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode()
 
-        # 3. اختيار البرومبت بناءً على نوع التحليل والرتبة
+        # --- إعادة البرومبتات الأصلية حرفياً كما كانت في أول رسالة لك ---
         if analysis_type == "KAIA Master" and current_user.tier == "Platinum":
-            # --- البرومبت البلاتيني الجبار (KAIA Master Vision) ---
             system_prompt = f"""
 أنت "KAIA AI Institutional Analyst" — مساعد تحليل سوق تعليمي (ليس نصيحة مالية).
 حلّل صورة الشارت بأسلوب المؤسسات (SMC/ICT) عبر تتبّع السيولة وبنية السوق،
@@ -450,7 +411,6 @@ async def analyze_chart(
 (market, timeframe, session_context, market_state, institutional_evidence, key_levels, stop_hunt_risk_zones, scenarios, confidence_score, disclaimer)
 """
         elif analysis_type == "Elliott Waves":
-            # --- برومبت موجات إليوت ---
             system_prompt = f"""
 أنت خبير "KAIA AI Elliott Waves". حلل الشارت المرفق بناءً على نظرية موجات إليوت.
 حدد الموجة الحالية (1-5 أو A-C) والأهداف المتوقعة.
@@ -458,14 +418,12 @@ async def analyze_chart(
 المفاتيح المطلوبة: (market_bias, wave_count, analysis_text, risk_note, market, timeframe, confidence)
 """
         else:
-            # --- برومبت SMC العادي (لجميع الفئات) ---
             system_prompt = f"""
 أنت "KAIA AI Institutional Analyst". حلّل الشارت بأسلوب (SMC/ICT).
 يجب أن يكون الرد باللغة ({lang}) وبصيغة JSON حصراً وبالمفاتيح التالية حرفياً:
 (market_bias, market_phase, confidence, analysis_text, risk_note, market, timeframe)
 """
 
-        # 4. التنفيذ عبر OpenAI
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -482,44 +440,28 @@ async def analyze_chart(
             temperature=0.3
         )
 
-        # --- بداية الكود المصفح والنهائي (درع الحماية الشامل) ---
-
-        # 1. استلام الرد الخام من الذكاء الاصطناعي
         raw_output = response.choices[0].message.content
-        result = {}
+        result = json.loads(raw_output)
 
-        # 2. تحويل الرد إلى قاموس بيانات (JSON) بأمان تام
-        try:
-            result = json.loads(raw_output)
-            if isinstance(result, str):
-                result = json.loads(result)
-        except:
-            result = {"analysis_text": str(raw_output)}
-
-        # 3. التأكد أن النتيجة هي حقيبة بيانات وليست نصاً
-        res_dict = result if isinstance(result, dict) else {}
-
-        # 4. استخراج الاتجاه (Bias) بأمان
-        final_bias = res_dict.get("market_bias")
-        if not final_bias:
-            m_state = res_dict.get("market_state")
+        # --- بداية درع حماية التزامن (هذا الجزء لا يلمس البرومبت، بل يعالج النتيجة فقط) ---
+        if "market_bias" not in result:
+            m_state = result.get("market_state", {})
             if isinstance(m_state, dict):
-                final_bias = m_state.get("directional_bias", "Neutral")
+                result["market_bias"] = m_state.get("directional_bias", "Neutral")
             else:
-                final_bias = str(m_state) if m_state else "Neutral"
+                result["market_bias"] = str(m_state) if m_state else "Neutral"
 
-        # 5. استخراج الملاحظات (Notes) بأمان
-        final_notes = res_dict.get("analysis_text")
-        if not final_notes:
-            m_state = res_dict.get("market_state")
+        if "analysis_text" not in result:
+            m_state = result.get("market_state", {})
             if isinstance(m_state, dict):
-                final_notes = m_state.get("notes", "Analysis complete")
+                result["analysis_text"] = m_state.get("notes", "Analysis complete")
             else:
-                final_notes = str(m_state) if m_state else "Institutional view"
+                result["analysis_text"] = str(m_state) if m_state else "Institutional view"
 
-        final_market = res_dict.get("market") or "Asset"
+        final_market = result.get("market") or "Asset"
+        final_bias = result.get("market_bias")
+        final_notes = result.get("analysis_text")
 
-        # 6. حفظ السجل التاريخي في قاعدة البيانات
         db.add(Analysis(
             user_id=current_user.id,
             symbol=str(final_market),
@@ -546,83 +488,56 @@ async def analyze_chart(
         if os.path.exists(img_path):
             os.remove(img_path)
 
+# -----------------------------------------------------------------
+# 12. توجيه الصفحات ودعم PWA (المستعادة بالكامل)
+# -----------------------------------------------------------------
 
 @app.get("/api/history")
 def get_user_history(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """عرض سجل تحليلات المستخدم السابقة"""
     return db.query(Analysis).filter(Analysis.user_id == current_user.id).order_by(Analysis.id.desc()).all()
 
-
-# -----------------------------------------------------------------
-# 12. توجيه الصفحات ودعم PWA (Routes)
-# -----------------------------------------------------------------
-
 @app.get("/")
-def home_page():
-    return FileResponse("frontend/index.html")
+def home_page(): return FileResponse("frontend/index.html")
 
 @app.get("/manifest.json")
-def get_manifest():
-    return FileResponse("frontend/manifest.json")
-
+def get_manifest(): return FileResponse("frontend/manifest.json")
 
 @app.get("/sw.js")
-def get_sw():
-    return FileResponse("frontend/sw.js")
+def get_sw(): return FileResponse("frontend/sw.js")
 
 @app.get("/.well-known/assetlinks.json")
 async def get_assetlinks():
-    return [
-        {
-            "relation": ["delegate_permission/common.handle_all_urls"],
-            "target": {
-                "namespace": "android_app",
-                "package_name": "com.onrender.kaia_ai_app.twa",
-                "sha256_cert_fingerprints": ["73:70:D7:27:14:0D:C7:A2:F9:FC:D1:A1:21:B4:1D:18:99:7D:27:38:14:85:E3:40:57:FD:8B:5B:AB:36:3A:0C"]
-            }
-        }
-    ]
+    return [{"relation": ["delegate_permission/common.handle_all_urls"],"target": {"namespace": "android_app","package_name": "com.onrender.kaia_ai_app.twa","sha256_cert_fingerprints": ["73:70:D7:27:14:0D:C7:A2:F9:FC:D1:A1:21:B4:1D:18:99:7D:27:38:14:85:E3:40:57:FD:8B:5B:AB:36:3A:0C"]}}]
+
 @app.get("/mobile")
-def mobile_page():
-    return FileResponse("frontend/mobile.html")
+def mobile_page(): return FileResponse("frontend/mobile.html")
 
 @app.get("/dashboard")
-def dashboard_page():
-    return FileResponse("frontend/dashboard.html")
-
+def dashboard_page(): return FileResponse("frontend/dashboard.html")
 
 @app.get("/admin")
-def admin_page():
-    return FileResponse("frontend/admin.html")
-
+def admin_page(): return FileResponse("frontend/admin.html")
 
 @app.get("/editor")
-def editor_page():
-    return FileResponse("frontend/editor.html")
-
+def editor_page(): return FileResponse("frontend/editor.html")
 
 @app.get("/history")
-def history_page():
-    return FileResponse("frontend/history.html")
+def history_page(): return FileResponse("frontend/history.html")
 
-# دالة رفع الشارتات (تمت إعادتها للعمل بشكل منفصل عن المقالات)
 @app.post("/api/upload-chart")
 async def upload_chart(chart: UploadFile = File(...)):
-    # التصحيح: يجب الحفظ في STORAGE_PATH لكي يجدها المحلل
     name = f"{uuid.uuid4()}.{chart.filename.split('.')[-1]}"
     save_path = os.path.join(STORAGE_PATH, name)
-    
     with open(save_path, "wb") as buffer:
         shutil.copyfileobj(chart.file, buffer)
     return {"filename": name}
 
 # -----------------------------------------------------------------
-# 13. أدوات الصيانة الطارئة (Emergency Tools)
+# 13. أدوات الصيانة الطارئة
 # -----------------------------------------------------------------
 
 @app.get("/api/nuclear-wipe")
 def nuclear_wipe(email: str, db: Session = Depends(get_db)):
-    """حذف حساب مستخدم بالكامل في حالة الطوارئ"""
     target = email.lower().strip()
     user = db.query(User).filter(User.email == target).first()
     if user:
@@ -632,10 +547,8 @@ def nuclear_wipe(email: str, db: Session = Depends(get_db)):
         return {"message": f"تم مسح الحساب {target} بنجاح"}
     return {"message": "المستخدم غير موجود"}
 
-
 @app.get("/api/fix-my-account")
 def fix_my_account(email: str, new_password: str, db: Session = Depends(get_db)):
-    """أداة إصلاح حساب الملك واستعادة الصلاحيات كاملة"""
     target = email.lower().strip()
     user = db.query(User).filter(User.email == target).first()
     if user:
@@ -649,5 +562,5 @@ def fix_my_account(email: str, new_password: str, db: Session = Depends(get_db))
     return {"error": "لم يتم العثور على الحساب"}
 
 # =================================================================
-# 🚀 END OF KAIA MASTER ENGINE - VERSION 2025.12.29
+# 🚀 END OF KAIA MASTER ENGINE - VERSION 2025.12.30
 # =================================================================
