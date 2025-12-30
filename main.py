@@ -482,40 +482,47 @@ async def analyze_chart(
             temperature=0.3
         )
 
-        # --- بداية الكود المنقذ النهائي (إصلاح خطأ 'str' object) ---
+        # --- بداية الكود المصفح والنهائي (درع الحماية الشامل) ---
+        
         raw_output = response.choices[0].message.content
         result = {}
 
         try:
-            # 1. محاولة تحويل النص إلى قاموس (JSON)
-            temp_result = json.loads(raw_output)
-            
-            # 2. فحص إضافي: لو كان الناتج لا يزال نصاً، نقوم بتحويله مرة أخرى (إصلاح Double Encoding)
-            if isinstance(temp_result, str):
-                result = json.loads(temp_result)
-            else:
-                result = temp_result
+            # 1. محاولة تحويل الرد إلى قاموس بيانات
+            result = json.loads(raw_output)
+            if isinstance(result, str):
+                result = json.loads(result)
         except:
-            # 3. خطة الطوارئ: لو فشل كل شيء، نصنع نحن قاموساً لكي لا ينهار السيرفر
-            result = {
-                "market_bias": "Neutral",
-                "analysis_text": str(raw_output),
-                "market": "Unknown",
-                "timeframe": timeframe
-            }
+            # 2. إذا فشل تماماً، نضع الرد كنص بسيط لكي لا ينهار السيرفر
+            result = {"analysis_text": str(raw_output), "market_bias": "Neutral"}
 
-        # 4. استخراج البيانات "بأمان تام" (لا يمكن أن يظهر خطأ get هنا)
+        # 3. استخراج البيانات "حبة حبة" مع فحص النوع في كل خطوة (أمان 100%)
+        final_bias = "Neutral"
+        final_notes = "Done"
+        final_market = "Unknown"
+
         if isinstance(result, dict):
-            final_bias = result.get("market_bias") or result.get("market_state", {}).get("directional_bias", "Neutral")
-            final_notes = result.get("analysis_text") or str(result.get("market_state", {}).get("notes", "Analysis complete"))
-            final_market = result.get("market") or "Unknown"
-        else:
-            # لو فشل الفحص النوعي رغم كل شيء
-            final_bias = "Neutral"
-            final_notes = str(raw_output)
-            final_market = "Unknown"
+            # جلب الاتجاه (Bias) بأمان
+            final_bias = result.get("market_bias")
+            if not final_bias:
+                m_state = result.get("market_state")
+                if isinstance(m_state, dict):
+                    final_bias = m_state.get("directional_bias", "Neutral")
+                else:
+                    final_bias = str(m_state) if m_state else "Neutral"
 
-        # 5. حفظ السجل التاريخي في قاعدة البيانات
+            # جلب الملاحظات (Notes) بأمان
+            final_notes = result.get("analysis_text")
+            if not final_notes:
+                m_state = result.get("market_state")
+                if isinstance(m_state, dict):
+                    final_notes = m_state.get("notes", "Analysis complete")
+                else:
+                    final_notes = str(m_state) if m_state else "Institutional view"
+
+            final_market = result.get("market") or "Asset"
+
+        # 4. حفظ السجل التاريخي في قاعدة البيانات
         db.add(Analysis(
             user_id=current_user.id,
             symbol=str(final_market),
@@ -523,7 +530,7 @@ async def analyze_chart(
             reason=str(final_notes),
             timeframe=timeframe
         ))
-        # --- نهاية الكود المنقذ ---
+        # --- نهاية الكود المصفح ---
 
         if not current_user.is_whale:
             current_user.credits -= 1
