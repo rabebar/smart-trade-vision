@@ -486,6 +486,10 @@ def get_user_history(current_user: User = Depends(get_current_user), db: Session
 # 12. توجيه الصفحات ودعم PWA (Routes)
 # -----------------------------------------------------------------
 
+@app.get("/")
+def home_page():
+    return FileResponse("frontend/index.html")
+
 @app.get("/manifest.json")
 def get_manifest():
     return FileResponse("frontend/manifest.json")
