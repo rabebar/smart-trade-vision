@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   KAIA AI × KAIA - COMMAND CENTER ENGINE (Version 7.2 FINAL)
+   KAIA AI × KAIA - COMMAND CENTER ENGINE (Version 7.6 - RESTORED)
    ============================================================ */
 
 const $ = (id) => document.getElementById(id);
@@ -10,7 +10,7 @@ let currentLang = localStorage.getItem("kaia_lang") || "ar";
 let currentUserData = null;
 
 /* =======================
-   ACCESS CONTROL
+   1. ACCESS CONTROL (أصلي)
    ======================= */
 async function checkAccessAndInit() {
     if (!token) {
@@ -39,6 +39,7 @@ async function checkAccessAndInit() {
         applyDashboardTranslations(currentLang);
 
     } catch (e) {
+        console.error("Auth Error:", e);
         localStorage.removeItem("token");
         window.location.href = "/";
     }
@@ -50,7 +51,7 @@ function syncUserData() {
 }
 
 /* =======================
-   محرك اللغات والترجمة الشامل
+   2. محرك اللغات (أصلي)
    ======================= */
 function applyDashboardTranslations(lang) {
     const dict = translations?.[lang];
@@ -82,21 +83,25 @@ function applyDashboardTranslations(lang) {
 }
 
 /* =======================
-   برمجة الآلة الحاسبة الجانبية (Calculator)
+   3. الآلة الحاسبة (أصلي)
    ======================= */
 let calcExpression = "";
+
 window.inputCalc = (val) => {
     calcExpression += val;
     $("calc-display").innerText = calcExpression;
 };
+
 window.clearCalc = () => {
     calcExpression = "";
     $("calc-display").innerText = "0";
 };
+
 window.deleteCalc = () => {
     calcExpression = calcExpression.slice(0, -1);
     $("calc-display").innerText = calcExpression || "0";
 };
+
 window.resultCalc = () => {
     try {
         calcExpression = eval(calcExpression).toString();
@@ -108,51 +113,84 @@ window.resultCalc = () => {
 };
 
 /* =======================
-   برمجة إدارة المخاطر وحساب النقاط
+   4. إدارة المخاطر (أصلي)
    ======================= */
 window.calculateRiskPercent = () => {
     const balance = parseFloat($("balance").value);
     const lot = parseFloat($("risk-lot").value);
     const slPips = parseFloat($("sl-pips-input").value);
+
     if (!balance || !lot || !slPips) {
         alert(currentLang === 'ar' ? "يرجى ملء جميع الخانات أولاً" : "Please fill all fields first");
         return;
     }
+
     const riskAmount = lot * slPips * 10;
     const riskPercent = (riskAmount / balance) * 100;
+
     const resultDiv = $("risk-result");
-    resultDiv.innerHTML = currentLang === 'ar' ? `مبلغ المخاطرة: $${riskAmount.toFixed(2)} <br> نسبة المخاطرة: ${riskPercent.toFixed(2)}%` : `Risk Amount: $${riskAmount.toFixed(2)} <br> Risk Percent: ${riskPercent.toFixed(2)}%`;
+    if (currentLang === 'ar') {
+        resultDiv.innerHTML = `مبلغ المخاطرة: $${riskAmount.toFixed(2)} <br> نسبة المخاطرة: ${riskPercent.toFixed(2)}%`;
+    } else {
+        resultDiv.innerHTML = `Risk Amount: $${riskAmount.toFixed(2)} <br> Risk Percent: ${riskPercent.toFixed(2)}%`;
+    }
 };
 
 window.calculatePipProfit = () => {
     const lot = parseFloat($("pip-lot-size").value);
     const pips = parseFloat($("pip-count").value);
+
     if (!lot || !pips) {
         alert(currentLang === 'ar' ? "يرجى إدخال اللوت وعدد النقاط" : "Please enter lot and pip count");
         return;
     }
+
     const profit = lot * pips * 10;
     const resultDiv = $("pip-result");
-    resultDiv.innerText = currentLang === 'ar' ? `الربح المتوقع: $${profit.toFixed(2)}` : `Expected Profit: $${profit.toFixed(2)}`;
+
+    if (currentLang === 'ar') {
+        resultDiv.innerText = `الربح المتوقع: $${profit.toFixed(2)}`;
+    } else {
+        resultDiv.innerText = `Expected Profit: $${profit.toFixed(2)}`;
+    }
 };
 
 /* =======================
-   تصفير بيئة العمل (CLEANUP ENGINE - UPDATED)
+   5. نظام المساعدة والتعليمات (أصلي)
+   ======================= */
+function setupHelpSystem() {
+    const helpIcon = $("help-icon");
+    const helpBox = $("help-box");
+
+    if (helpIcon && helpBox) {
+        helpIcon.onclick = (e) => {
+            e.stopPropagation();
+            const isVisible = helpBox.style.display === "block";
+            helpBox.style.display = isVisible ? "none" : "block";
+        };
+
+        document.addEventListener("click", (e) => {
+            if (helpBox.style.display === "block" && !helpBox.contains(e.target) && e.target !== helpIcon) {
+                helpBox.style.display = "none";
+            }
+        });
+    }
+}
+
+/* =======================
+   6. التصفير البصري (المعدل للإصلاح فقط)
    ======================= */
 window.resetWorkspace = function() {
-    // 1. إخفاء صندوق النتيجة
     if ($("result-box")) $("result-box").style.display = "none";
-    
-    // 2. تصفير مدخل الملف (إلزامي لضمان عدم التكرار)
     if ($("chartUpload")) $("chartUpload").value = ""; 
 
-    // 3. مسح الصورة بصرياً من صندوق الرفع (المسح الجذري)
+    // إصلاح الممحاة: مسح خلفية الصورة بصرياً
     if ($("drop-zone")) {
         $("drop-zone").style.backgroundImage = "none";
-        $("drop-zone").style.backgroundColor = ""; 
+        $("drop-zone").style.backgroundColor = "";
+        $("drop-zone").style.removeProperty("background-image");
     }
 
-    // 4. إعادة النص واللون الأصلي
     if ($("status-text")) {
         const dict = translations?.[currentLang];
         $("status-text").innerText = dict?.drop_zone_text || "إلصق الشارت هنا 📸";
@@ -161,42 +199,77 @@ window.resetWorkspace = function() {
 };
 
 /* =======================
-   منطق جلسات التداول الذكي
+   7. منطق الجلسات والعطلات (المستعاد بالكامل)
    ======================= */
 async function updateMarketSessions() {
     const now = new Date();
     const utcHour = now.getUTCHours();
     const utcDay = now.getUTCDay();
+    const year = now.getFullYear();
+    const todayISO = now.toISOString().split('T')[0];
+
+    // جلب العطلات من API عالمي
+    let holidays = JSON.parse(localStorage.getItem('kaia_holidays') || '[]');
+    const lastFetch = localStorage.getItem('kaia_holiday_last_fetch');
+
+    if (!lastFetch || lastFetch !== todayISO) {
+        try {
+            const countryCodes = ['AU', 'JP', 'GB', 'US'];
+            let fetchedHolidays = [];
+
+            for (let code of countryCodes) {
+                const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${code}`);
+                const data = await res.json();
+                fetchedHolidays.push(...data.map(h => ({ date: h.date, country: code })));
+            }
+            localStorage.setItem('kaia_holidays', JSON.stringify(fetchedHolidays));
+            localStorage.setItem('kaia_holiday_last_fetch', todayISO);
+            holidays = fetchedHolidays;
+        } catch (e) { console.error("Holiday API Error"); }
+    }
+
     const sessions = [
-        { id: "session-sydney", start: 22, end: 7 },
-        { id: "session-tokyo", start: 0, end: 9 },
-        { id: "session-london", start: 8, end: 17 },
-        { id: "session-newyork", start: 13, end: 22 }
+        { id: "session-sydney", start: 22, end: 7, country: 'AU' },
+        { id: "session-tokyo", start: 0, end: 9, country: 'JP' },
+        { id: "session-london", start: 8, end: 17, country: 'GB' },
+        { id: "session-newyork", start: 13, end: 22, country: 'US' }
     ];
+
     const isWeekend = (utcDay === 6) || (utcDay === 0 && utcHour < 22) || (utcDay === 5 && utcHour >= 22);
+
     sessions.forEach(s => {
         const el = $(s.id);
         if (!el) return;
+
+        const isTodayHoliday = holidays.some(h => h.date === todayISO && h.country === s.country);
+        
         let isOpen = false;
-        if (!isWeekend) {
-            if (s.start < s.end) { isOpen = utcHour >= s.start && utcHour < s.end; }
-            else { isOpen = utcHour >= s.start || utcHour < s.end; }
+        if (!isWeekend && !isTodayHoliday) {
+            if (s.start < s.end) {
+                isOpen = utcHour >= s.start && utcHour < s.end;
+            } else {
+                isOpen = utcHour >= s.start || utcHour < s.end;
+            }
         }
-        isOpen ? el.classList.add("session-active") : el.classList.remove("session-active");
+
+        if (isOpen) {
+            el.classList.add("session-active");
+        } else {
+            el.classList.remove("session-active");
+        }
     });
 }
 
 /* =======================
-   محرك التحليل (SYNCHRONIZED WITH HUMAN ERRORS)
+   8. محرك التحليل (المعدل للإصلاح والتزامن)
    ======================= */
 async function runInstitutionalAnalysis() {
     const strategy = $("strategy")?.value || "SMC";
     const timeframe = $("timeframe")?.value || "15m";
     const fileInput = $("chartUpload");
 
-    // فحص أولي لوجود الملف
     if (!fileInput || !fileInput.files.length) {
-        alert(currentLang === 'ar' ? "⚠️ يرجى إعادة رفع صورة الشارت مرة أخرى لبدء تحليل جديد." : "⚠️ Please re-upload the chart image to start a new analysis.");
+        alert(currentLang === 'ar' ? "⚠️ يرجى إعادة رفع صورة الشارت مرة أخرى لبدء تحليل جديد." : "⚠️ Please re-upload chart image.");
         return;
     }
 
@@ -208,19 +281,13 @@ async function runInstitutionalAnalysis() {
     btn.disabled = true;
 
     try {
-        // 1. محاولة رفع الصورة
         const uploadFd = new FormData();
         uploadFd.append("chart", fileInput.files[0]);
 
         const uploadRes = await fetch("/api/upload-chart", { method: "POST", body: uploadFd });
-        
-        // فحص رد السيرفر (إذا لم يكن JSON سيرمي خطأ نلتقطه في Catch)
         if (!uploadRes.ok) throw new Error("UPLOAD_FAIL");
-
         const uploadData = await uploadRes.json();
-        if (!uploadData.filename) throw new Error("FILENAME_MISSING");
 
-        // 2. محاولة طلب التحليل
         const analyzeFd = new FormData();
         analyzeFd.append("filename", uploadData.filename);
         analyzeFd.append("timeframe", timeframe);
@@ -233,44 +300,57 @@ async function runInstitutionalAnalysis() {
             body: analyzeFd
         });
 
-        if (!analyzeRes.ok) {
-            const errData = await analyzeRes.json();
-            throw new Error(errData.detail || "ANALYSIS_FAIL");
-        }
-
+        if (!analyzeRes.ok) throw new Error("ANALYSIS_FAIL");
         const data = await analyzeRes.json();
         const analysis = data.analysis;
         
         resBox.style.display = "block";
-        const bias = analysis.market_bias || "Neutral";
-        const colorStyle = bias.toLowerCase().includes("bull") ? "color:#10b981" : (bias.toLowerCase().includes("bear") ? "color:#ef4444" : "color:#3b82f6");
 
-        resContent.innerHTML = `
-            <div class="analysis-result-card" style="background:rgba(11,18,34,0.95); padding:20px; border-radius:15px; border:1px solid var(--primary);">
-                <h3 style="text-align:center;font-weight:900; margin-bottom:15px;">KAIA LIVE REPORT</h3>
-                <div class="res-data-grid" style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; margin-top:15px;">
-                    <div class="res-data-item" style="text-align:center;"><small style="display:block; color:var(--muted);">Bias</small><span style="${colorStyle}">${bias}</span></div>
-                    <div class="res-data-item" style="text-align:center;"><small style="display:block; color:var(--muted);">Phase</small><span>${analysis.market_phase || '---'}</span></div>
-                    <div class="res-data-item" style="text-align:center;"><small style="display:block; color:var(--muted);">Conf.</small><span>${analysis.confidence || analysis.confidence_score || '---'}</span></div>
+        if (data.tier_mode === "Platinum") {
+            // استعادة العرض البلاتيني الفخم (Whale Vision)
+            resContent.innerHTML = `
+                <div class="analysis-result-card" style="border:2px solid var(--gold); padding:25px; border-radius:20px; background:rgba(255,215,0,0.03);">
+                    <h3 style="text-align:center; color:var(--gold); font-weight:900;">KAIA MASTER VISION</h3>
+                    
+                    <div style="background:rgba(239,68,68,0.1); padding:15px; border-radius:15px; margin:15px 0; border:1px dashed #ef4444;">
+                        <strong style="color:#ef4444;"><i class="fa-solid fa-bullseye"></i> مناطق مصائد الحيتان (Stop-Hunt):</strong>
+                        ${analysis.stop_hunt_risk_zones?.map(z => `<div style="font-size:13px; margin-top:5px;">• <b>${z.zone_price_hint}:</b> ${z.why_risky}</div>`).join('') || 'No data'}
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
+                        <div style="background:#050b14; padding:15px; border-radius:15px; border-right:4px solid var(--success);">
+                            <small style="color:var(--success)">Upside Watch</small>
+                            ${analysis.key_levels?.upside?.map(l => `<div style="font-family:monospace; font-weight:900; font-size:16px;">${l.price}</div>`).join('') || '---'}
+                        </div>
+                        <div style="background:#050b14; padding:15px; border-radius:15px; border-right:4px solid #ef4444;">
+                            <small style="color:#ef4444">Downside Watch</small>
+                            ${analysis.key_levels?.downside?.map(l => `<div style="font-family:monospace; font-weight:900; font-size:16px;">${l.price}</div>`).join('') || '---'}
+                        </div>
+                    </div>
+
+                    <div style="padding:15px; background:rgba(255,255,255,0.03); border-radius:15px;">
+                        <strong>بصمة المؤسسات:</strong> ${analysis.market_state?.notes || analysis.analysis_text}
+                    </div>
                 </div>
-                <div class="analysis-box" style="margin-top:20px; border-top:1px solid var(--border); padding-top:10px;">
-                    <strong style="color:var(--primary);">Institutional Narrative:</strong>
-                    <p style="font-size:14px; line-height:1.6; margin-top:5px;">${analysis.analysis_text || ''}</p>
+            `;
+        } else {
+            // العرض العادي
+            const bias = analysis.market_bias || "Neutral";
+            resContent.innerHTML = `
+                <div class="analysis-result-card" style="padding:20px; border-right:5px solid var(--primary);">
+                    <h3>KAIA ANALYSIS</h3>
+                    <div style="font-size:18px; font-weight:900; color:var(--primary);">Bias: ${bias}</div>
+                    <p style="margin-top:10px; line-height:1.6;">${analysis.analysis_text || ''}</p>
                 </div>
-            </div>
-        `;
+            `;
+        }
 
         currentUserData.credits = data.remaining_credits;
         syncUserData();
 
     } catch (e) {
-        // --- تحويل الأخطاء البرمجية إلى رسائل إنسانية مفهومة ---
-        console.error("Engine Error:", e);
-        if (e.message.includes("Unexpected token") || e.message === "UPLOAD_FAIL") {
-            alert(currentLang === 'ar' ? "⚠️ حدث خطأ في استلام الصورة، يرجى إعادة رفع الشارت والمحاولة مجدداً." : "⚠️ Error receiving image, please re-upload and try again.");
-        } else {
-            alert(currentLang === 'ar' ? ("⚠️ عذراً: " + e.message) : ("⚠️ Error: " + e.message));
-        }
+        alert(currentLang === 'ar' ? "⚠️ حدث خطأ، يرجى إعادة رفع الشارت والمحاولة." : "⚠️ Error, please re-upload.");
+        resetWorkspace();
     } finally {
         btn.innerText = currentLang === 'ar' ? "بدء التحليل" : "Analyze";
         btn.disabled = false;
@@ -278,7 +358,7 @@ async function runInstitutionalAnalysis() {
 }
 
 /* =======================
-   UTILITIES & INIT
+   9. UTILITIES & INIT (أصلي)
    ======================= */
 function setupWorkspaceUtilities() {
     document.addEventListener("paste", (e) => {
@@ -328,22 +408,6 @@ function setupWorkspaceUtilities() {
             localStorage.removeItem("token");
             window.location.href = "/";
         };
-    }
-}
-
-function setupHelpSystem() {
-    const helpIcon = $("help-icon");
-    const helpBox = $("help-box");
-    if (helpIcon && helpBox) {
-        helpIcon.onclick = (e) => {
-            e.stopPropagation();
-            helpBox.style.display = helpBox.style.display === "block" ? "none" : "block";
-        };
-        document.addEventListener("click", (e) => {
-            if (helpBox.style.display === "block" && !helpBox.contains(e.target) && e.target !== helpIcon) {
-                helpBox.style.display = "none";
-            }
-        });
     }
 }
 
