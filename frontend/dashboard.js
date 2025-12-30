@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   KAIA AI × KAIA - COMMAND CENTER ENGINE (Version 7.8 - WHALE VISION)
+   KAIA AI × KAIA - COMMAND CENTER ENGINE (Version 7.9 - OBJECT FIX)
    ============================================================ */
 
 const $ = (id) => document.getElementById(id);
@@ -178,19 +178,15 @@ function setupHelpSystem() {
 }
 
 /* =======================
-   6. التصفير البصري (إصلاح بقاء الصورة)
+   6. التصفير البصري (أصلي)
    ======================= */
 window.resetWorkspace = function() {
     if ($("result-box")) $("result-box").style.display = "none";
     if ($("chartUpload")) $("chartUpload").value = ""; 
 
-    // إجبار المتصفح على مسح أنماط الخلفية المحقونة
     const dropZone = $("drop-zone");
     if (dropZone) {
         dropZone.style.backgroundImage = "none";
-        dropZone.style.backgroundSize = "";
-        dropZone.style.backgroundRepeat = "";
-        dropZone.style.backgroundPosition = "";
     }
 
     const statusText = $("status-text");
@@ -263,8 +259,21 @@ async function updateMarketSessions() {
 }
 
 /* =======================
-   8. محرك التحليل (استعادة Whale Vision بالكامل)
+   8. محرك التحليل (إصلاح [object Object])
    ======================= */
+
+// دالة مساعدة لفك الكائنات وتحويلها لنصوص مقروءة
+function formatAIValue(val) {
+    if (!val) return '---';
+    if (typeof val === 'string') return val;
+    if (Array.isArray(val)) return val.map(v => formatAIValue(v)).join(' | ');
+    if (typeof val === 'object') {
+        // إذا كان كائناً، نجمع قيمه
+        return Object.entries(val).map(([k, v]) => `${k}: ${formatAIValue(v)}`).join('<br>');
+    }
+    return val;
+}
+
 async function runInstitutionalAnalysis() {
     const strategy = $("strategy")?.value || "SMC";
     const timeframe = $("timeframe")?.value || "15m";
@@ -309,32 +318,35 @@ async function runInstitutionalAnalysis() {
         resBox.style.display = "block";
 
         if (data.tier_mode === "Platinum") {
-            // استعادة العرض البلاتيني (Whale Vision) بناءً على برومبت المستخدم الأصلي
+            // معالجة ذكية للبيانات لضمان عدم ظهور [object Object]
+            const stopHuntData = formatAIValue(analysis.stop_hunt_risk_zones);
+            const upsideLevels = formatAIValue(analysis.key_levels?.upside || analysis.key_levels);
+            const downsideLevels = formatAIValue(analysis.key_levels?.downside || '---');
+            const smcEvidence = formatAIValue(analysis.institutional_evidence || analysis.analysis_text);
+
             resContent.innerHTML = `
                 <div class="analysis-result-card" style="border:2px solid var(--gold); padding:20px; border-radius:15px; background:rgba(255,215,0,0.02);">
                     <h3 style="color:var(--gold); text-align:center;">🏆 KAIA MASTER VISION</h3>
                     
                     <div class="whale-section" style="margin-top:15px; padding:10px; background:rgba(239,68,68,0.05); border:1px dashed #ef4444; border-radius:10px;">
                         <strong style="color:#ef4444;">🎯 مناطق مصائد السيولة (Stop-Hunt Zones):</strong>
-                        <ul style="margin-top:5px; font-size:14px;">
-                            ${(Array.isArray(analysis.stop_hunt_risk_zones) ? analysis.stop_hunt_risk_zones : [analysis.stop_hunt_risk_zones]).map(zone => `<li>• ${zone}</li>`).join('')}
-                        </ul>
+                        <div style="font-size:14px; margin-top:5px; line-height:1.5;">${stopHuntData}</div>
                     </div>
 
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;">
                         <div style="padding:10px; background:#050b14; border-radius:10px; border-right:3px solid var(--success);">
                             <small style="color:var(--success)">Key Upside Levels</small>
-                            <div style="font-family:monospace; font-weight:bold;">${analysis.key_levels?.upside || analysis.key_levels || '---'}</div>
+                            <div style="font-family:monospace; font-weight:bold; font-size:14px; margin-top:5px;">${upsideLevels}</div>
                         </div>
                         <div style="padding:10px; background:#050b14; border-radius:10px; border-right:3px solid #ef4444;">
-                            <small style="color:#ef4444)">Key Downside Levels</small>
-                            <div style="font-family:monospace; font-weight:bold;">${analysis.key_levels?.downside || '---'}</div>
+                            <small style="color:#ef4444">Key Downside Levels</small>
+                            <div style="font-family:monospace; font-weight:bold; font-size:14px; margin-top:5px;">${downsideLevels}</div>
                         </div>
                     </div>
 
                     <div style="margin-top:15px; padding:10px; background:rgba(255,255,255,0.03); border-radius:10px;">
                         <strong>🛡️ الأدلة المؤسسية (SMC Evidence):</strong>
-                        <p style="font-size:14px; margin-top:5px;">${analysis.institutional_evidence || analysis.analysis_text}</p>
+                        <p style="font-size:14px; margin-top:5px; line-height:1.6;">${smcEvidence}</p>
                     </div>
 
                     <div style="margin-top:15px; font-size:12px; opacity:0.7; text-align:center;">
@@ -343,12 +355,11 @@ async function runInstitutionalAnalysis() {
                 </div>
             `;
         } else {
-            // العرض القياسي
             resContent.innerHTML = `
                 <div class="analysis-result-card" style="padding:15px; border-right:4px solid var(--primary);">
                     <h3 style="color:var(--primary);">KAIA ANALYSIS</h3>
                     <div style="font-weight:bold; margin:10px 0;">Bias: ${analysis.market_bias || 'Neutral'}</div>
-                    <p style="line-height:1.6;">${analysis.analysis_text || ''}</p>
+                    <p style="line-height:1.6;">${formatAIValue(analysis.analysis_text)}</p>
                 </div>
             `;
         }
