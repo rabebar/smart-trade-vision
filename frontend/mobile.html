@@ -2,11 +2,11 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <!-- منع الزوم نهائياً مع السماح بالتمرير السلس ووضع الـ App Mode -->
+    <!-- 1. منع التكبير والتصغير نهائياً (Zoom Lock) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>KAIA AI | Institutional PRO</title>
 
-    <!-- PWA & Identity Config -->
+    <!-- PWA Config -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#050b14">
     <link rel="apple-touch-icon" href="/static/logo.png">
@@ -25,37 +25,46 @@
             --success: #10b981;
         }
 
-        /* منع الزوم وتحسين ملمس التطبيق */
+        /* 2. إعدادات الشاشة: قابلة للرفع والتخفيض (Scroll) ولكن بدون زوم */
         html, body { 
             background: var(--bg); color: white; margin: 0; padding: 0;
             width: 100%; height: 100%; 
-            overflow: hidden; /* الهيكل ثابت */
+            overflow: hidden; /* الهيكل ثابت والمحتوى داخله يتحرك */
             font-family: 'Cairo', sans-serif;
             -webkit-user-select: none; user-select: none;
             -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
+            touch-action: pan-y; /* يسمح فقط بالتمرير العمودي للأصابع */
         }
 
-        /* الشل الرئيسي */
+        /* حاوية التطبيق */
         .app-shell {
             height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        /* المنطقة القابلة للرفع والتخفيض (Scroll) */
+        /* المنطقة القابلة للسكرول - المحتوى الأساسي */
         .main-content-scroll {
             flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding-bottom: 130px; /* مساحة كافية للبار السفلي */
+            padding-bottom: 120px; /* مساحة للبار السفلي */
         }
 
-        /* الهيدر */
+        /* شاشة التحميل */
+        #splash-screen { 
+            position: fixed; inset: 0; background: var(--bg); z-index: 10000; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            transition: 0.8s ease-in-out; 
+        }
+        .splash-logo { width: 140px; animation: pulse-gold 2s infinite; }
+        @keyframes pulse-gold { 0%, 100% { filter: drop-shadow(0 0 10px var(--gold)); transform: scale(1); } 50% { filter: drop-shadow(0 0 30px var(--gold)); transform: scale(1.05); } }
+
+        /* الهيدر الثابت */
         .app-header { 
             height: 75px; background: #050b14; display: flex; align-items: center; 
             justify-content: space-between; padding: 0 15px; border-bottom: 1px solid rgba(255,255,255,0.1); 
-            flex-shrink: 0; z-index: 1001;
+            flex-shrink: 0;
         }
         .header-logo img { height: 40px; }
         .user-pill { 
@@ -63,7 +72,7 @@
             padding: 8px 15px; border-radius: 20px; font-size: 15px; font-weight: 900; 
         }
 
-        /* البار السفلي الضخم */
+        /* البار السفلي */
         .app-bottom-nav { 
             position: fixed; bottom: 0; left: 0; width: 100%; height: 100px; 
             background: #050b14; border-top: 3px solid var(--primary); 
@@ -79,7 +88,7 @@
         .nav-link i { font-size: 32px; }
         .nav-link.active { color: var(--primary); transform: translateY(-5px); transition: 0.3s; }
 
-        /* البطاقات */
+        /* البطاقات والتصميم */
         .tab-content { display: none; padding: 15px; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .mobile-card { 
@@ -89,36 +98,22 @@
         }
         .mobile-card h3 { font-size: 20px; font-weight: 900; color: var(--primary); margin-bottom: 15px; border-bottom: 1px solid rgba(59,130,246,0.1); padding-bottom: 10px; }
 
-        /* الشارت */
-        .chart-wrapper-75 { 
-            height: 70vh; width: 100%; border: 3px solid var(--primary); 
-            border-radius: 25px; overflow: hidden; background: #000; margin-bottom: 15px; 
-        }
-
-        /* الأدوات */
-        .heatmap-giant { height: 600px; border-radius: 20px; overflow: hidden; border: 1px solid #333; }
-        .agenda-giant { height: 500px; border-radius: 20px; overflow: hidden; border: 1px solid #333; }
-        .input-pro { 
-            width: 100%; height: 65px; background: #000; border: 2px solid #333; 
-            border-radius: 18px; color: #fff; padding: 0 20px; font-size: 18px; 
-            font-weight: 800; font-family: inherit; margin-bottom: 15px; box-sizing: border-box; 
-        }
+        /* أحجام الأدوات */
+        .chart-wrapper-75 { height: 70vh; width: 100%; border: 3px solid var(--primary); border-radius: 25px; overflow: hidden; background: #000; margin-bottom: 15px; }
+        .input-pro { width: 100%; height: 65px; background: #000; border: 2px solid #333; border-radius: 18px; color: #fff; padding: 0 20px; font-size: 18px; font-weight: 800; margin-bottom: 15px; box-sizing: border-box; }
         .btn-pro { height: 75px; font-size: 20px; font-weight: 900; border-radius: 22px; width: 100%; border: none; background: var(--primary); color: #fff; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3); cursor: pointer; }
+        
+        .trader-journal-pro { width: 100%; height: 150px; background: #000; color: #fff; border: 2px solid #222; border-radius: 20px; padding: 15px; font-family: inherit; resize: none; font-size: 16px; box-sizing: border-box; }
+        
+        /* شاشة الدخول */
+        #auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; justify-content: center; padding: 30px; box-sizing: border-box; overflow-y: auto; }
 
-        /* البروفايل */
+        /* البروفايل المؤسسي */
         .profile-header-box { text-align: center; padding: 20px 0; }
         #user-avatar-main { font-size: 80px; margin-bottom: 10px; opacity: 0.9; }
         #user-full-name { font-size: 32px; font-weight: 900; color: #fff; margin: 5px 0; }
         #user-rank-icon-main { font-size: 60px; display: block; margin-bottom: 10px; }
         .tier-label { font-size: 15px; background: var(--primary); padding: 5px 25px; border-radius: 20px; font-weight: 900; display: inline-block; }
-
-        /* شاشات Splash و Auth */
-        #splash-screen { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.8s ease-in-out; }
-        .splash-logo { width: 140px; animation: pulse-gold 2s infinite; }
-        @keyframes pulse-gold { 0%, 100% { filter: drop-shadow(0 0 10px var(--gold)); transform: scale(1); } 50% { filter: drop-shadow(0 0 30px var(--gold)); transform: scale(1.05); } }
-        
-        #auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; justify-content: center; padding: 30px; box-sizing: border-box; }
-        .trader-journal-pro { width: 100%; height: 150px; background: #000; color: #fff; border: 2px solid #222; border-radius: 20px; padding: 15px; font-family: inherit; resize: none; font-size: 16px; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -129,7 +124,7 @@
         <h2 style="margin-top:20px; font-weight:900; color:#fff; font-size: 30px;">KAIA AI PRO</h2>
     </div>
 
-    <!-- 2. بوابة الدخول -->
+    <!-- 2. بوابة الدخول (Login/Register) -->
     <div id="auth-screen">
         <div class="mobile-card">
             <h2 id="auth-ui-title" style="text-align:center; font-weight:900; font-size:26px; color:var(--primary); margin-bottom:25px;">دخول آمن</h2>
@@ -154,30 +149,40 @@
 
         <div class="main-content-scroll">
             
-            <!-- [الرادار] -->
+            <!-- [الرادار الشامل - فوركس، أسهم، سلع، مؤشرات] -->
             <section id="tab-radar" class="tab-content" style="display: block;">
-                <div class="mobile-card" style="padding: 5px; height: 650px;">
-                    <div class="tradingview-widget-container" style="height:100%">
-                        <div id="tv_radar_container" style="height: 100%;"></div>
-                        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-                        <script type="text/javascript">
-                            new TradingView.MediumWidget({
-                                "symbols": [["FX:EURUSD|1D"],["FX:GBPUSD|1D"],["FX:USDJPY|1D"],["FX:XAUUSD|1D"],["FX:AUDUSD|1D"]],
-                                "chartOnly": false, "width": "100%", "height": "100%", "locale": "ar", "colorTheme": "dark", "gridLineColor": "rgba(42, 46, 57, 0)", "fontColor": "#787b86", "isTransparent": true, "autosize": true, "container_id": "tv_radar_container"
-                            });
+                <div class="mobile-card" style="padding: 0px; height: 750px; overflow: hidden; border: 2px solid var(--primary);">
+                    <div class="tradingview-widget-container" style="height: 100%;">
+                        <div class="tradingview-widget-container__widget"></div>
+                        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+                        {
+                          "colorTheme": "dark", "dateRange": "12M", "showChart": true, "locale": "ar", "width": "100%", "height": "100%", "largeChartUrl": "", "isTransparent": true, "showSymbolLogo": true, "showFloatingTooltip": false,
+                          "tabs": [
+                            { "title": "الفوركس المباشر", "symbols": [{ "s": "FX:EURUSD" }, { "s": "FX:GBPUSD" }, { "s": "FX:USDJPY" }, { "s": "FX:XAUUSD", "d": "الذهب" }, { "s": "FX:AUDUSD" }] },
+                            { "title": "مؤشرات عالمية", "symbols": [{ "s": "FOREXCOM:SPXUSD", "d": "S&P 500" }, { "s": "FOREXCOM:NSXUSD", "d": "Nasdaq 100" }, { "s": "FOREXCOM:DJI", "d": "Dow 30" }, { "s": "INDEX:DXY", "d": "الدولار" }] },
+                            { "title": "السلع والطاقة", "symbols": [{ "s": "NYMEX:CL1!", "d": "النفط الخام" }, { "s": "NYMEX:NG1!", "d": "الغاز" }, { "s": "COMEX:GC1!", "d": "الذهب" }, { "s": "COMEX:SI1!", "d": "الفضة" }] },
+                            { "title": "الأسهم والصناديق", "symbols": [{ "s": "NASDAQ:AAPL" }, { "s": "NASDAQ:TSLA" }, { "s": "NASDAQ:NVDA" }, { "s": "NASDAQ:MSFT" }] }
+                          ]
+                        }
                         </script>
                     </div>
                 </div>
             </section>
 
-            <!-- [التحليل] شارت مع أدوات كاملة (البحث والكاميرا) -->
+            <!-- [التحليل] شارت مع أدوات البحث والكاميرا -->
             <section id="tab-analysis" class="tab-content">
                 <div class="chart-wrapper-75" id="tv_chart_mobile"></div>
                 <div class="mobile-card">
                     <h3>المحلل المؤسسي</h3>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
-                        <select id="strategy" class="input-pro" style="height:55px; font-size:15px;"><option id="kaia-premium-opt" value="KAIA Master" style="display:none;">KAIA Master</option><option value="SMC" selected>SMC Concepts</option></select>
-                        <select id="timeframe" class="input-pro" style="height:55px; font-size:15px;"><option value="15m">15 Min</option><option value="1H">1 Hour</option></select>
+                        <select id="strategy" class="input-pro" style="height:55px; font-size:15px;">
+                            <option id="kaia-premium-opt" value="KAIA Master" style="display:none;">KAIA Master</option>
+                            <option value="SMC" selected>SMC Concepts</option>
+                        </select>
+                        <select id="timeframe" class="input-pro" style="height:55px; font-size:15px;">
+                            <option value="15m">15 Min</option>
+                            <option value="1H">1 Hour</option>
+                        </select>
                     </div>
                     <button class="btn-pro" style="background:#1e293b; height:60px; margin-bottom:15px;" onclick="document.getElementById('chartUpload').click()"><i class="fa-solid fa-camera"></i> رفع شارت</button>
                     <input type="file" id="chartUpload" style="display:none;" onchange="document.getElementById('up-confirm').style.display='block'">
@@ -190,7 +195,7 @@
                 </div>
             </section>
 
-            <!-- [الأدوات] كاملة مع الأجندة والمفكرة والحاسبة -->
+            <!-- [الأدوات] كاملة -->
             <section id="tab-tools" class="tab-content">
                 <div class="mobile-card">
                     <h3>حاسبة اللوت (1%)</h3>
@@ -204,29 +209,28 @@
                     <textarea id="mob-journal" class="trader-journal-pro" placeholder="سجل خطتك هنا.."></textarea>
                 </div>
                 <div class="mobile-card">
-                    <h3>قوة العملات (Heatmap)</h3>
-                    <div class="heatmap-giant">
-                        <iframe src="https://www.tradingview-widget.com/embed-widget/forex-heat-map/?locale=ar#%7B%22width%22%3A%22100%22%2C%22height%22%3A%22100%22%2C%22currencies%22%3A%5B%22EUR%22%2C%22USD%22%2C%22GBP%22%2C%22JPY%22%2C%22AUD%22%2C%22CAD%22%2C%22CHF%22%2C%22NZD%22%5D%2C%22isTransparent%22%3Atrue%2C%22colorTheme%22%3A%22dark%22%7D" style="width: 100%; height: 100%; border: none;"></iframe>
+                    <h3>الأجندة الاقتصادية</h3>
+                    <div style="height:500px;">
+                        <iframe src="https://www.tradingview-widget.com/embed-widget/events/?locale=ar#%7B%22colorTheme%22%3A%22dark%22%2C%22isTransparent%22%3Atrue%2C%22width%22%3A%22100%22%2C%22height%22%3A%22100%22%2C%22importanceFilter%22%3A%22-1%2C0%2C1%22%7D" style="width: 100%; height: 100%; border: none;"></iframe>
                     </div>
                 </div>
                 <div class="mobile-card">
-                    <h3>الأجندة الاقتصادية</h3>
-                    <div class="agenda-giant">
-                        <iframe src="https://www.tradingview-widget.com/embed-widget/events/?locale=ar#%7B%22colorTheme%22%3A%22dark%22%2C%22isTransparent%22%3Atrue%2C%22width%22%3A%22100%22%2C%22height%22%3A%22100%22%2C%22importanceFilter%22%3A%22-1%2C0%2C1%22%7D" style="width: 100%; height: 100%; border: none;"></iframe>
+                    <h3>قوة العملات (Heatmap)</h3>
+                    <div style="height:500px;">
+                        <iframe src="https://www.tradingview-widget.com/embed-widget/forex-heat-map/?locale=ar#%7B%22width%22%3A%22100%22%2C%22height%22%3A%22100%22%2C%22currencies%22%3A%5B%22EUR%22%2C%22USD%22%2C%22GBP%22%2C%22JPY%22%2C%22AUD%22%2C%22CAD%22%2C%22CHF%22%2C%22NZD%22%5D%2C%22isTransparent%22%3Atrue%2C%22colorTheme%22%3A%22dark%22%7D" style="width: 100%; height: 100%; border: none;"></iframe>
                     </div>
                 </div>
             </section>
 
-            <!-- [الحساب] -->
+            <!-- [الحساب والبروفايل] -->
             <section id="tab-profile" class="tab-content">
                 <div class="mobile-card profile-header-box">
                     <div id="user-avatar-main">👤</div>
                     <h2 id="user-full-name">تحميل...</h2>
                     <span id="user-rank-icon-main">👑</span>
                     <div id="user-tier-badge" class="tier-label">MEMBER</div>
-                    
                     <div style="margin-top:40px; display:grid; gap:20px;">
-                        <button class="btn-pro" style="background:var(--gold); color:#000; height:75px;" onclick="window.open('/upgrade')"><i class="fa-solid fa-crown"></i> ترقية الحساب الملكي</button>
+                        <button class="btn-pro" style="background:var(--gold); color:#000; height:75px;" onclick="window.open('/upgrade')">ترقية الحساب الملكي</button>
                         <button id="pwa-install-btn" class="btn-pro" style="background:#1e293b; height:65px; display:none;" onclick="installPWA()">تثبيت التطبيق 📲</button>
                         <button class="btn-pro" style="background:rgba(239,68,68,0.1); color:#ef4444; border:2px solid #ef4444; height:65px;" onclick="logout()">تسجيل الخروج</button>
                     </div>
@@ -242,7 +246,9 @@
         </nav>
     </div>
 
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
+        // --- المنطق البرمجي الكامل ---
         let token = localStorage.getItem("token");
         let deferredPrompt;
         let isRegister = false;
@@ -253,7 +259,6 @@
                 setTimeout(()=>document.getElementById("splash-screen").style.display="none",500); 
                 checkAuth(); 
             }, 2500);
-
             const journal = document.getElementById("mob-journal");
             if(journal) {
                 journal.value = localStorage.getItem("mob_journal") || "";
@@ -261,11 +266,36 @@
             }
         };
 
+        function toggleAuthMode() {
+            isRegister = !isRegister;
+            document.getElementById("auth-ui-title").innerText = isRegister ? "حساب جديد" : "دخول آمن";
+            document.getElementById("reg-fields").style.display = isRegister ? "block" : "none";
+            document.getElementById("auth-main-btn").innerText = isRegister ? "إنشاء حساب" : "دخول";
+            document.getElementById("auth-toggle-btn").innerText = isRegister ? "لديك حساب؟ سجل الآن" : "سجل دخول";
+        }
+
+        async function handleAuthAction() {
+            const email = document.getElementById("auth-email").value;
+            const pass = document.getElementById("auth-pass").value;
+            if(!email || !pass) return alert("يرجى إدخال البيانات");
+            const url = isRegister ? "/api/register" : "/api/login";
+            let body = isRegister ? JSON.stringify({ email: email.trim().toLowerCase(), password: pass, full_name: document.getElementById("auth-name").value || "User", whatsapp: document.getElementById("auth-whatsapp").value || "0", phone: "0", country: "Other", tier: "Trial" }) : new FormData();
+            if(!isRegister) { body.append("username", email.trim().toLowerCase()); body.append("password", pass); }
+            try {
+                const res = await fetch(url, { method:"POST", headers: isRegister?{"Content-Type":"application/json"}:{}, body });
+                const data = await res.json();
+                if(res.ok) { 
+                    if(isRegister) { alert("تم الحساب!"); toggleAuthMode(); } 
+                    else { localStorage.setItem("token", data.access_token); location.reload(); }
+                } else alert(data.detail || "خطأ");
+            } catch(e) { alert("فشل الاتصال"); }
+        }
+
         function checkAuth() { 
             if(!token) document.getElementById("auth-screen").style.display="flex"; 
             else { document.getElementById("app-main").style.display="flex"; syncData(); } 
         }
-
+        
         async function syncData() {
             try {
                 const res = await fetch("/api/me", { headers: {"Authorization":"Bearer "+token} });
@@ -291,38 +321,14 @@
             el.classList.add('active');
             if(t === 'analysis') {
                 new TradingView.widget({
-                    "autosize": true, "symbol": "FX:EURUSD", "interval": "60", "timezone": "Etc/UTC", "theme": "dark", "style": "1", "locale": "ar", "toolbar_bg": "#f1f3f6", "enable_publishing": false,
-                    "allow_symbol_change": true, "save_image": true, "container_id": "tv_chart_mobile"
+                    "autosize": true, "symbol": "FX:EURUSD", "interval": "60", "theme": "dark", "locale": "ar", "allow_symbol_change": true, "save_image": true, "container_id": "tv_chart_mobile"
                 });
             }
         }
 
-        async function handleAuthAction() {
-            const email = document.getElementById("auth-email").value;
-            const pass = document.getElementById("auth-pass").value;
-            if(!email || !pass) return alert("بيانات ناقصة");
-            const url = isRegister ? "/api/register" : "/api/login";
-            let body = isRegister ? JSON.stringify({ email: email.trim().toLowerCase(), password: pass, full_name: document.getElementById("auth-name").value || "User", whatsapp: document.getElementById("auth-whatsapp").value || "0", phone: "0", country: "Other", tier: "Trial" }) : new FormData();
-            if(!isRegister) { body.append("username", email.trim().toLowerCase()); body.append("password", pass); }
-            try {
-                const res = await fetch(url, { method:"POST", headers: isRegister?{"Content-Type":"application/json"}:{}, body });
-                const data = await res.json();
-                if(res.ok) { 
-                    if(isRegister) { alert("تم الحساب! سجل دخولك."); toggleAuthMode(); } 
-                    else { localStorage.setItem("token", data.access_token); location.reload(); }
-                } else alert(data.detail || "خطأ");
-            } catch(e) { alert("فشل الاتصال"); }
-        }
-
-        function toggleAuthMode() {
-            isRegister = !isRegister;
-            document.getElementById("auth-ui-title").innerText = isRegister ? "حساب جديد" : "دخول آمن";
-            document.getElementById("reg-fields").style.display = isRegister ? "block" : "none";
-        }
-
         async function runMobileAnalysis() {
             const file = document.getElementById("chartUpload").files[0];
-            if(!file) return alert("ارفع شارت");
+            if(!file) return alert("اختر صورة شارت");
             const btn = document.getElementById("run-btn"); btn.disabled = true; btn.innerText = "جاري التحليل...";
             try {
                 const upFd = new FormData(); upFd.append("chart", file);
@@ -333,7 +339,7 @@
                 const data = await res.json();
                 if(res.ok) { 
                     document.getElementById("result-box").style.display="block"; 
-                    document.getElementById("res-data-content").innerHTML = `<p>${data.analysis.analysis_text}</p><b style="font-size:20px; color:var(--gold);">Bias: ${data.analysis.market_bias}</b>`; 
+                    document.getElementById("res-data-content").innerHTML = `<p>${data.analysis.analysis_text}</p><b>Bias: ${data.analysis.market_bias}</b>`; 
                     syncData(); 
                 }
             } catch(e) { alert("خطأ اتصال"); }
