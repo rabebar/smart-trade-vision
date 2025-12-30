@@ -2,7 +2,7 @@
 
 /* ============================================================
    KAIA AI - MASTER FRONTEND ENGINE (Final Integrated)
-   Version: 7.3 - Fixed Language & Ticker Conflict
+   Version: 7.4 - Fixed Password Mismatch Gateway
    ============================================================ */
 
 // --- 1. الثوابت والمتغيرات العامة ---
@@ -115,7 +115,7 @@ async function updateUIBasedOnAuth() {
                         // 3. حماية إضافية: تعطيل زر تجربة المحرك (Demo) في الصفحة الرئيسية
                         const demoBtn = document.getElementById("run-btn");
                         if (demoBtn) {
-                            demoBtn.innerText = "بانتظار تفعيل الحساب ⏳";
+                            demoBtn.innerText = "بانتظار التفعيل الحساب ⏳";
                             demoBtn.style.opacity = "0.5";
                             demoBtn.style.pointerEvents = "none";
                         }
@@ -204,7 +204,7 @@ function toggleAuthMode() {
 function updateAuthModalState() {
     const dict = (typeof translations !== 'undefined') ? translations[currentLang] : {};
     
-    const fields = ["name-field-wrap", "whatsapp-field-wrap", "country-field-wrap"];
+    const fields = ["name-field-wrap", "whatsapp-field-wrap", "country-field-wrap", "pass-confirm-field-wrap"];
     fields.forEach(id => { 
         if($(id)) $(id).style.display = isRegisterMode ? "block" : "none"; 
     });
@@ -256,6 +256,7 @@ async function handleAuthSubmit() {
     const rawEmail = $("auth-email")?.value || "";
     const email = rawEmail.trim().toLowerCase();
     const pass = $("auth-pass")?.value;
+    const passConfirm = $("auth-pass-confirm")?.value; // [إضافة] جلب قيمة تأكيد كلمة المرور
     
     if (!email || !pass) {
         alert(currentLang === "ar" ? "يرجى إدخال كافة البيانات المطلوبة" : "Please fill all required data");
@@ -264,12 +265,19 @@ async function handleAuthSubmit() {
 
     try {
         if (isRegisterMode) {
+            // [حماية المتصفح] التحقق من التطابق قبل الإرسال لتوفير الجهد
+            if (pass !== passConfirm) {
+                alert(currentLang === "ar" ? "عذراً، كلمتا المرور غير متطابقتين" : "Passwords do not match");
+                return;
+            }
+
             const res = await fetch("/api/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     email: email,
                     password: pass,
+                    confirm_password: passConfirm, // [إرسال] الحقل المطلوب للسيرفر وشيمات Pydantic
                     full_name: $("auth-fullname").value || "Trader",
                     phone: "000",
                     whatsapp: $("auth-whatsapp").value || "",
@@ -332,6 +340,16 @@ function initUploadEngine() {
         const item = Array.from(e.clipboardData.items).find(x => x.type.indexOf("image") !== -1);
         if (item) {
             const blob = item.getAsFile();
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                if (dropZone) {
+                    dropZone.style.backgroundImage = `url(${event.target.result})`;
+                    dropZone.style.backgroundSize = "contain";
+                    dropZone.style.backgroundRepeat = "no-repeat";
+                    dropZone.style.backgroundPosition = "center";
+                }
+            };
+            reader.readAsDataURL(blob);
             const dt = new DataTransfer(); 
             dt.items.add(blob);
             fileInput.files = dt.files; 
@@ -340,7 +358,17 @@ function initUploadEngine() {
     });
 
     fileInput.onchange = () => {
-        if(fileInput.files[0]) updateStatus(fileInput.files[0].name);
+        if(fileInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                dropZone.style.backgroundImage = `url(${e.target.result})`;
+                dropZone.style.backgroundSize = "contain";
+                dropZone.style.backgroundRepeat = "no-repeat";
+                dropZone.style.backgroundPosition = "center";
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+            updateStatus(fileInput.files[0].name);
+        }
     };
 
     function updateStatus(n) { 
@@ -481,9 +509,6 @@ window.onload = async () => {
         });
 
         initUploadEngine();
-        
-        // ملاحظة: تم حذف fetchMarketNews من هنا لأنها تدار من ملف index.html
-        // لضمان عدم وجود تعارضات برمجية.
         
     } catch (err) { 
         console.error("Critical Initialization Error:", err); 
