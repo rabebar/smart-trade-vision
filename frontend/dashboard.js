@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   KAIA AI × KAIA - COMMAND CENTER ENGINE (Version 7.9 - OBJECT FIX)
+   KAIA AI × KAIA - COMMAND CENTER ENGINE (Version 8.0 - ZERO MEMORY)
    ============================================================ */
 
 const $ = (id) => document.getElementById(id);
@@ -178,23 +178,41 @@ function setupHelpSystem() {
 }
 
 /* =======================
-   6. التصفير البصري (أصلي)
+   6. التصفير النووي (حل معضلة بقاء الصورة والذاكرة)
    ======================= */
 window.resetWorkspace = function() {
+    // 1. إخفاء صندوق النتائج
     if ($("result-box")) $("result-box").style.display = "none";
-    if ($("chartUpload")) $("chartUpload").value = ""; 
-
-    const dropZone = $("drop-zone");
-    if (dropZone) {
-        dropZone.style.backgroundImage = "none";
+    
+    // 2. تصفير "ذاكرة" مدخل الملفات تماماً (إفراغ الـ Buffer)
+    const fileInput = $("chartUpload");
+    if (fileInput) {
+        fileInput.value = ""; 
+        try {
+            // إنشاء حاوية ملفات فارغة لمسح الذاكرة العميقة للمتصفح
+            fileInput.files = new DataTransfer().files;
+        } catch(e) { console.warn("Buffer clear not supported"); }
     }
 
+    // 3. التصفير البصري الإجباري (مسح الـ CSS مهما كانت الظروف)
+    const dropZone = $("drop-zone");
+    if (dropZone) {
+        dropZone.style.setProperty('background-image', 'none', 'important');
+        dropZone.style.backgroundImage = "none";
+        dropZone.style.backgroundSize = "";
+        dropZone.style.backgroundRepeat = "";
+        dropZone.style.backgroundPosition = "";
+    }
+
+    // 4. إعادة النص واللون الأصلي
     const statusText = $("status-text");
     if (statusText) {
         const dict = translations?.[currentLang];
         statusText.innerText = dict?.drop_zone_text || (currentLang === 'ar' ? "إلصق الشارت هنا 📸" : "Paste Chart Here 📸");
         statusText.style.color = ""; 
     }
+    
+    console.log("🧼 Zero Memory Reset Complete");
 };
 
 /* =======================
@@ -259,16 +277,13 @@ async function updateMarketSessions() {
 }
 
 /* =======================
-   8. محرك التحليل (إصلاح [object Object])
+   8. محرك التحليل (فخامة العرض + استعادة القوة)
    ======================= */
-
-// دالة مساعدة لفك الكائنات وتحويلها لنصوص مقروءة
 function formatAIValue(val) {
     if (!val) return '---';
     if (typeof val === 'string') return val;
     if (Array.isArray(val)) return val.map(v => formatAIValue(v)).join(' | ');
     if (typeof val === 'object') {
-        // إذا كان كائناً، نجمع قيمه
         return Object.entries(val).map(([k, v]) => `${k}: ${formatAIValue(v)}`).join('<br>');
     }
     return val;
@@ -318,7 +333,6 @@ async function runInstitutionalAnalysis() {
         resBox.style.display = "block";
 
         if (data.tier_mode === "Platinum") {
-            // معالجة ذكية للبيانات لضمان عدم ظهور [object Object]
             const stopHuntData = formatAIValue(analysis.stop_hunt_risk_zones);
             const upsideLevels = formatAIValue(analysis.key_levels?.upside || analysis.key_levels);
             const downsideLevels = formatAIValue(analysis.key_levels?.downside || '---');
@@ -444,4 +458,10 @@ window.onload = () => {
     setInterval(updateMarketSessions, 60000);
     if ($("run-btn")) $("run-btn").onclick = runInstitutionalAnalysis;
     if ($("drop-zone")) $("drop-zone").onclick = () => $("chartUpload").click();
+    
+    // ربط أي زر إغلاق (X) موجود داخل صندوق النتائج بدالة التصفير
+    const closeBtn = document.querySelector("#result-box .close-btn");
+    if (closeBtn) {
+        closeBtn.onclick = resetWorkspace;
+    }
 };
