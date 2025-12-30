@@ -482,16 +482,36 @@ async def analyze_chart(
             temperature=0.3
         )
 
-        result = json.loads(response.choices[0].message.content)
+        # --- بداية الكود السليم والمؤمّن ---
+        raw_output = response.choices[0].message.content
+        try:
+            # محاولة تحويل الرد إلى JSON
+            result = json.loads(raw_output)
+            if isinstance(result, str):
+                result = json.loads(result)
+        except:
+            # إذا فشل، نصنع قاموساً يدوياً لكي لا ينهار السيرفر
+            result = {"market_bias": "Neutral", "analysis_text": str(raw_output)}
 
-        # 5. حفظ السجل وخصم الرصيد
+        # استخراج البيانات بأمان (سواء كان الرد بلاتيني أو عادي)
+        if isinstance(result, dict):
+            final_bias = result.get("market_bias") or result.get("market_state", {}).get("directional_bias", "Neutral")
+            final_notes = result.get("analysis_text") or str(result.get("market_state", {}).get("notes", "Analysis complete"))
+            final_market = result.get("market") or "Unknown"
+        else:
+            final_bias = "Neutral"
+            final_notes = str(result)
+            final_market = "Unknown"
+
+        # حفظ السجل التاريخي في قاعدة البيانات
         db.add(Analysis(
             user_id=current_user.id,
-            symbol=result.get("market", "Unknown"),
-            signal=result.get("market_bias", result.get("market_state", {}).get("directional_bias", "Neutral")),
-            reason=str(result.get("analysis_text", result.get("market_state", {}).get("notes", "Done"))),
-            timeframe=result.get("timeframe", timeframe)
+            symbol=str(final_market),
+            signal=str(final_bias),
+            reason=str(final_notes),
+            timeframe=timeframe
         ))
+        # --- نهاية الكود السليم ---
 
         if not current_user.is_whale:
             current_user.credits -= 1
