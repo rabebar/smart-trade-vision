@@ -447,8 +447,12 @@ body.has-banner .top-navbar { margin-top: 50px; }
         </div>
         <button class="core-analyze-btn" id="run-btn" data-i18n="analyze_btn" style="height: 75px; width: 100%; font-size: 22px; font-weight: 900; border-radius: 15px;">بدء عملية التحليل</button>
         <div id="result-box" style="display: none; margin-top: 40px; border-top: 1px solid var(--border); padding-top: 30px;">
-            <div id="res-data-content"></div>
-        </div>
+    <div id="res-data-content"></div>
+    <!-- هذا هو الزر الجديد الذي سيقوم بالتنظيف -->
+    <button onclick="resetAnalyzerFull()" style="width:100%; height:60px; background:#1e293b; color:white; border:none; border-radius:15px; margin-top:20px; font-weight:900; cursor:pointer;">
+        إغلاق وتصفير المحلل
+    </button>
+</div>
     </div>
 </section>
 
@@ -603,6 +607,15 @@ body.has-banner .top-navbar { margin-top: 50px; }
             setTimeout(syncKAIAWorld, 100); 
         });
     }
+    function resetAnalyzerFull() {
+    // إخفاء الصندوق
+    document.getElementById("result-box").style.display = "none";
+    // مسح الصورة تماماً
+    document.getElementById("chartUpload").value = "";
+    // إعادة النص للوضع الأصلي
+    const st = document.getElementById("status-text");
+    if(st) st.innerText = "قم بلصق صورة الشارت هنا 📸";
+}
 </script>
 
 </body>
