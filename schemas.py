@@ -15,6 +15,7 @@ class UserLogin(BaseModel):
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
+    confirm_password: str  # [حقن الأمان] إضافة حقل تأكيد كلمة المرور لربطه بالسيرفر
     full_name: str
     phone: str
     whatsapp: Optional[str] = ""
