@@ -644,29 +644,49 @@ async function executeDesktopAnalysis() {
         const data = await res.json();
         if (res.ok) {
             const analysis = data.analysis;
-            const bias = (analysis.market_state.directional_bias || "Neutral").toLowerCase();
-            let colorClass = bias.includes("bull") ? "report-bullish" : (bias.includes("bear") ? "report-bearish" : "report-neutral");
-            let biasClass = bias.includes("bull") ? "bias-text-bull" : (bias.includes("bear") ? "bias-text-bear" : "");
+            
+            // 1. استخراج البيانات بذكاء (سواء كانت بلاتينية أو عادية)
+            const bias = analysis.market_bias || (analysis.market_state ? analysis.market_state.directional_bias : "Neutral");
+            const notes = analysis.analysis_text || (analysis.market_state ? analysis.market_state.notes : "Institutional analysis complete.");
+            const market = analysis.market || "Asset";
+            const timeframe = analysis.timeframe || document.getElementById("timeframe").value;
+
+            // 2. تحديد الألوان بناءً على الاتجاه
+            let colorClass = bias.toLowerCase().includes("bull") ? "report-bullish" : (bias.toLowerCase().includes("bear") ? "report-bearish" : "report-neutral");
+            let biasClass = bias.toLowerCase().includes("bull") ? "bias-text-bull" : (bias.toLowerCase().includes("bear") ? "bias-text-bear" : "");
 
             resBox.style.display = "block";
-            resContent.innerHTML = `
+            
+            // 3. بناء واجهة العرض الموحدة (التي تدعم الجداول)
+            let contentHtml = `
                 <div class="analysis-card ${colorClass}" style="background:rgba(11,18,34,0.95); padding:25px; border-radius:20px; line-height:1.8;">
                     <h3 style="color:var(--primary); text-align:center; font-weight:900;">KAIA MASTER REPORT</h3>
-                    <div style="text-align:center; font-size:12px; color:var(--muted); margin-bottom:15px;">${analysis.market || 'Market'} | ${analysis.timeframe || '15m'}</div>
-                    <p style="font-size:14px; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:10px;">${analysis.market_state.notes}</p>
-                    <div style="font-size:18px; text-align:center; margin-bottom:15px;">الاتجاه المتوقع: <span class="${biasClass}">${analysis.market_state.directional_bias}</span></div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <div style="text-align:center; font-size:12px; color:var(--muted); margin-bottom:15px;">${market} | ${timeframe}</div>
+                    <p style="font-size:15px; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:10px;">${notes}</p>
+                    <div style="font-size:18px; text-align:center; margin-bottom:15px;">الاتجاه المؤسسي: <span class="${biasClass}">${bias}</span></div>
+            `;
+
+            // 4. إضافة جداول الأهداف (تظهر فقط في خيار البلاتينيوم/ماستر)
+            if (analysis.key_levels) {
+                contentHtml += `
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
                         <div style="background:rgba(16,185,129,0.05); padding:10px; border-radius:10px; border:1px solid rgba(16,185,129,0.2);">
-                            <strong style="color:#10b981; font-size:11px;">مستويات عليا:</strong>
-                            <div style="font-size:12px; font-family:monospace;">${analysis.key_levels.upside.map(l => `• ${l.price}`).join("<br>")}</div>
+                            <strong style="color:#10b981; font-size:11px;">Upside Watch:</strong>
+                            <div style="font-size:12px; font-family:monospace; margin-top:5px;">${analysis.key_levels.upside.map(l => `• ${l.price}`).join("<br>")}</div>
                         </div>
                         <div style="background:rgba(239,68,68,0.05); padding:10px; border-radius:10px; border:1px solid rgba(239,68,68,0.2);">
-                            <strong style="color:#ef4444; font-size:11px;">مستويات دنيا:</strong>
-                            <div style="font-size:12px; font-family:monospace;">${analysis.key_levels.downside.map(l => `• ${l.price}`).join("<br>")}</div>
+                            <strong style="color:#ef4444; font-size:11px;">Downside Watch:</strong>
+                            <div style="font-size:12px; font-family:monospace; margin-top:5px;">${analysis.key_levels.downside.map(l => `• ${l.price}`).join("<br>")}</div>
                         </div>
-                    </div>
-                </div>`;
+                    </div>`;
+            }
+            
+            contentHtml += `</div>`;
+            resContent.innerHTML = contentHtml;
+            
+            // تحديث الرصيد في الهيدر
             syncDash();
+        
         } else { alert(data.detail || "خطأ في المحرك"); }
     } catch (e) { alert("فشل الاتصال بالمحرك"); }
     finally { btn.disabled = false; btn.innerText = "بدء التحليل"; }
