@@ -376,9 +376,13 @@ async def analyze_chart(
     if current_user.credits <= 0 and not current_user.is_whale:
         raise HTTPException(status_code=400, detail="الرصيد غير كافٍ، يرجى الترقية")
 
+    # --- حقن بوابة الترقية الذكية ---
     if analysis_type == "KAIA Master" and current_user.tier != "Platinum":
-        raise HTTPException(status_code=403, detail="عذراً، استراتيجية KAIA Master Vision مخصصة حصرياً لمشتركي الباقة البلاتينية.")
-
+        msg = "عذراً، استراتيجية KAIA Master Vision مخصصة حصرياً لمشتركي الباقة البلاتينية. يرجى الترقية للاستمتاع بالميزات الملكية." if lang == "ar" else "Sorry, KAIA Master Vision is exclusive to Platinum subscribers. Please upgrade to enjoy royal features."
+        return {
+            "status": "upgrade_required",
+            "detail": msg
+        }
     img_path = os.path.join(STORAGE_PATH, filename)
     if not os.path.exists(img_path):
         raise HTTPException(status_code=404, detail="الصورة غير موجودة")

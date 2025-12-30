@@ -328,6 +328,13 @@ async function runInstitutionalAnalysis() {
 
         if (!analyzeRes.ok) throw new Error("ANALYSIS_FAIL");
         const data = await analyzeRes.json();
+        // --- إضافة منطق رسالة الترقية الذكية ---
+        if (data.status === "upgrade_required") {
+            alert(data.detail); // ستظهر الرسالة التي كتبناها في السيرفر (يرجى الترقية...)
+            btn.innerText = currentLang === 'ar' ? "بدء التحليل" : "Analyze";
+            btn.disabled = false;
+            return; // توقف هنا ولا تكمل التحليل
+        }
         const analysis = data.analysis;
         
         resBox.style.display = "block";
