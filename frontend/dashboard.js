@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   KAIA AI × KAIA - COMMAND CENTER ENGINE (Version 7.1 UPDATED)
+   KAIA AI × KAIA - COMMAND CENTER ENGINE (Version 7.2 FINAL)
    ============================================================ */
 
 const $ = (id) => document.getElementById(id);
@@ -39,7 +39,6 @@ async function checkAccessAndInit() {
         applyDashboardTranslations(currentLang);
 
     } catch (e) {
-        console.error("Auth Error:", e);
         localStorage.removeItem("token");
         window.location.href = "/";
     }
@@ -86,22 +85,18 @@ function applyDashboardTranslations(lang) {
    برمجة الآلة الحاسبة الجانبية (Calculator)
    ======================= */
 let calcExpression = "";
-
 window.inputCalc = (val) => {
     calcExpression += val;
     $("calc-display").innerText = calcExpression;
 };
-
 window.clearCalc = () => {
     calcExpression = "";
     $("calc-display").innerText = "0";
 };
-
 window.deleteCalc = () => {
     calcExpression = calcExpression.slice(0, -1);
     $("calc-display").innerText = calcExpression || "0";
 };
-
 window.resultCalc = () => {
     try {
         calcExpression = eval(calcExpression).toString();
@@ -113,90 +108,51 @@ window.resultCalc = () => {
 };
 
 /* =======================
-   برمجة إدارة المخاطر (Risk Management)
+   برمجة إدارة المخاطر وحساب النقاط
    ======================= */
 window.calculateRiskPercent = () => {
     const balance = parseFloat($("balance").value);
     const lot = parseFloat($("risk-lot").value);
     const slPips = parseFloat($("sl-pips-input").value);
-
     if (!balance || !lot || !slPips) {
         alert(currentLang === 'ar' ? "يرجى ملء جميع الخانات أولاً" : "Please fill all fields first");
         return;
     }
-
     const riskAmount = lot * slPips * 10;
     const riskPercent = (riskAmount / balance) * 100;
-
     const resultDiv = $("risk-result");
-    if (currentLang === 'ar') {
-        resultDiv.innerHTML = `مبلغ المخاطرة: $${riskAmount.toFixed(2)} <br> نسبة المخاطرة: ${riskPercent.toFixed(2)}%`;
-    } else {
-        resultDiv.innerHTML = `Risk Amount: $${riskAmount.toFixed(2)} <br> Risk Percent: ${riskPercent.toFixed(2)}%`;
-    }
+    resultDiv.innerHTML = currentLang === 'ar' ? `مبلغ المخاطرة: $${riskAmount.toFixed(2)} <br> نسبة المخاطرة: ${riskPercent.toFixed(2)}%` : `Risk Amount: $${riskAmount.toFixed(2)} <br> Risk Percent: ${riskPercent.toFixed(2)}%`;
 };
 
-/* =======================
-   برمجة حاسبة النقاط (Pip Calculator)
-   ======================= */
 window.calculatePipProfit = () => {
     const lot = parseFloat($("pip-lot-size").value);
     const pips = parseFloat($("pip-count").value);
-
     if (!lot || !pips) {
         alert(currentLang === 'ar' ? "يرجى إدخال اللوت وعدد النقاط" : "Please enter lot and pip count");
         return;
     }
-
     const profit = lot * pips * 10;
     const resultDiv = $("pip-result");
-
-    if (currentLang === 'ar') {
-        resultDiv.innerText = `الربح المتوقع: $${profit.toFixed(2)}`;
-    } else {
-        resultDiv.innerText = `Expected Profit: $${profit.toFixed(2)}`;
-    }
+    resultDiv.innerText = currentLang === 'ar' ? `الربح المتوقع: $${profit.toFixed(2)}` : `Expected Profit: $${profit.toFixed(2)}`;
 };
 
 /* =======================
-   نظام المساعدة والتعليمات
-   ======================= */
-function setupHelpSystem() {
-    const helpIcon = $("help-icon");
-    const helpBox = $("help-box");
-
-    if (helpIcon && helpBox) {
-        helpIcon.onclick = (e) => {
-            e.stopPropagation();
-            const isVisible = helpBox.style.display === "block";
-            helpBox.style.display = isVisible ? "none" : "block";
-        };
-
-        document.addEventListener("click", (e) => {
-            if (helpBox.style.display === "block" && !helpBox.contains(e.target) && e.target !== helpIcon) {
-                helpBox.style.display = "none";
-            }
-        });
-    }
-}
-
-/* =======================
-   تصفير بيئة العمل (Cleanup Logic - UPDATED)
+   تصفير بيئة العمل (CLEANUP ENGINE - UPDATED)
    ======================= */
 window.resetWorkspace = function() {
     // 1. إخفاء صندوق النتيجة
     if ($("result-box")) $("result-box").style.display = "none";
     
-    // 2. تصفير مدخل الملف
+    // 2. تصفير مدخل الملف (إلزامي لضمان عدم التكرار)
     if ($("chartUpload")) $("chartUpload").value = ""; 
 
-    // 3. تصفير خلفية الصورة بصرياً (إزالة الشارت القديم من العين)
+    // 3. مسح الصورة بصرياً من صندوق الرفع (المسح الجذري)
     if ($("drop-zone")) {
         $("drop-zone").style.backgroundImage = "none";
-        $("drop-zone").style.borderColor = ""; // إعادة لون الحدود الأصلي
+        $("drop-zone").style.backgroundColor = ""; 
     }
 
-    // 4. إعادة النص الأصلي
+    // 4. إعادة النص واللون الأصلي
     if ($("status-text")) {
         const dict = translations?.[currentLang];
         $("status-text").innerText = dict?.drop_zone_text || "إلصق الشارت هنا 📸";
@@ -211,36 +167,13 @@ async function updateMarketSessions() {
     const now = new Date();
     const utcHour = now.getUTCHours();
     const utcDay = now.getUTCDay();
-    const year = now.getFullYear();
-    const todayISO = now.toISOString().split('T')[0];
-
-    let holidays = JSON.parse(localStorage.getItem('kaia_holidays') || '[]');
-    const lastFetch = localStorage.getItem('kaia_holiday_last_fetch');
-
-    if (!lastFetch || lastFetch !== todayISO) {
-        try {
-            const countryCodes = ['AU', 'JP', 'GB', 'US'];
-            let fetchedHolidays = [];
-            for (let code of countryCodes) {
-                const res = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${code}`);
-                const data = await res.json();
-                fetchedHolidays.push(...data.map(h => ({ date: h.date, country: code })));
-            }
-            localStorage.setItem('kaia_holidays', JSON.stringify(fetchedHolidays));
-            localStorage.setItem('kaia_holiday_last_fetch', todayISO);
-            holidays = fetchedHolidays;
-        } catch (e) { console.error("Holiday API Error"); }
-    }
-
     const sessions = [
-        { id: "session-sydney", start: 22, end: 7, country: 'AU' },
-        { id: "session-tokyo", start: 0, end: 9, country: 'JP' },
-        { id: "session-london", start: 8, end: 17, country: 'GB' },
-        { id: "session-newyork", start: 13, end: 22, country: 'US' }
+        { id: "session-sydney", start: 22, end: 7 },
+        { id: "session-tokyo", start: 0, end: 9 },
+        { id: "session-london", start: 8, end: 17 },
+        { id: "session-newyork", start: 13, end: 22 }
     ];
-
     const isWeekend = (utcDay === 6) || (utcDay === 0 && utcHour < 22) || (utcDay === 5 && utcHour >= 22);
-
     sessions.forEach(s => {
         const el = $(s.id);
         if (!el) return;
@@ -249,21 +182,21 @@ async function updateMarketSessions() {
             if (s.start < s.end) { isOpen = utcHour >= s.start && utcHour < s.end; }
             else { isOpen = utcHour >= s.start || utcHour < s.end; }
         }
-        if (isOpen) { el.classList.add("session-active"); }
-        else { el.classList.remove("session-active"); }
+        isOpen ? el.classList.add("session-active") : el.classList.remove("session-active");
     });
 }
 
 /* =======================
-   ANALYSIS ENGINE (SYNCHRONIZED)
+   محرك التحليل (SYNCHRONIZED WITH HUMAN ERRORS)
    ======================= */
 async function runInstitutionalAnalysis() {
     const strategy = $("strategy")?.value || "SMC";
     const timeframe = $("timeframe")?.value || "15m";
     const fileInput = $("chartUpload");
 
+    // فحص أولي لوجود الملف
     if (!fileInput || !fileInput.files.length) {
-        alert(currentLang === 'ar' ? "الرجاء اختيار أو لصق صورة الشارت أولاً" : "Please upload or paste chart first");
+        alert(currentLang === 'ar' ? "⚠️ يرجى إعادة رفع صورة الشارت مرة أخرى لبدء تحليل جديد." : "⚠️ Please re-upload the chart image to start a new analysis.");
         return;
     }
 
@@ -275,13 +208,19 @@ async function runInstitutionalAnalysis() {
     btn.disabled = true;
 
     try {
+        // 1. محاولة رفع الصورة
         const uploadFd = new FormData();
         uploadFd.append("chart", fileInput.files[0]);
 
         const uploadRes = await fetch("/api/upload-chart", { method: "POST", body: uploadFd });
-        const uploadData = await uploadRes.json();
-        if (!uploadData.filename) throw new Error("Upload failed");
+        
+        // فحص رد السيرفر (إذا لم يكن JSON سيرمي خطأ نلتقطه في Catch)
+        if (!uploadRes.ok) throw new Error("UPLOAD_FAIL");
 
+        const uploadData = await uploadRes.json();
+        if (!uploadData.filename) throw new Error("FILENAME_MISSING");
+
+        // 2. محاولة طلب التحليل
         const analyzeFd = new FormData();
         analyzeFd.append("filename", uploadData.filename);
         analyzeFd.append("timeframe", timeframe);
@@ -294,13 +233,15 @@ async function runInstitutionalAnalysis() {
             body: analyzeFd
         });
 
+        if (!analyzeRes.ok) {
+            const errData = await analyzeRes.json();
+            throw new Error(errData.detail || "ANALYSIS_FAIL");
+        }
+
         const data = await analyzeRes.json();
-        if (!analyzeRes.ok) throw new Error(data.detail || "Analysis error");
-
         const analysis = data.analysis;
+        
         resBox.style.display = "block";
-
-        // بناء تقرير التحليل مع دعم الألوان بناءً على الاتجاه
         const bias = analysis.market_bias || "Neutral";
         const colorStyle = bias.toLowerCase().includes("bull") ? "color:#10b981" : (bias.toLowerCase().includes("bear") ? "color:#ef4444" : "color:#3b82f6");
 
@@ -316,7 +257,6 @@ async function runInstitutionalAnalysis() {
                     <strong style="color:var(--primary);">Institutional Narrative:</strong>
                     <p style="font-size:14px; line-height:1.6; margin-top:5px;">${analysis.analysis_text || ''}</p>
                 </div>
-                ${analysis.risk_note ? `<div style="margin-top:10px; color:#ef4444; font-size:12px;"><strong>Risk Note:</strong> ${analysis.risk_note}</div>` : ''}
             </div>
         `;
 
@@ -324,8 +264,13 @@ async function runInstitutionalAnalysis() {
         syncUserData();
 
     } catch (e) {
-        console.error("Analysis Error:", e);
-        alert(e.message || "Engine Error");
+        // --- تحويل الأخطاء البرمجية إلى رسائل إنسانية مفهومة ---
+        console.error("Engine Error:", e);
+        if (e.message.includes("Unexpected token") || e.message === "UPLOAD_FAIL") {
+            alert(currentLang === 'ar' ? "⚠️ حدث خطأ في استلام الصورة، يرجى إعادة رفع الشارت والمحاولة مجدداً." : "⚠️ Error receiving image, please re-upload and try again.");
+        } else {
+            alert(currentLang === 'ar' ? ("⚠️ عذراً: " + e.message) : ("⚠️ Error: " + e.message));
+        }
     } finally {
         btn.innerText = currentLang === 'ar' ? "بدء التحليل" : "Analyze";
         btn.disabled = false;
@@ -350,7 +295,6 @@ function setupWorkspaceUtilities() {
                 }
             };
             reader.readAsDataURL(blob);
-
             const dt = new DataTransfer();
             dt.items.add(blob);
             $("chartUpload").files = dt.files;
@@ -384,6 +328,22 @@ function setupWorkspaceUtilities() {
             localStorage.removeItem("token");
             window.location.href = "/";
         };
+    }
+}
+
+function setupHelpSystem() {
+    const helpIcon = $("help-icon");
+    const helpBox = $("help-box");
+    if (helpIcon && helpBox) {
+        helpIcon.onclick = (e) => {
+            e.stopPropagation();
+            helpBox.style.display = helpBox.style.display === "block" ? "none" : "block";
+        };
+        document.addEventListener("click", (e) => {
+            if (helpBox.style.display === "block" && !helpBox.contains(e.target) && e.target !== helpIcon) {
+                helpBox.style.display = "none";
+            }
+        });
     }
 }
 
