@@ -392,6 +392,10 @@ async def upload_article_image(image: UploadFile = File(...), current_user: User
     return {"image_url": f"/images/{file_name}"}
 
 
+# -----------------------------------------------------------------
+# 11. محرك التحليل الذكي المطور (KAIA AI Engine - Tiered Logic)
+# -----------------------------------------------------------------
+
 @app.post("/api/analyze-chart")
 async def analyze_chart(
     filename: str = Form(...),
@@ -401,12 +405,18 @@ async def analyze_chart(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    # 1. فحص الرصيد
     if current_user.credits <= 0 and not current_user.is_whale:
         raise HTTPException(status_code=400, detail="الرصيد غير كافٍ، يرجى الترقية")
 
-    # تحديد مسار الصورة في القرص الدائم
+    # 2. حماية باقة البلاتينيوم حصرياً لـ KAIA Master
+    if analysis_type == "KAIA Master" and current_user.tier != "Platinum":
+        raise HTTPException(
+            status_code=403, 
+            detail="عذراً، استراتيجية KAIA Master Vision مخصصة حصرياً لمشتركي الباقة البلاتينية."
+        )
+
     img_path = os.path.join(STORAGE_PATH, filename)
-    
     if not os.path.exists(img_path):
         raise HTTPException(status_code=404, detail="الصورة غير موجودة")
 
@@ -414,19 +424,48 @@ async def analyze_chart(
         with open(img_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode()
 
-        # [حقن التصحيح: توحيد المفاتيح مع dashboard.js لإنهاء خطأ Connection Error]
-        system_prompt = f"""
-أنت "KAIA AI Institutional Analyst". حلّل الشارت بأسلوب (SMC/ICT).
-يجب أن يكون الرد بصيغة JSON حصراً وبالمفاتيح التالية حرفياً:
-1. market_bias: (اتجاه السوق)
-2. market_phase: (مرحلة السوق)
-3. confidence: (نسبة الثقة)
-4. analysis_text: (التحليل المفصل باللغة {lang})
-5. risk_note: (تنبيه المخاطرة باللغة {lang})
-6. market: (اسم الزوج)
-7. timeframe: (الفريم)
+        # 3. اختيار البرومبت بناءً على نوع التحليل والرتبة
+        if analysis_type == "KAIA Master" and current_user.tier == "Platinum":
+            # --- البرومبت البلاتيني الجبار (KAIA Master Vision) ---
+            system_prompt = f"""
+أنت "KAIA AI Institutional Analyst" — مساعد تحليل سوق تعليمي (ليس نصيحة مالية).
+حلّل صورة الشارت بأسلوب المؤسسات (SMC/ICT) عبر تتبّع السيولة وبنية السوق،
+ثم قدّم مستويات رقمية واضحة للمراقبة صعودًا وهبوطًا + تحذيرات من مناطق محتملة لاصطياد السيولة (Stop-hunt risk).
+
+قواعد صارمة (Legal-Safe):
+- لغة الرد: يجب أن يكون الرد كاملاً باللغة ({lang}).
+- ممنوع إعطاء توصيات تنفيذية مباشرة (اشترِ/بِع). استخدم لغة مراقبة: (يراقَب/قد يتفاعل).
+- مسموح ذكر أرقام مستويات (Prices) كـ "Watch Levels" مع سبب واضح.
+
+منهج التحليل المؤسّسي:
+1) حدّد السوق والفريم {timeframe} + حالة السوق.
+2) استخرج BOS/CHOCH.
+3) حدّد تجمعات السيولة و Liquidity Sweep.
+4) حدّد بصمات مؤسسية: Order Block / FVG / Breaker.
+5) قدّم المستويات القادمة (Near/Mid/Far) بأرقام واضحة.
+6) أضف قسم تحذير Stop-hunt risk zones.
+7) قدم سيناريوهين (صعود/هبوط) مع مستوى الإلغاء (Invalidation level).
+
+صيغة الإخراج: أعد ONLY JSON صالح وبنفس المفاتيح التالية حرفياً، وبدون أي نص خارجي:
+(market, timeframe, session_context, market_state, institutional_evidence, key_levels, stop_hunt_risk_zones, scenarios, confidence_score, disclaimer)
 """
-        
+        elif analysis_type == "Elliott Waves":
+            # --- برومبت موجات إليوت ---
+            system_prompt = f"""
+أنت خبير "KAIA AI Elliott Waves". حلل الشارت المرفق بناءً على نظرية موجات إليوت.
+حدد الموجة الحالية (1-5 أو A-C) والأهداف المتوقعة.
+يجب أن يكون الرد باللغة ({lang}) وبصيغة JSON حصراً.
+المفاتيح المطلوبة: (market_bias, wave_count, analysis_text, risk_note, market, timeframe, confidence)
+"""
+        else:
+            # --- برومبت SMC العادي (لجميع الفئات) ---
+            system_prompt = f"""
+أنت "KAIA AI Institutional Analyst". حلّل الشارت بأسلوب (SMC/ICT).
+يجب أن يكون الرد باللغة ({lang}) وبصيغة JSON حصراً وبالمفاتيح التالية حرفياً:
+(market_bias, market_phase, confidence, analysis_text, risk_note, market, timeframe)
+"""
+
+        # 4. التنفيذ عبر OpenAI
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
@@ -434,7 +473,7 @@ async def analyze_chart(
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": f"Analyze this {analysis_type} chart on {timeframe} timeframe."},
+                        {"type": "text", "text": f"Analyze this {analysis_type} chart on {timeframe} timeframe in {lang} language."},
                         {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded_string}"}}
                     ]
                 }
@@ -445,15 +484,12 @@ async def analyze_chart(
 
         result = json.loads(response.choices[0].message.content)
 
-        # ربط البيانات الجديدة مع قاعدة البيانات (للسجل التاريخي)
-        market_bias = result.get("market_bias", "Neutral")
-        summary_notes = result.get("analysis_text", "Analysis complete")
-
+        # 5. حفظ السجل وخصم الرصيد
         db.add(Analysis(
             user_id=current_user.id,
-            symbol=result.get("market", analysis_type),
-            signal=market_bias,
-            reason=summary_notes,
+            symbol=result.get("market", "Unknown"),
+            signal=result.get("market_bias", result.get("market_state", {}).get("directional_bias", "Neutral")),
+            reason=str(result.get("analysis_text", result.get("market_state", {}).get("notes", "Done"))),
             timeframe=result.get("timeframe", timeframe)
         ))
 
@@ -465,12 +501,12 @@ async def analyze_chart(
         return {
             "status": "success",
             "analysis": result,
+            "tier_mode": "Platinum" if analysis_type == "KAIA Master" else "Standard",
             "remaining_credits": current_user.credits
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-        
     finally:
         if os.path.exists(img_path):
             os.remove(img_path)

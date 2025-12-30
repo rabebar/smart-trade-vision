@@ -197,6 +197,62 @@
 .v-text { font-weight: 800; color: #fff; font-size: 14px; }
 .v-btn { background: #3b82f6; color: #000; padding: 8px 20px; border-radius: 8px; text-decoration: none; font-weight: 900; font-size: 13px; }
 body.has-banner .top-navbar { margin-top: 50px; }
+/* --- تنسيقات واجهة النتائج البلاتينية (KAIA Master) --- */
+.platinum-result-wrap { 
+    border: 2px solid var(--gold); 
+    border-radius: 20px; 
+    padding: 20px; 
+    background: rgba(255, 215, 0, 0.03); 
+    margin-top: 15px; 
+}
+.plat-header { 
+    color: var(--gold); 
+    text-align: center; 
+    font-weight: 900; 
+    margin-bottom: 20px; 
+    font-size: 20px; 
+    text-shadow: 0 0 10px rgba(255,215,0,0.3); 
+}
+.levels-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 15px; 
+    margin-bottom: 20px; 
+}
+.level-card { 
+    background: #0b1222; 
+    border-radius: 15px; 
+    padding: 12px; 
+    border: 1px solid rgba(255,255,255,0.05); 
+}
+.level-card.up { border-right: 4px solid var(--success); }
+.level-card.down { border-right: 4px solid #ef4444; }
+.price-tag { 
+    font-family: monospace; 
+    font-size: 18px; 
+    font-weight: 900; 
+    color: #fff; 
+    display: block; 
+    margin: 5px 0; 
+}
+.stop-hunt-alert { 
+    background: rgba(239, 68, 68, 0.1); 
+    border: 2px dashed #ef4444; 
+    border-radius: 15px; 
+    padding: 15px; 
+    margin-bottom: 20px; 
+}
+.scenario-box { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 10px; 
+}
+.scen-card { 
+    background: rgba(255,255,255,0.02); 
+    padding: 12px; 
+    border-radius: 12px; 
+    font-size: 13px; 
+}
     </style>
 </head>
 <body>
@@ -433,9 +489,14 @@ body.has-banner .top-navbar { margin-top: 50px; }
         <div class="core-inputs-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 30px 0;">
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <label data-i18n="strategy_label" style="font-weight: 800; color: var(--muted);">الاستراتيجية</label>
-                <select id="strategy" style="height: 55px; background-color: #000; color: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 0 15px; font-weight: 700;">
-                    <option value="SMC">Smart Money Concepts (SMC) 💎</option>
-                </select>
+                <select id="strategy" class="input-pro" style="height:55px; font-size:15px;">
+    <!-- خيار بلاتيني حصري -->
+    <option id="kaia-premium-opt" value="KAIA Master" style="display:none;">KAIA Master Vision 👑</option>
+    
+    <!-- خيارات متاحة -->
+    <option value="SMC" selected>SMC Concepts 💎</option>
+    <option value="Elliott Waves">Elliott Waves 🌊</option>
+</select>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <label data-i18n="timeframe_label" style="font-weight: 800; color: var(--muted);">الفريم</label>
@@ -607,6 +668,120 @@ body.has-banner .top-navbar { margin-top: 50px; }
             setTimeout(syncKAIAWorld, 100); 
         });
     }
+    // المحرك الرئيسي للتحليل وربط النتائج بالسيرفر
+async function runMobileAnalysis() {
+    const fileInput = document.getElementById("chartUpload");
+    const file = fileInput.files[0];
+    if(!file) return alert("يرجى اختيار أو لصق صورة الشارت أولاً 📸");
+    
+    const btn = document.getElementById("run-btn");
+    btn.disabled = true; 
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحليل المؤسسي...';
+
+    const fd = new FormData();
+    fd.append("chart", file);
+    
+    try {
+        // 1. رفع الصورة مؤقتاً للسيرفر
+        const upRes = await fetch("/api/upload-chart", { method: "POST", body: fd });
+        const upData = await upRes.json();
+        
+        // 2. طلب التحليل الذكي
+        const anFd = new FormData();
+        anFd.append("filename", upData.filename);
+        anFd.append("timeframe", document.getElementById("timeframe").value);
+        anFd.append("analysis_type", document.getElementById("strategy").value);
+        anFd.append("lang", document.getElementById("language-select").value);
+
+        const res = await fetch("/api/analyze-chart", { 
+            method: "POST", 
+            headers: { "Authorization": "Bearer " + localStorage.getItem("token") },
+            body: anFd 
+        });
+        
+        const result = await res.json();
+        
+        if(res.ok) {
+            document.getElementById("result-box").style.display = "block";
+            
+            // التبديل الذكي بين العرض البلاتيني والعادي
+            if(result.tier_mode === "Platinum") {
+                renderMasterVisionUI(result.analysis);
+            } else {
+                document.getElementById("res-data-content").innerHTML = `
+                    <div style="padding:15px; border-right:4px solid var(--primary); background:rgba(59,130,246,0.05);">
+                        <h4 style="margin:0 0 10px 0;">${result.analysis.market || 'Analysis'} | ${result.analysis.timeframe}</h4>
+                        <p style="font-size:15px; line-height:1.6;">${result.analysis.analysis_text}</p>
+                        <b style="color:var(--gold); font-size:18px;">Bias: ${result.analysis.market_bias}</b>
+                    </div>`;
+            }
+            // تحديث الرصيد بعد الخصم
+            if(typeof syncData === 'function') syncData();
+            
+        } else {
+            alert(result.detail || "حدث خطأ في عملية التحليل");
+        }
+    } catch(e) { 
+        alert("فشل الاتصال بمحرك KAIA AI.. تأكد من اتصالك بالإنترنت"); 
+    }
+    
+    btn.disabled = false; 
+    btn.innerText = "بدء عملية التحليل";
+}
+    // دالة بناء واجهة النتائج الاحترافية لمحرك KAIA Master
+function renderMasterVisionUI(data) {
+    const resBox = document.getElementById("res-data-content");
+    
+    let html = `
+        <div class="platinum-result-wrap">
+            <div class="plat-header"><i class="fa-solid fa-crown"></i> KAIA MASTER VISION</div>
+            
+            <div style="text-align:center; margin-bottom:20px;">
+                <span style="background:var(--primary); padding:5px 15px; border-radius:10px; font-size:12px;">${data.market} | ${data.timeframe}</span>
+                <h3 style="color:var(--gold); margin-top:10px;">Bias: ${data.market_state.directional_bias}</h3>
+            </div>
+
+            <!-- مناطق خطر اصطياد السيولة -->
+            <div class="stop-hunt-alert">
+                <h4 style="color:#ef4444; margin:0 0 10px 0;"><i class="fa-solid fa-bullseye"></i> مناطق خطر الـ Stop-Hunt</h4>
+                ${data.stop_hunt_risk_zones.map(z => `<div style="font-size:13px; margin-bottom:5px;"><b>${z.zone_price_hint}:</b> ${z.why_risky}</div>`).join('')}
+            </div>
+
+            <!-- جداول المستويات الرقمية -->
+            <h4 style="margin-bottom:10px; font-size:16px;"><i class="fa-solid fa-layer-group"></i> مستويات المراقبة المؤسسية</h4>
+            <div class="levels-grid">
+                <div class="level-card up">
+                    <small style="color:var(--success)">أهداف صعودية / سيولة</small>
+                    ${data.key_levels.upside.map(l => `<span class="price-tag">${l.price}</span><small style="font-size:10px; color:var(--muted)">${l.label}</small>`).join('<hr style="opacity:0.05; margin:5px 0;">')}
+                </div>
+                <div class="level-card down">
+                    <small style="color:#ef4444">أهداف هبوطية / سيولة</small>
+                    ${data.key_levels.downside.map(l => `<span class="price-tag">${l.price}</span><small style="font-size:10px; color:var(--muted)">${l.label}</small>`).join('<hr style="opacity:0.05; margin:5px 0;">')}
+                </div>
+            </div>
+
+            <!-- السيناريوهات المتوقعة -->
+            <div class="scenario-box">
+                <div class="scen-card" style="border-right:3px solid var(--success)">
+                    <b style="color:var(--success)">سيناريو الصعود</b>
+                    <p style="margin:5px 0;">${data.scenarios.bullish.idea}</p>
+                    <small style="color:var(--muted)">الإلغاء: ${data.scenarios.bullish.invalidation_level}</small>
+                </div>
+                <div class="scen-card" style="border-right:3px solid #ef4444">
+                    <b style="color:#ef4444">سيناريو الهبوط</b>
+                    <p style="margin:5px 0;">${data.scenarios.bearish.idea}</p>
+                    <small style="color:var(--muted)">الإلغاء: ${data.scenarios.bearish.invalidation_level}</small>
+                </div>
+            </div>
+            
+            <div style="margin-top:20px; padding:15px; background:rgba(255,255,255,0.03); border-radius:15px; font-size:14px; border:1px solid rgba(255,255,255,0.05);">
+                <b>ملاحظات المحلل:</b> ${data.market_state.notes}
+            </div>
+        </div>
+    `;
+    
+    resBox.innerHTML = html;
+}
     function resetAnalyzerFull() {
     // 1. إخفاء النتائج
     document.getElementById("result-box").style.display = "none";
