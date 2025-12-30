@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   KAIA AI × KAIA - COMMAND CENTER ENGINE (Version 7.6 - RESTORED)
+   KAIA AI × KAIA - COMMAND CENTER ENGINE (Version 7.8 - WHALE VISION)
    ============================================================ */
 
 const $ = (id) => document.getElementById(id);
@@ -178,31 +178,27 @@ function setupHelpSystem() {
 }
 
 /* =======================
-   6. التصفير البصري (المعدل للإصلاح الفوري)
+   6. التصفير البصري (إصلاح بقاء الصورة)
    ======================= */
 window.resetWorkspace = function() {
-    // 1. إخفاء صندوق النتائج وتصفير مدخلات الملفات
     if ($("result-box")) $("result-box").style.display = "none";
     if ($("chartUpload")) $("chartUpload").value = ""; 
 
-    // 2. إصلاح الممحاة: مسح خلفية الصورة بصرياً وبالقوة (إزالة Inline Styles)
+    // إجبار المتصفح على مسح أنماط الخلفية المحقونة
     const dropZone = $("drop-zone");
     if (dropZone) {
         dropZone.style.backgroundImage = "none";
-        dropZone.style.backgroundColor = "";
-        dropZone.style.removeProperty("background-image");
-        dropZone.classList.remove("has-image"); // إزالة أي كلاس قد يكون مضافاً
+        dropZone.style.backgroundSize = "";
+        dropZone.style.backgroundRepeat = "";
+        dropZone.style.backgroundPosition = "";
     }
 
-    // 3. إعادة النص التوضيحي الأصلي
     const statusText = $("status-text");
     if (statusText) {
         const dict = translations?.[currentLang];
         statusText.innerText = dict?.drop_zone_text || (currentLang === 'ar' ? "إلصق الشارت هنا 📸" : "Paste Chart Here 📸");
         statusText.style.color = ""; 
     }
-    
-    console.log("🧹 Workspace Reset Successfully");
 };
 
 /* =======================
@@ -267,7 +263,7 @@ async function updateMarketSessions() {
 }
 
 /* =======================
-   8. محرك التحليل (المعدل لدعم Whale Vision ودرع JSON)
+   8. محرك التحليل (استعادة Whale Vision بالكامل)
    ======================= */
 async function runInstitutionalAnalysis() {
     const strategy = $("strategy")?.value || "SMC";
@@ -275,7 +271,7 @@ async function runInstitutionalAnalysis() {
     const fileInput = $("chartUpload");
 
     if (!fileInput || !fileInput.files.length) {
-        alert(currentLang === 'ar' ? "⚠️ يرجى إعادة رفع صورة الشارت مرة أخرى لبدء تحليل جديد." : "⚠️ Please re-upload chart image.");
+        alert(currentLang === 'ar' ? "⚠️ يرجى رفع صورة الشارت أولاً." : "⚠️ Please upload chart image.");
         return;
     }
 
@@ -283,7 +279,7 @@ async function runInstitutionalAnalysis() {
     const resBox = $("result-box");
     const resContent = $("res-data-content");
 
-    btn.innerText = currentLang === 'ar' ? "KAIA تدرس السيولة..." : "KAIA ANALYZING...";
+    btn.innerText = currentLang === 'ar' ? "تحليل مؤسسي جاري..." : "KAIA ANALYZING...";
     btn.disabled = true;
 
     try {
@@ -308,65 +304,61 @@ async function runInstitutionalAnalysis() {
 
         if (!analyzeRes.ok) throw new Error("ANALYSIS_FAIL");
         const data = await analyzeRes.json();
-        
-        if (data.status === "error") throw new Error(data.detail);
-
         const analysis = data.analysis;
+        
         resBox.style.display = "block";
 
         if (data.tier_mode === "Platinum") {
-            // استعادة وعرض Whale Vision (رؤية الحيتان)
+            // استعادة العرض البلاتيني (Whale Vision) بناءً على برومبت المستخدم الأصلي
             resContent.innerHTML = `
-                <div class="analysis-result-card" style="border:2px solid var(--gold); padding:25px; border-radius:20px; background:rgba(255,215,0,0.03);">
-                    <h3 style="text-align:center; color:var(--gold); font-weight:900; margin-bottom:20px;">KAIA MASTER VISION</h3>
+                <div class="analysis-result-card" style="border:2px solid var(--gold); padding:20px; border-radius:15px; background:rgba(255,215,0,0.02);">
+                    <h3 style="color:var(--gold); text-align:center;">🏆 KAIA MASTER VISION</h3>
                     
-                    <div style="background:rgba(239,68,68,0.1); padding:15px; border-radius:15px; margin:15px 0; border:1px dashed #ef4444;">
-                        <strong style="color:#ef4444;"><i class="fa-solid fa-bullseye"></i> مناطق مصائد الحيتان (Stop-Hunt):</strong>
-                        ${(analysis.stop_hunt_risk_zones || []).map(z => `
-                            <div style="font-size:13px; margin-top:8px; border-bottom:1px solid rgba(239,68,68,0.2); padding-bottom:5px;">
-                                <b style="color:#ef4444;">📍 ${z.zone_price_hint}:</b> ${z.why_risky}
-                            </div>
-                        `).join('') || (currentLang === 'ar' ? 'لا توجد مصائد واضحة حالياً' : 'No traps detected')}
+                    <div class="whale-section" style="margin-top:15px; padding:10px; background:rgba(239,68,68,0.05); border:1px dashed #ef4444; border-radius:10px;">
+                        <strong style="color:#ef4444;">🎯 مناطق مصائد السيولة (Stop-Hunt Zones):</strong>
+                        <ul style="margin-top:5px; font-size:14px;">
+                            ${(Array.isArray(analysis.stop_hunt_risk_zones) ? analysis.stop_hunt_risk_zones : [analysis.stop_hunt_risk_zones]).map(zone => `<li>• ${zone}</li>`).join('')}
+                        </ul>
                     </div>
 
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
-                        <div style="background:#050b14; padding:15px; border-radius:15px; border-right:4px solid var(--success);">
-                            <small style="color:var(--success)">Upside Watch</small>
-                            ${(analysis.key_levels?.upside || []).map(l => `<div style="font-family:monospace; font-weight:900; font-size:16px; margin-top:5px;">${l.price}</div>`).join('') || '---'}
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;">
+                        <div style="padding:10px; background:#050b14; border-radius:10px; border-right:3px solid var(--success);">
+                            <small style="color:var(--success)">Key Upside Levels</small>
+                            <div style="font-family:monospace; font-weight:bold;">${analysis.key_levels?.upside || analysis.key_levels || '---'}</div>
                         </div>
-                        <div style="background:#050b14; padding:15px; border-radius:15px; border-right:4px solid #ef4444;">
-                            <small style="color:#ef4444">Downside Watch</small>
-                            ${(analysis.key_levels?.downside || []).map(l => `<div style="font-family:monospace; font-weight:900; font-size:16px; margin-top:5px;">${l.price}</div>`).join('') || '---'}
+                        <div style="padding:10px; background:#050b14; border-radius:10px; border-right:3px solid #ef4444;">
+                            <small style="color:#ef4444)">Key Downside Levels</small>
+                            <div style="font-family:monospace; font-weight:bold;">${analysis.key_levels?.downside || '---'}</div>
                         </div>
                     </div>
 
-                    <div style="padding:15px; background:rgba(255,255,255,0.03); border-radius:15px; border:1px solid rgba(255,255,255,0.1);">
-                        <strong>📝 البصمة المؤسسية:</strong> 
-                        <p style="margin-top:8px; line-height:1.6; font-size:14px;">${analysis.analysis_text || analysis.market_state?.notes || 'Analysis complete.'}</p>
+                    <div style="margin-top:15px; padding:10px; background:rgba(255,255,255,0.03); border-radius:10px;">
+                        <strong>🛡️ الأدلة المؤسسية (SMC Evidence):</strong>
+                        <p style="font-size:14px; margin-top:5px;">${analysis.institutional_evidence || analysis.analysis_text}</p>
+                    </div>
+
+                    <div style="margin-top:15px; font-size:12px; opacity:0.7; text-align:center;">
+                        Confidence Score: ${analysis.confidence_score || 'N/A'}
                     </div>
                 </div>
             `;
         } else {
-            // العرض العادي للباقات الأخرى
-            const bias = analysis.market_bias || "Neutral";
+            // العرض القياسي
             resContent.innerHTML = `
-                <div class="analysis-result-card" style="padding:20px; border-right:5px solid var(--primary); background:rgba(255,255,255,0.02); border-radius:10px;">
-                    <h3>KAIA ANALYSIS</h3>
-                    <div style="font-size:18px; font-weight:900; color:var(--primary); margin:10px 0;">Bias: ${bias}</div>
-                    <p style="margin-top:10px; line-height:1.6; font-size:15px;">${analysis.analysis_text || ''}</p>
-                    ${analysis.risk_note ? `<div style="margin-top:15px; font-size:12px; color:#ef4444;">⚠️ ${analysis.risk_note}</div>` : ''}
+                <div class="analysis-result-card" style="padding:15px; border-right:4px solid var(--primary);">
+                    <h3 style="color:var(--primary);">KAIA ANALYSIS</h3>
+                    <div style="font-weight:bold; margin:10px 0;">Bias: ${analysis.market_bias || 'Neutral'}</div>
+                    <p style="line-height:1.6;">${analysis.analysis_text || ''}</p>
                 </div>
             `;
         }
 
         currentUserData.credits = data.remaining_credits;
         syncUserData();
-        resBox.scrollIntoView({ behavior: 'smooth' });
 
     } catch (e) {
-        console.error("Analysis Error:", e);
-        alert(currentLang === 'ar' ? `⚠️ فشل التحليل: ${e.message}` : `⚠️ Analysis Failed: ${e.message}`);
-        resetWorkspace();
+        alert(currentLang === 'ar' ? "⚠️ حدث خطأ في معالجة الشارت." : "⚠️ Error analyzing chart.");
+        console.error(e);
     } finally {
         btn.innerText = currentLang === 'ar' ? "بدء التحليل" : "Analyze";
         btn.disabled = false;
