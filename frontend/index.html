@@ -576,46 +576,62 @@
 <script src="/static/script.js?v=8.0"></script>
 
 <script id="kaia-total-logic">
-    // [1] تأثيرات الأجواء الملكية (الثلج)
-    (function() {
-        const now = new Date();
-        const expiryDate = new Date('2026-01-06'); 
-        if (now < expiryDate) {
-            setInterval(() => {
-                const flake = document.createElement('div');
-                flake.innerHTML = '•'; flake.className = 'snowflake';
-                flake.style.left = Math.random() * 100 + 'vw'; flake.style.opacity = Math.random();
-                flake.style.fontSize = (Math.random() * 10 + 10) + 'px'; 
-                flake.style.animationDuration = (Math.random() * 4 + 3) + 's';
-                document.body.appendChild(flake);
-                setTimeout(() => flake.remove(), 6000);
-            }, 400);
+    // [1] قائمة الدول العربية (لتحويل اللغة تلقائياً)
+    const arabicCountries = ['SA', 'AE', 'QA', 'KW', 'OM', 'BH', 'EG', 'JO', 'PS', 'LB', 'SY', 'IQ', 'LY', 'DZ', 'MA', 'TN', 'YE', 'SD', 'MA', 'MR'];
+
+    // [2] بيانات البروشور باللغتين
+    const content = {
+        "ar": {
+            "lines": [
+                "جاري الاتصال... تم تفعيل المنظومة السيادية. أهلاً بك يا مدير في KAIA AI. أنا مدير أعمالك الاستراتيجي، شريكك في فهم نية الحيتان.",
+                "ترسانة غرفة القيادة جاهزة: شارت TradingView المطور، حاسبات مخاطر ونقاط، جدول قوة العملات، ومفكرة ذكية. كل ما تحتاجه في واجهة واحدة.",
+                "حدد رتبتك: الباقة التجريبية (Trial)، الأساسية (Basic)، الاحترافية (Pro)، أو <span class='highlight-gold'>الباقة البلاتينية (Platinum)</span>: حيث محرك <span class='highlight-gold'>KAIA Master</span> والدردشة المباشرة معي كمدير أعمالك.",
+                "<div class='legal-warning'>⚠️ تنبيه مخاطر: التداول ينطوي على مخاطر عالية. محرك KAIA AI هو أداة تعليمية وليس نصيحة مالية. بدخولك، أنت تقر بمسؤوليتك الكاملة.</div>"
+            ],
+            "btn": "تفعيل المنظومة السيادية والدخول"
+        },
+        "en": {
+            "lines": [
+                "Connecting... Sovereign System Activated. Welcome, sir, to KAIA AI. I am your Strategic Manager, your partner in uncovering market secrets.",
+                "Command Center Tools Ready: Advanced TradingView chart, Risk & Pip calculators, Currency Heatmap, and Smart Journal. Everything you need in one interface.",
+                "Select Your Rank: Trial, Basic, Pro, or <span class='highlight-gold'>Platinum Edition</span>: Featuring the <span class='highlight-gold'>KAIA Master</span> engine and direct AI Chat with me as your manager.",
+                "<div class='legal-warning'>⚠️ Legal Risk Warning: Trading involves high risk. KAIA AI is an educational tool, not financial advice. By entering, you acknowledge full responsibility.</div>"
+            ],
+            "btn": "Activate Sovereign System & Enter"
         }
-    })();
+    };
 
-    // [2] محرك البروشور التسويقي بنظام الآلة الكاتبة السريعة
-    const brochureData = [
-        "جاري الاتصال... تم تفعيل المنظومة السيادية. أهلاً بك يا مدير في KAIA AI. أنا مدير أعمالك الاستراتيجي، شريكك في كشف ما تخفيه الشاشات وفهم نية الحيتان.",
-        "ترسانة غرفة القيادة جاهزة بتنظيم فائق: شارت TradingView المطور مع حاسبة مخاطر ونقاط صارمة. آلة حاسبة تقنية مدمجة. جدول قوة العملات مع الأجندة الاقتصادية. مفكرة المتداول الذكية لتدوين خططك. كل ما تحتاجه في واجهة واحدة خالية من الضجيج.",
-        "حدد رتبتك القيادية: الباقة التجريبية (Trial) للاختبار. الباقة الأساسية (Basic) للرادار الكامل. الباقة الاحترافية (Pro) لكافة الاستراتيجيات. <span class='highlight-gold'>الباقة البلاتينية (Platinum)</span>: رتبة الملك.. تشمل كشف سيولة الحيتان عبر محرك <span class='highlight-gold'>KAIA Master</span> والدردشة المباشرة معي كمدير أعمالك.",
-        "<div class='legal-warning'>⚠️ تنبيه مخاطر قانوني: التداول ينطوي على مخاطر عالية جداً. محرك KAIA AI هو أداة تحليلية تعليمية وليس نصيحة مالية مرخصة. بدخولك للمنصة، أنت تقر بمسؤوليتك الكاملة وتخلي مسؤولية المنصة عن أي خسائر مالية.</div>"
-    ];
-
-    function runTypewriterBrochure() {
+    async function runGlobalBrochure() {
         const screen = document.getElementById('brochure-screen');
         const introReveal = document.getElementById('intro-reveal');
         const introLoader = document.getElementById('intro-loader');
         const igniteBtn = document.getElementById('ignite-system-btn');
 
+        let lang = "en"; // اللغة الافتراضية
+
+        try {
+            // فحص موقع الزائر عبر الـ IP
+            const response = await fetch('https://ipapi.co/json/');
+            const locationData = await response.json();
+            if (arabicCountries.includes(locationData.country_code)) {
+                lang = "ar";
+            }
+        } catch (e) {
+            console.log("Location fetch failed, using default English");
+        }
+
         if (introLoader) introLoader.style.display = 'none';
         if (introReveal) introReveal.style.display = 'block';
+        if (igniteBtn) igniteBtn.innerText = content[lang].btn;
 
         let lineIndex = 0;
+        const brochureData = content[lang].lines;
 
         function typeLine() {
             if (lineIndex < brochureData.length) {
                 const lineDiv = document.createElement('div');
                 lineDiv.className = 'typewriter-line line-visible';
+                if (lang === 'en') lineDiv.style.textAlign = 'left'; // ضبط الاتجاه للانجليزي
                 screen.appendChild(lineDiv);
 
                 let charIndex = 0;
@@ -624,7 +640,6 @@
                 const interval = setInterval(() => {
                     lineDiv.innerHTML = text.substring(0, charIndex);
                     charIndex++;
-                    
                     if (charIndex > text.length) {
                         clearInterval(interval);
                         lineIndex++;
@@ -641,9 +656,23 @@
         typeLine();
     }
 
-    // [3] إدارة تشغيل المنظومة
+    // إدارة الأجواء الموسمية (الثلج)
+    (function() {
+        const expiryDate = new Date('2026-01-06'); 
+        if (new Date() < expiryDate) {
+            setInterval(() => {
+                const flake = document.createElement('div');
+                flake.innerHTML = '•'; flake.className = 'snowflake';
+                flake.style.left = Math.random() * 100 + 'vw';
+                flake.style.animationDuration = (Math.random() * 4 + 3) + 's';
+                document.body.appendChild(flake);
+                setTimeout(() => flake.remove(), 6000);
+            }, 400);
+        }
+    })();
+
     document.addEventListener("DOMContentLoaded", () => {
-        setTimeout(runTypewriterBrochure, 1500);
+        setTimeout(runGlobalBrochure, 1500);
         const btn = document.getElementById('ignite-system-btn');
         if (btn) {
             btn.onclick = () => {
