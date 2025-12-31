@@ -257,8 +257,7 @@ async function handleAuthSubmit() {
     const email = rawEmail.trim().toLowerCase();
     const pass = $("auth-pass")?.value;
     const passConfirm = $("auth-pass-confirm")?.value; // جلب قيمة تأكيد كلمة المرور
-    const passConfirm = $("auth-pass-confirm")?.value; // جلب قيمة التأكيد
-
+   
 if (isRegisterMode && pass !== passConfirm) {
     alert(currentLang === "ar" ? "عذراً، كلمتا المرور غير متطابقتين" : "Passwords do not match");
     return; // إيقاف العملية فوراً
