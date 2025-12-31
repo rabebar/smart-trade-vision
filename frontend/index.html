@@ -718,60 +718,113 @@ async function runMobileAnalysis() {
     btn.disabled = false; 
     btn.innerText = "بدء عملية التحليل";
 }
-    // دالة بناء واجهة النتائج الاحترافية لمحرك KAIA Master
+    
+// دالة بناء واجهة النتائج الاحترافية المحدثة لمحرك KAIA Master (Platinum Edition)
 function renderMasterVisionUI(data) {
     const resBox = document.getElementById("res-data-content");
     
+    // استخراج التحليل الزمني من الملاحظات بشكل ذكي
+    let timeAnalysisStr = "";
+    if (data.market_state && data.market_state.notes) {
+        const match = data.market_state.notes.match(/التحليل الزمني \(KAIA Smart\):.*$/m);
+        if (match) {
+            timeAnalysisStr = match[0];
+            // تنظيف الملاحظات الأصلية من سطر التحليل الزمني لعدم التكرار
+            data.market_state.notes = data.market_state.notes.replace(timeAnalysisStr, "").trim();
+        }
+    }
+
     let html = `
         <div class="platinum-result-wrap">
-            <div class="plat-header"><i class="fa-solid fa-crown"></i> KAIA MASTER VISION</div>
+            <div class="plat-header"><i class="fa-solid fa-crown"></i> KAIA MASTER VISION (PLATINUM)</div>
             
+            <!-- ملخص الحالة والتحليل الزمني -->
             <div style="text-align:center; margin-bottom:20px;">
-                <span style="background:var(--primary); padding:5px 15px; border-radius:10px; font-size:12px;">${data.market} | ${data.timeframe}</span>
-                <h3 style="color:var(--gold); margin-top:10px;">Bias: ${data.market_state.directional_bias}</h3>
+                <span style="background:var(--primary); padding:5px 15px; border-radius:10px; font-size:12px; color:#fff;">${data.market} | ${data.timeframe}</span>
+                <h3 style="color:var(--gold); margin-top:10px; font-size:24px;">Bias: ${data.market_state.directional_bias}</h3>
+                
+                ${timeAnalysisStr ? `
+                    <div style="margin-top:10px; padding:10px; border:1px solid var(--gold); border-radius:12px; background:rgba(255,215,0,0.05); color:var(--gold); font-weight:bold; font-size:14px;">
+                        <i class="fa-solid fa-clock-rotate-left"></i> ${timeAnalysisStr}
+                    </div>
+                ` : ''}
+            </div>
+
+            <!-- البصمات المؤسسية (New Section) -->
+            <div style="margin-bottom:20px; padding:15px; background:rgba(255,255,255,0.02); border-radius:15px; border:1px solid rgba(59,130,246,0.2);">
+                <h4 style="color:var(--primary); margin:0 0 10px 0; font-size:15px;"><i class="fa-solid fa-fingerprint"></i> الأدلة المؤسسية (SMC Evidence)</h4>
+                <div style="font-size:13px; color:#d1d4dc; line-height:1.6;">
+                    ${data.institutional_evidence ? data.institutional_evidence : 'جاري تحليل تجمعات السيولة...'}
+                </div>
             </div>
 
             <!-- مناطق خطر اصطياد السيولة -->
             <div class="stop-hunt-alert">
-                <h4 style="color:#ef4444; margin:0 0 10px 0;"><i class="fa-solid fa-bullseye"></i> مناطق خطر الـ Stop-Hunt</h4>
-                ${data.stop_hunt_risk_zones.map(z => `<div style="font-size:13px; margin-bottom:5px;"><b>${z.zone_price_hint}:</b> ${z.why_risky}</div>`).join('')}
+                <h4 style="color:#ef4444; margin:0 0 10px 0; font-size:15px;"><i class="fa-solid fa-bullseye"></i> Stop-Hunt Risk Zones</h4>
+                ${data.stop_hunt_risk_zones && data.stop_hunt_risk_zones.length > 0 ? 
+                    data.stop_hunt_risk_zones.map(z => `<div style="font-size:13px; margin-bottom:5px;"><b>${z.zone_range || z.zone_price_hint}:</b> ${z.why_risky}</div>`).join('') 
+                    : '<div style="font-size:12px;">لم يتم رصد مصائد سيولة واضحة حالياً.</div>'}
             </div>
 
-            <!-- جداول المستويات الرقمية -->
-            <h4 style="margin-bottom:10px; font-size:16px;"><i class="fa-solid fa-layer-group"></i> مستويات المراقبة المؤسسية</h4>
+            <!-- مستويات المراقبة الرقمية المحدثة -->
+            <h4 style="margin-bottom:10px; font-size:16px;"><i class="fa-solid fa-layer-group"></i> مستويات المراقبة (Watch Levels)</h4>
             <div class="levels-grid">
+                <!-- مستويات صاعدة -->
                 <div class="level-card up">
-                    <small style="color:var(--success)">أهداف صعودية / سيولة</small>
-                    ${data.key_levels.upside.map(l => `<span class="price-tag">${l.price}</span><small style="font-size:10px; color:var(--muted)">${l.label}</small>`).join('<hr style="opacity:0.05; margin:5px 0;">')}
+                    <small style="color:var(--success); font-weight:900;">Upside Key Levels</small>
+                    <div style="margin-top:8px;">
+                        ${data.key_levels.upside.map(l => `
+                            <div style="margin-bottom:8px;">
+                                <span class="price-tag">${l.price}</span>
+                                <small style="display:block; font-size:11px; color:var(--success); font-weight:bold;">${l.label}</small>
+                                <small style="display:block; font-size:10px; color:var(--muted);">${l.reason || ''}</small>
+                            </div>
+                        `).join('<hr style="opacity:0.05; margin:5px 0;">')}
+                    </div>
                 </div>
+                <!-- مستويات هابطة -->
                 <div class="level-card down">
-                    <small style="color:#ef4444">أهداف هبوطية / سيولة</small>
-                    ${data.key_levels.downside.map(l => `<span class="price-tag">${l.price}</span><small style="font-size:10px; color:var(--muted)">${l.label}</small>`).join('<hr style="opacity:0.05; margin:5px 0;">')}
+                    <small style="color:#ef4444; font-weight:900;">Downside Key Levels</small>
+                    <div style="margin-top:8px;">
+                        ${data.key_levels.downside.map(l => `
+                            <div style="margin-bottom:8px;">
+                                <span class="price-tag">${l.price}</span>
+                                <small style="display:block; font-size:11px; color:#ef4444; font-weight:bold;">${l.label}</small>
+                                <small style="display:block; font-size:10px; color:var(--muted);">${l.reason || ''}</small>
+                            </div>
+                        `).join('<hr style="opacity:0.05; margin:5px 0;">')}
+                    </div>
                 </div>
             </div>
 
-            <!-- السيناريوهات المتوقعة -->
+            <!-- السيناريوهات الاستراتيجية -->
             <div class="scenario-box">
                 <div class="scen-card" style="border-right:3px solid var(--success)">
-                    <b style="color:var(--success)">سيناريو الصعود</b>
-                    <p style="margin:5px 0;">${data.scenarios.bullish.idea}</p>
-                    <small style="color:var(--muted)">الإلغاء: ${data.scenarios.bullish.invalidation_level}</small>
+                    <b style="color:var(--success)"><i class="fa-solid fa-arrow-trend-up"></i> Bullish If/Then</b>
+                    <p style="margin:5px 0; font-size:12px; line-height:1.4;">${data.scenarios.bullish.idea || data.scenarios.bullish}</p>
+                    <div style="margin-top:5px; padding:5px; background:rgba(0,0,0,0.2); border-radius:5px;">
+                        <small style="color:var(--gold)">Flip Level: ${data.scenarios.bullish.invalidation_level || 'N/A'}</small>
+                    </div>
                 </div>
                 <div class="scen-card" style="border-right:3px solid #ef4444">
-                    <b style="color:#ef4444">سيناريو الهبوط</b>
-                    <p style="margin:5px 0;">${data.scenarios.bearish.idea}</p>
-                    <small style="color:var(--muted)">الإلغاء: ${data.scenarios.bearish.invalidation_level}</small>
+                    <b style="color:#ef4444"><i class="fa-solid fa-arrow-trend-down"></i> Bearish If/Then</b>
+                    <p style="margin:5px 0; font-size:12px; line-height:1.4;">${data.scenarios.bearish.idea || data.scenarios.bearish}</p>
+                    <div style="margin-top:5px; padding:5px; background:rgba(0,0,0,0.2); border-radius:5px;">
+                        <small style="color:var(--gold)">Flip Level: ${data.scenarios.bearish.invalidation_level || 'N/A'}</small>
+                    </div>
                 </div>
             </div>
             
-            <div style="margin-top:20px; padding:15px; background:rgba(255,255,255,0.03); border-radius:15px; font-size:14px; border:1px solid rgba(255,255,255,0.05);">
-                <b>ملاحظات المحلل:</b> ${data.market_state.notes}
+            <!-- ملاحظات إضافية -->
+            <div style="margin-top:20px; padding:15px; background:rgba(255,255,255,0.03); border-radius:15px; font-size:14px; border:1px solid rgba(255,255,255,0.05); color:#d1d4dc;">
+                <b style="color:var(--primary)">ملاحظات المحلل:</b> ${data.market_state.notes || 'لا يوجد ملاحظات إضافية.'}
             </div>
         </div>
     `;
     
     resBox.innerHTML = html;
 }
+
     function resetAnalyzerFull() {
     // 1. إخفاء النتائج
     document.getElementById("result-box").style.display = "none";
