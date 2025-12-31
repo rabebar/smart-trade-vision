@@ -131,7 +131,12 @@ const translations = {
         "if_bullish": "إذا صعد السعر (Bullish)",
         "if_bearish": "إذا هبط السعر (Bearish)",
         "time_analysis": "التحليل الزمني",
-        "legal_note_report": "ملاحظة: هذه ليست توصية مباشرة بالبيع أو الشراء، بل هي رؤية فنية تعليمية تعتمد على مستويات مراقبة سلوك السعر المؤسسي. التداول ينطوي على مخاطر عالية، والقرار النهائي للتنفيذ يقع على عاتق المتداول وحده."
+        "legal_note_report": "ملاحظة: هذه ليست توصية مباشرة بالبيع أو الشراء، بل هي رؤية فنية تعليمية تعتمد على مستويات مراقبة سلوك السعر المؤسسي. التداول ينطوي على مخاطر عالية، والقرار النهائي للتنفيذ يقع على عاتق المتداول وحده.",
+        "manager_btn": "KAIA - مدير أعمالك",
+"manager_status": "الوكيل الاستراتيجي متصل",
+"manager_placeholder": "اكتب سؤالك هنا يا مدير...",
+"manager_typing": "جاري معالجة طلبك يا مدير...",
+"manager_welcome": "مرحباً بك يا مدير.. أنا كايا، مدير أعمالك الاستراتيجي. كيف يمكنني مساعدتك في قراءة الأسواق اليوم؟"
     },
     "en": {
         "intro_loading": "Starting KAIA AI Engine...",
@@ -266,7 +271,12 @@ const translations = {
         "if_bullish": "If price goes up (Bullish)",
         "if_bearish": "If price goes down (Bearish)",
         "time_analysis": "Time Analysis",
-        "legal_note_report": "Note: This is not a direct buy or sell recommendation, but an educational technical view based on institutional price action monitoring. Trading involves high risks, and the final execution decision rests solely with the trader."
+        "legal_note_report": "Note: This is not a direct buy or sell recommendation, but an educational technical view based on institutional price action monitoring. Trading involves high risks, and the final execution decision rests solely with the trader.",
+        "manager_btn": "KAIA - Your Manager",
+"manager_status": "Strategic Agent Connected",
+"manager_placeholder": "Type your question here, sir...",
+"manager_typing": "Processing your request, sir...",
+"manager_welcome": "Welcome, sir.. I am KAIA, your strategic manager. How can I assist you in reading the markets today?"
     },
     "fr": {
         "intro_loading": "Démarrage du moteur KAIA AI...",
@@ -393,7 +403,13 @@ const translations = {
         "if_bullish": "Si le prix monte (Haussier)",
         "if_bearish": "Si le prix descend (Baissier)",
         "time_analysis": "Analyse Temporelle",
-        "legal_note_report": "Note : Ceci n'est pas une recommandation directe d'achat ou de vente, mais une vue technique éducative basée sur la surveillance de l'action des prix institutionnels. Le trading comporte des risques élevés, et la décision finale d'exécution appartient exclusivement au trader."
+        "legal_note_report": "Note : Ceci n'est pas une recommandation directe d'achat ou de vente, mais une vue technique éducative basée sur la surveillance de l'action des prix institutionnels. Le trading comporte des risques élevés, et la décision finale d'exécution appartient exclusivement au trader.",
+        "manager_btn": "KAIA - Your Manager",
+"manager_status": "Strategic Agent Connected",
+"manager_placeholder": "Type your question here, sir...",
+"manager_typing": "Processing your request, sir...",
+"manager_welcome": "Welcome, sir.. I am KAIA, your strategic manager. How can I assist you in reading the markets today?"
+        
     },
     "es": {
         "intro_loading": "Iniciando motor KAIA AI...",
@@ -520,7 +536,12 @@ const translations = {
         "if_bullish": "Si el precio sube (Alcista)",
         "if_bearish": "Si el precio baja (Bajista)",
         "time_analysis": "Análisis Temporal",
-        "legal_note_report": "Nota: Esta no es una recomendación directa de compra o venta, sino una visión técnica educativa basada en el monitoreo de la acción del precio institucional. El trading implica altos riesgos y la decisión final de ejecución recae exclusivamente en el trader."
+        "legal_note_report": "Nota: Esta no es una recomendación directa de compra o venta, sino una visión técnica educativa basada en el monitoreo de la acción del precio institucional. El trading implica altos riesgos y la decisión final de ejecución recae exclusivamente en el trader.",
+        "manager_btn": "KAIA - Your Manager",
+"manager_status": "Strategic Agent Connected",
+"manager_placeholder": "Type your question here, sir...",
+"manager_typing": "Processing your request, sir...",
+"manager_welcome": "Welcome, sir.. I am KAIA, your strategic manager. How can I assist you in reading the markets today?"
     },
     "it": {
         "intro_loading": "Avvio motore KAIA AI...",
@@ -647,6 +668,11 @@ const translations = {
         "if_bullish": "Se il prezzo sale (Rialzista)",
         "if_bearish": "Se il prezzo scende (Ribassista)",
         "time_analysis": "Analisi Temporale",
-        "legal_note_report": "Nota: Questa non è una raccomandazione diretta di acquisto o vendita, ma una visione tecnica educativa basata sul monitoraggio dell'azione dei prezzi istituzionali. Il trading comporta rischi elevati e la decisione finale di esecuzione spetta esclusivamente al trader."
+        "legal_note_report": "Nota: Questa non è una raccomandazione diretta di acquisto o vendita, ma una visione tecnica educativa basata sul monitoraggio dell'azione dei prezzi istituzionali. Il trading comporta rischi elevati e la decisione finale di esecuzione spetta esclusivamente al trader.",
+        "manager_btn": "KAIA - Your Manager",
+"manager_status": "Strategic Agent Connected",
+"manager_placeholder": "Type your question here, sir...",
+"manager_typing": "Processing your request, sir...",
+"manager_welcome": "Welcome, sir.. I am KAIA, your strategic manager. How can I assist you in reading the markets today?"
     }
 };

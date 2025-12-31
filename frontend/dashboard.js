@@ -437,3 +437,102 @@ window.onload = () => {
     if ($("run-btn")) $("run-btn").onclick = runInstitutionalAnalysis;
     if ($("drop-zone")) $("drop-zone").onclick = () => $("chartUpload").click();
 };
+
+/* ============================================================
+   10. منطق مدير أعمال كايا الاستراتيجي (KAIA Manager Logic - Mapped & Translated)
+   ============================================================ */
+
+// وظيفة فتح وإغلاق الستارة مع تحديث الترجمة فوراً
+window.toggleKaiaManager = function() {
+    const curtain = $("kaia-manager-curtain");
+    if (!curtain) return;
+    
+    // سحب الترجمات الحالية
+    const currentLang = document.getElementById("language-select").value || "ar";
+    const t = translations[currentLang];
+
+    if (curtain.style.display === "flex") {
+        // إغلاق (رفع) الستارة
+        curtain.style.animation = "slideDownChat 0.3s reverse forwards";
+        setTimeout(() => { curtain.style.display = "none"; }, 300);
+    } else {
+        // تحديث نصوص الواجهة من ملف الترجمة قبل الفتح
+        if ($("m-status-text")) $("m-status-text").innerText = t['manager_status'];
+        if ($("chat-input-field")) $("chat-input-field").placeholder = t['manager_placeholder'];
+        if ($("typing-indicator")) $("typing-indicator").innerText = t['manager_typing'];
+        
+        // حقن الرسالة الترحيبية إذا كان الشات فارغاً
+        const messagesBox = $("chat-messages");
+        if (messagesBox && (messagesBox.children.length === 0)) {
+            messagesBox.innerHTML = `<div class="msg-bubble msg-kaia">${t['manager_welcome']}</div>`;
+        }
+
+        // إظهار (إنزال) الستارة
+        curtain.style.display = "flex";
+        curtain.style.animation = "slideDownChat 0.4s ease-out forwards";
+        $("chat-input-field").focus();
+    }
+};
+
+// وظيفة الإغلاق النهائي وتفريغ المحادثة
+window.closeKaiaManager = function() {
+    const curtain = $("kaia-manager-curtain");
+    if (curtain) curtain.style.display = "none";
+    const messagesBox = $("chat-messages");
+    if (messagesBox) messagesBox.innerHTML = ""; 
+};
+
+// وظيفة إرسال الرسالة إلى السيرفر
+window.sendChatMessage = async function() {
+    const input = $("chat-input-field");
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    // 1. عرض رسالة المستخدم
+    appendChatMessage(msg, 'user');
+    input.value = "";
+
+    // 2. إظهار مؤشر الانتظار
+    const typing = $("typing-indicator");
+    if (typing) typing.style.display = "block";
+    
+    const messagesBox = $("chat-messages");
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+
+    try {
+        const res = await fetch("/api/chat", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token 
+            },
+            body: JSON.stringify({ message: msg, lang: currentLang })
+        });
+
+        const data = await res.json();
+        if (typing) typing.style.display = "none";
+
+        if (res.ok) {
+            appendChatMessage(data.reply, 'kaia');
+        } else {
+            appendChatMessage(data.detail || "عذراً يا مدير، حدث عطل فني بسيط.", 'kaia');
+        }
+    } catch (e) {
+        if (typing) typing.style.display = "none";
+        appendChatMessage("فشل الاتصال بمدير الأعمال، تأكد من جودة الإنترنت.", 'kaia');
+    }
+};
+
+// دالة مساعدة لبناء فقاعات الشات
+function appendChatMessage(text, sender) {
+    const container = $("chat-messages");
+    if (!container) return;
+    
+    const div = document.createElement("div");
+    div.className = `msg-bubble ${sender === 'user' ? 'msg-user' : 'msg-kaia'}`;
+    div.innerText = text;
+    container.appendChild(div);
+    
+    // تمرير تلقائي لأسفل المحادثة
+    container.scrollTop = container.scrollHeight;
+}

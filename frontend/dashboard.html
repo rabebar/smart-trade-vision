@@ -405,6 +405,108 @@
         .report-neutral { border: 2px solid #3b82f6 !important; }
         .bias-text-bull { color: #10b981; font-weight: 900; text-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
         .bias-text-bear { color: #ef4444; font-weight: 900; text-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+
+        /* [حقن ملكي] تنسيق مدير أعمالك كايا (KAIA Manager Agent) */
+.kaia-manager-curtain {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%; /* تغطي مساحة صندوق التحليل تماماً */
+    background: #020617; /* أسود عميق */
+    border: 2px solid var(--gold);
+    border-radius: 20px;
+    z-index: 100;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+    animation: slideDownChat 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+@keyframes slideDownChat {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.manager-header {
+    background: linear-gradient(90deg, #0b1222, #1e293b);
+    padding: 15px;
+    border-bottom: 1px solid var(--gold);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-messages-area {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background-image: radial-gradient(circle at 2px 2px, rgba(255,215,0,0.02) 1px, transparent 0);
+    background-size: 24px 24px;
+}
+
+.msg-bubble {
+    max-width: 85%;
+    padding: 12px 18px;
+    border-radius: 15px;
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 600;
+}
+
+.msg-user {
+    align-self: flex-end;
+    background: var(--primary);
+    color: #000;
+    border-bottom-right-radius: 2px;
+}
+
+.msg-kaia {
+    align-self: flex-start;
+    background: #0b1222;
+    color: var(--gold);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-bottom-left-radius: 2px;
+    text-shadow: 0 0 5px rgba(255,215,0,0.1);
+}
+
+.manager-footer {
+    padding: 15px;
+    background: #050b14;
+    border-top: 1px solid rgba(255,215,0,0.2);
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input {
+    flex: 1;
+    background: #000;
+    border: 1px solid var(--border);
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 10px;
+    outline: none;
+    font-family: inherit;
+}
+
+.chat-input:focus { border-color: var(--gold); }
+
+.chat-send-btn {
+    background: var(--gold);
+    color: #000;
+    border: none;
+    padding: 0 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 900;
+}
+
+/* تأثير "جاري الكتابة" */
+.typing-dots { font-style: italic; color: var(--gold); font-size: 12px; margin-left: 10px; }
     </style>
 
     <!-- أيقونات الموقع ومكتبة ضغط الصور -->
@@ -488,6 +590,36 @@
 </div>
 
     <aside class="sidebar-tools">
+        <!-- [حقن ملكي] زر تشغيل مدير الأعمال كايا -->
+<button onclick="toggleKaiaManager()" class="core-analyze-btn" style="height: 55px; background: linear-gradient(90deg, #000, #0b1222); border: 2px solid var(--gold); color: var(--gold); margin-bottom: 15px; width: 100%; font-size: 17px; display: flex; align-items: center; justify-content: center; gap: 12px; box-shadow: 0 4px 15px rgba(255,215,0,0.1); border-radius: 12px; cursor: pointer; font-weight: 900;">
+    <i class="fa-solid fa-user-tie"></i>
+    <span id="chat-btn-text">KAIA - مدير أعمالك</span>
+</button>
+      <!-- هيكل ستارة مدير الأعمال المطور لدعم اللغات -->
+        <div id="kaia-manager-curtain" class="kaia-manager-curtain">
+            <div class="manager-header">
+                <div style="color: var(--gold); font-weight: 900; font-size: 14px;">
+                    <i class="fa-solid fa-headset"></i> <span id="m-status-text">...</span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="toggleKaiaManager()" title="رفع النافذة" style="background:none; border:none; color:var(--gold); cursor:pointer;"><i class="fa-solid fa-chevron-up"></i></button>
+                    <button onclick="closeKaiaManager()" title="إغلاق نهائي" style="background:none; border:none; color:#ef4444; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+            
+            <div id="chat-messages" class="chat-messages-area">
+                <!-- الرسائل تظهر هنا برمجياً -->
+            </div>
+
+            <div id="typing-indicator" class="typing-dots" style="display:none; padding: 10px;">...</div>
+
+            <div class="manager-footer">
+                <input type="text" id="chat-input-field" class="chat-input" placeholder="..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
+                <button onclick="sendChatMessage()" class="chat-send-btn">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
         <div class="analysis-mini-core">
             <div style="margin-bottom: 20px; font-weight: 900; color: var(--primary); display: flex; justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 10px;">
