@@ -257,6 +257,12 @@ async function handleAuthSubmit() {
     const email = rawEmail.trim().toLowerCase();
     const pass = $("auth-pass")?.value;
     const passConfirm = $("auth-pass-confirm")?.value; // جلب قيمة تأكيد كلمة المرور
+    const passConfirm = $("auth-pass-confirm")?.value; // جلب قيمة التأكيد
+
+if (isRegisterMode && pass !== passConfirm) {
+    alert(currentLang === "ar" ? "عذراً، كلمتا المرور غير متطابقتين" : "Passwords do not match");
+    return; // إيقاف العملية فوراً
+}
     
     if (!email || !pass) {
         alert(currentLang === "ar" ? "يرجى إدخال كافة البيانات المطلوبة" : "Please fill all required data");
@@ -274,16 +280,16 @@ async function handleAuthSubmit() {
             const res = await fetch("/api/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    email: email,
-                    password: pass,
-                    confirm_password: passConfirm, // إرسال حقل التأكيد للسيرفر
-                    full_name: $("auth-fullname").value || "Trader",
-                    phone: "000",
-                    whatsapp: $("auth-whatsapp").value || "",
-                    country: $("auth-country").value || "Global",
-                    tier: selectedPlan.name 
-                })
+               body: JSON.stringify({
+            email: email,
+            password: pass,
+            confirm_password: passConfirm, // هذا هو السطر الذي سنضيفه
+            full_name: $("auth-fullname").value || "Trader",
+            phone: "000",
+            whatsapp: $("auth-whatsapp").value || "",
+            country: $("auth-country").value || "Global",
+            tier: selectedPlan.name 
+        })
             });
             
             const data = await res.json();

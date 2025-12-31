@@ -1,6 +1,6 @@
 # =================================================================
 # 🛰️ KAIA AI – THE ULTIMATE INSTITUTIONAL ANALYST ENGINE
-# 🛡️ VERSION: 2025.12.30 - RESTORED PROMPTS EDITION
+# 🛡️ VERSION: 2025.12.30 - RESTORED PROMPTS EDITION (MODIFIED FOR PASS SHIELD)
 # =================================================================
 
 from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException, Request
@@ -178,7 +178,7 @@ def get_sponsors(location: str = "main", db: Session = Depends(get_db)):
 
 
 # -----------------------------------------------------------------
-# 8. نظام التسجيل والحماية الذكي (Auth & IP Tracking) - النسخة المحصنة
+# 8. نظام التسجيل والحماية الذكي (Auth & IP Tracking) - النسخة المحدثة
 # -----------------------------------------------------------------
 
 @app.post("/api/register", response_model=schemas.UserOut)
@@ -186,19 +186,18 @@ def register(user: schemas.UserCreate, request: Request, db: Session = Depends(g
     clean_email = user.email.lower().strip()
     client_ip = request.client.host or "0.0.0.0"
 
-    # 1. [نقطة التفتيش] التحقق من تطابق كلمتي المرور قبل أي شيء
-    # تأكد أن حقل التأكيد في ملف schemas.py اسمه confirm_password
-    if hasattr(user, 'confirm_password') and user.password != user.confirm_password:
+    # [نقطة التفتيش] التحقق من تطابق الباسوورد (الخانة الأولى مع الخانة الثانية)
+    if user.password != user.confirm_password:
         raise HTTPException(status_code=400, detail="عذراً، كلمتا المرور غير متطابقتين")
 
-    # 2. التحقق من وجود الحساب مسبقاً
+    # التحقق من وجود الحساب مسبقاً
     if db.query(User).filter(User.email == clean_email).first():
         raise HTTPException(status_code=400, detail="البريد الإلكتروني مسجل لدينا بالفعل")
 
-    # 3. تحديد الرصيد بناءً على الباقة
+    # تحديد الرصيد بناءً على الباقة
     credits_map = {"Trial": 3, "Basic": 20, "Pro": 40, "Platinum": 200}
     
-    # 4. إنشاء المستخدم الجديد
+    # إنشاء المستخدم الجديد
     new_user = User(
         email=clean_email,
         password_hash=pwd_context.hash(user.password),
