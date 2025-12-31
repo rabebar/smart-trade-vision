@@ -2,7 +2,7 @@
 
 /* ============================================================
    KAIA AI - MASTER FRONTEND ENGINE (Final Integrated)
-   Version: 7.6.1 - Forced Visibility Fix
+   Version: 7.8 - Forced Double Password Visibility
    ============================================================ */
 
 // --- 1. الثوابت والمتغيرات العامة ---
@@ -98,21 +98,15 @@ async function updateUIBasedOnAuth() {
             
             if (res.ok) {
                 currentUserData = await res.json();
-                // --- نظام كشف التفعيل الذكي (الصفحة الرئيسية) ---
                 const banner = document.getElementById("activation-banner");
                 if (banner) {
                     if (!currentUserData.is_verified) {
-                        // 1. إظهار التنبيه فوراً
                         banner.style.display = "block";
                         document.body.classList.add("has-banner");
-                        
-                        // 2. تحديث رابط الواتساب
                         const waLink = document.getElementById("whatsapp-verify-link");
                         if (waLink) {
                             waLink.href = `https://wa.me/970594060648?text=مرحباً KAIA، لقد سجلت وأريد تفعيل حسابي: ${currentUserData.email}`;
                         }
-
-                        // 3. حماية إضافية: تعطيل زر تجربة المحرك (Demo) في الصفحة الرئيسية
                         const demoBtn = document.getElementById("run-btn");
                         if (demoBtn) {
                             demoBtn.innerText = "بانتظار تفعيل الحساب ⏳";
@@ -120,12 +114,10 @@ async function updateUIBasedOnAuth() {
                             demoBtn.style.pointerEvents = "none";
                         }
                     } else {
-                        // إذا كان الحساب مفعلاً، نخفي التنبيه تماماً
                         banner.style.display = "none";
                         document.body.classList.remove("has-banner");
                     }
                 }
-                // -----------------------------------------------
                 
                 if (demoArea) {
                     if (currentUserData.tier === "Trial") {
@@ -201,14 +193,32 @@ function toggleAuthMode() {
     updateAuthModalState();
 }
 
+/**
+ * دالة تحديث حالة النافذة (تسجيل دخول / إنشاء حساب)
+ * تم تعديلها هنا لتجبر الخانة الثانية على الظهور بقطعية تامة
+ */
 function updateAuthModalState() {
     const dict = (typeof translations !== 'undefined') ? translations[currentLang] : {};
     
-    const fields = ["name-field-wrap", "whatsapp-field-wrap", "country-field-wrap", "pass-confirm-field-wrap"];
-    fields.forEach(id => { 
-        if($(id)) {
-            // [تحسين حاسم لضعف النظر] إجبار المتصفح على إظهار الخانة باستخدام خاصية important برمجياً
-            $(id).style.setProperty('display', isRegisterMode ? "block" : "none", "important"); 
+    // الحقول التي تظهر فقط عند التسجيل
+    const registerOnlyFields = [
+        "name-field-wrap", 
+        "whatsapp-field-wrap", 
+        "country-field-wrap", 
+        "pass-confirm-field-wrap" // هذه هي الخانة التي سنقاتل لإظهارها
+    ];
+
+    registerOnlyFields.forEach(id => { 
+        const element = $(id);
+        if (element) {
+            if (isRegisterMode) {
+                // إظهار قسري يتجاوز أي إعدادات CSS قديمة
+                element.style.setProperty('display', 'block', 'important');
+                element.style.visibility = 'visible';
+                element.style.opacity = '1';
+            } else {
+                element.style.setProperty('display', 'none', 'important');
+            }
         }
     });
 
@@ -261,8 +271,9 @@ async function handleAuthSubmit() {
     const pass = $("auth-pass")?.value;
     const passConfirm = $("auth-pass-confirm")?.value;
    
+    // [قفل الأمان] منع المضي قدماً إذا لم تتطابق الكلمتان في وضع التسجيل
     if (isRegisterMode && pass !== passConfirm) {
-        alert(currentLang === "ar" ? "عذراً، كلمتا المرور غير متطابقتين" : "Passwords do not match");
+        alert(currentLang === "ar" ? "عذراً، كلمتا المرور غير متطابقتين. يرجى التأكد من كتابتهما بشكل صحيح في الخانتين." : "Passwords do not match. Please ensure both fields are identical.");
         return; 
     }
     
@@ -428,29 +439,14 @@ async function runDemoAnalysis() {
         if (currentUserData) currentUserData.credits = data.remaining_credits;
 
         $("result-box").style.display = "block";
-
         const analysis = (data && typeof data.analysis === "object" && data.analysis) ? data.analysis : null;
-
-        const signalText = (analysis && typeof analysis.market_bias === "string")
-            ? analysis.market_bias
-            : ((typeof data.signal === "string") ? data.signal : "");
-
-        const structureText = (analysis && typeof analysis.market_phase === "string")
-            ? analysis.market_phase
-            : ((typeof data.structure === "string") ? data.structure : "");
-
-        const zonesText = (analysis && typeof analysis.opportunity_context === "string")
-            ? analysis.opportunity_context
-            : ((typeof data.key_zones === "string") ? data.key_zones : "");
-
-        const reasonText = (analysis && typeof analysis.analysis_text === "string")
-            ? analysis.analysis_text
-            : ((typeof data.reason === "string") ? data.reason : "");
+        const signalText = (analysis && typeof analysis.market_bias === "string") ? analysis.market_bias : ((typeof data.signal === "string") ? data.signal : "");
+        const structureText = (analysis && typeof analysis.market_phase === "string") ? analysis.market_phase : ((typeof data.structure === "string") ? data.structure : "");
+        const zonesText = (analysis && typeof analysis.opportunity_context === "string") ? analysis.opportunity_context : ((typeof data.key_zones === "string") ? data.key_zones : "");
+        const reasonText = (analysis && typeof analysis.analysis_text === "string") ? analysis.analysis_text : ((typeof data.reason === "string") ? data.reason : "");
 
         const safeSignal = (typeof signalText === "string") ? signalText : "";
-        const biasClass = safeSignal.toLowerCase().includes('buy')
-            ? 'bullish-glow'
-            : (safeSignal.toLowerCase().includes('sell') ? 'bearish-glow' : '');
+        const biasClass = safeSignal.toLowerCase().includes('buy') ? 'bullish-glow' : (safeSignal.toLowerCase().includes('sell') ? 'bearish-glow' : '');
         
         $("res-data-content").innerHTML = `
             <div class="analysis-result-card ${biasClass}">
@@ -485,7 +481,6 @@ window.onload = async () => {
     try {
         applyTranslations(currentLang);
         runIntroSequence();
-        
         await updateUIBasedOnAuth();
 
         if ($("language-select")) {

@@ -337,3 +337,13 @@ body {
     min-width: fit-content !important;
     padding: 8px 12px !important;
 }
+
+/* ============================================================
+   [الرقعة التصحيحية النهائية لظهور خانة التأكيد]
+   ============================================================ */
+#pass-confirm-field-wrap {
+    display: none; /* يتم التحكم فيه عبر JS */
+    width: 100% !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
