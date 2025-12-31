@@ -688,20 +688,26 @@ document.addEventListener("DOMContentLoaded", () => {
     syncDash();
 });
 
-// [حقن ملكي] دالة بناء واجهة النتائج الاحترافية المترجمة بالكامل (النسخة العريضة)
-// [حقن الإصلاح النهائي] دالة العرض الفائقة والذكية لإلغاء الأخطاء البصرية
+// [حقن الإصلاح النهائي والقطعي] دالة العرض الذكية لفك كافة الأجسام البرمجية
 function renderMasterVisionUI(data) {
     const widePanel = document.getElementById("platinum-wide-panel");
     const wideContent = document.getElementById("wide-res-content");
     const currentLang = document.getElementById("language-select").value || "ar";
     const t = translations[currentLang];
 
-    // دالة مساعدة لتحويل أي كائن (Object) إلى نص مفهوم
-    const stringify = (val) => {
+    // دالة "المفك البرمجي" لفك أي تعقيد في البيانات
+    const smartString = (val) => {
         if (!val) return "...";
         if (typeof val === 'string') return val;
-        if (Array.isArray(val)) return val.map(v => stringify(v)).join(' | ');
-        if (typeof val === 'object') return Object.values(val).join(' - ');
+        if (Array.isArray(val)) return val.map(v => smartString(v)).join(' | ');
+        if (typeof val === 'object') {
+            // إذا كان جسم منطقة خطر، استخرج السعر والسبب
+            const price = val.zone_range || val.zone_price_hint || val.price || "";
+            const reason = val.why_risky || val.reason || val.label || "";
+            if (price || reason) return `${price} ${reason ? ': ' + reason : ''}`;
+            // لأي أجسام أخرى، ادمج القيم الموجودة بداخلها
+            return Object.values(val).filter(v => typeof v !== 'object').join(' - ');
+        }
         return String(val);
     };
 
@@ -715,7 +721,7 @@ function renderMasterVisionUI(data) {
     let html = `
         <div class="summary-box-v2" style="margin-top: 20px;">
             <h3 style="color: var(--primary); margin: 0 0 10px 0;"><i class="fa-solid fa-comment-dots"></i> ${t['simple_summary']}:</h3>
-            <p style="font-size: 20px; line-height: 1.6; color: #fff; font-weight: 700;">${stringify(cleanNotes)}</p>
+            <p style="font-size: 20px; line-height: 1.6; color: #fff; font-weight: 700;">${smartString(cleanNotes)}</p>
             ${timeAnalysisStr ? `<div style="margin-top:15px; color:var(--gold); font-weight:900; font-size:16px;"><i class="fa-solid fa-clock"></i> ${timeAnalysisStr}</div>` : ""}
         </div>
 
@@ -723,7 +729,7 @@ function renderMasterVisionUI(data) {
             <div class="report-card-v2">
                 <h4 style="color:var(--primary); border-bottom:1px solid rgba(59,130,246,0.3); padding-bottom:10px;"><i class="fa-solid fa-fingerprint"></i> ${t['whale_prints']}</h4>
                 <div style="font-size: 15px; line-height: 1.8; color: #d1d4dc; font-weight:600;">
-                    ${stringify(data.institutional_evidence)}
+                    ${smartString(data.institutional_evidence)}
                 </div>
             </div>
 
@@ -731,10 +737,10 @@ function renderMasterVisionUI(data) {
                 <h4 style="color:var(--gold); border-bottom:1px solid rgba(255,215,0,0.3); padding-bottom:10px;"><i class="fa-solid fa-layer-group"></i> ${t['watch_levels']}</h4>
                 <div style="margin-top:10px;">
                     <b style="color:var(--success); font-size:13px;">${t['upside_targets']}:</b>
-                    ${(data.key_levels?.upside || []).map(l => `<div style="margin:8px 0;">- <span style="font-family:monospace; color:#fff; font-weight:900;">${l.price || l}</span> <small>${l.label ? '('+l.label+')' : ''}</small></div>`).join('') || "..."}
+                    ${(data.key_levels?.upside || []).map(l => `<div style="margin:8px 0;">- <span style="font-family:monospace; color:#fff; font-weight:900;">${l.price || l}</span> <small>${l.label || l.reason ? '('+ (l.label || l.reason) +')' : ''}</small></div>`).join('') || "..."}
                     <hr style="opacity:0.1; margin:15px 0;">
                     <b style="color:var(--danger); font-size:13px;">${t['downside_targets']}:</b>
-                    ${(data.key_levels?.downside || []).map(l => `<div style="margin:8px 0;">- <span style="font-family:monospace; color:#fff; font-weight:900;">${l.price || l}</span> <small>${l.label ? '('+l.label+')' : ''}</small></div>`).join('') || "..."}
+                    ${(data.key_levels?.downside || []).map(l => `<div style="margin:8px 0;">- <span style="font-family:monospace; color:#fff; font-weight:900;">${l.price || l}</span> <small>${l.label || l.reason ? '('+ (l.label || l.reason) +')' : ''}</small></div>`).join('') || "..."}
                 </div>
             </div>
 
@@ -743,11 +749,11 @@ function renderMasterVisionUI(data) {
                 <div style="font-size: 14px; margin-top:10px; font-weight:600;">
                     <div style="margin-bottom:20px;">
                         <b style="color:var(--success)">${t['if_bullish']}:</b>
-                        <p style="margin:8px 0; color:#fff;">${stringify(data.scenarios?.bullish?.idea || data.scenarios?.bullish)}</p>
+                        <p style="margin:8px 0; color:#fff;">${smartString(data.scenarios?.bullish?.idea || data.scenarios?.bullish)}</p>
                     </div>
                     <div>
                         <b style="color:var(--danger)">${t['if_bearish']}:</b>
-                        <p style="margin:8px 0; color:#fff;">${stringify(data.scenarios?.bearish?.idea || data.scenarios?.bearish)}</p>
+                        <p style="margin:8px 0; color:#fff;">${smartString(data.scenarios?.bearish?.idea || data.scenarios?.bearish)}</p>
                     </div>
                 </div>
             </div>
@@ -755,14 +761,16 @@ function renderMasterVisionUI(data) {
 
         <div style="margin-top:25px; text-align:center; padding:20px; background:rgba(239, 68, 68, 0.1); border-radius:20px; border:1px dashed var(--danger);">
             <b style="color:var(--danger); font-size:16px;"><i class="fa-solid fa-triangle-exclamation"></i> ${t['stop_hunt_title']}:</b>
-            <p style="margin:10px 0; font-size:15px; font-weight:700; color:#fff;">${stringify(data.stop_hunt_risk_zones)}</p>
+            <p style="margin:10px 0; font-size:15px; font-weight:700; color:#fff;">${smartString(data.stop_hunt_risk_zones)}</p>
         </div>
     `;
-    wideContent.innerHTML = html;
+wideContent.innerHTML = html;
 }
-// دالة إغلاق التقرير العريض
+
+// دالة إغلاق التقرير العريض ليعمل زر [X]
 function closeWideReport() {
-    document.getElementById("platinum-wide-panel").style.display = "none";
+    const widePanel = document.getElementById("platinum-wide-panel");
+    if (widePanel) widePanel.style.display = "none";
 }
 </script>
 </body>
