@@ -695,18 +695,15 @@ function renderMasterVisionUI(data) {
     const currentLang = document.getElementById("language-select").value || "ar";
     const t = translations[currentLang];
 
-    // دالة "المفك البرمجي" لفك أي تعقيد في البيانات
+   // [حقن الصياد الذكي] دالة تجلب أي نص مخفي داخل البيانات لضمان عدم ظهور فراغات
     const smartString = (val) => {
-        if (!val) return "...";
+        if (!val || val === "undefined") return "...";
         if (typeof val === 'string') return val;
-        if (Array.isArray(val)) return val.map(v => smartString(v)).join(' | ');
+        if (Array.isArray(val)) return val.map(v => smartString(v)).filter(x => x !== "...").join(' | ');
         if (typeof val === 'object') {
-            // إذا كان جسم منطقة خطر، استخرج السعر والسبب
-            const price = val.zone_range || val.zone_price_hint || val.price || "";
-            const reason = val.why_risky || val.reason || val.label || "";
-            if (price || reason) return `${price} ${reason ? ': ' + reason : ''}`;
-            // لأي أجسام أخرى، ادمج القيم الموجودة بداخلها
-            return Object.values(val).filter(v => typeof v !== 'object').join(' - ');
+            // سحب كافة النصوص الموجودة داخل الصندوق مهما كانت أسماؤها
+            const allValues = Object.values(val).map(v => typeof v === 'object' ? smartString(v) : v).filter(v => v);
+            return allValues.length > 0 ? allValues.join(' : ') : "...";
         }
         return String(val);
     };
