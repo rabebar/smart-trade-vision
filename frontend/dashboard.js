@@ -1,7 +1,7 @@
 "use strict";
 
 /* ============================================================
-   KAIA AI × KAIA - COMMAND CENTER ENGINE (Version 8.0 - ZERO MEMORY)
+   KAIA AI × KAIA - COMMAND CENTER ENGINE (Version 8.1 - FINAL SURGICAL FIX)
    ============================================================ */
 
 const $ = (id) => document.getElementById(id);
@@ -45,9 +45,14 @@ async function checkAccessAndInit() {
     }
 }
 
+// [تعديل جراحي] إصلاح مشكلة undefined عبر التأكد من تحميل البيانات
 function syncUserData() {
-    if ($("dash-user")) $("dash-user").innerText = currentUserData.full_name;
-    if ($("dash-credits")) $("dash-credits").innerText = currentUserData.credits;
+    if ($("dash-user") && currentUserData) {
+        $("dash-user").innerText = currentUserData.full_name || "User";
+    }
+    if ($("dash-credits") && currentUserData) {
+        $("dash-credits").innerText = (currentUserData.credits !== undefined) ? currentUserData.credits : "0";
+    }
 }
 
 /* =======================
@@ -178,45 +183,40 @@ function setupHelpSystem() {
 }
 
 /* =======================
-   6. التصفير النووي (حل معضلة بقاء الصورة والذاكرة)
+   6. التصفير النووي (معدل جراحياً لإغلاق اللوحة العريضة)
    ======================= */
 window.resetWorkspace = function() {
-    // 1. إخفاء صندوق النتائج
+    // 1. إخفاء كافة صناديق النتائج
     if ($("result-box")) $("result-box").style.display = "none";
+    if ($("platinum-wide-panel")) $("platinum-wide-panel").style.display = "none";
     
-    // 2. تصفير "ذاكرة" مدخل الملفات تماماً (إفراغ الـ Buffer)
+    // 2. تصفير الذاكرة العميقة
     const fileInput = $("chartUpload");
     if (fileInput) {
         fileInput.value = ""; 
         try {
-            // إنشاء حاوية ملفات فارغة لمسح الذاكرة العميقة للمتصفح
             fileInput.files = new DataTransfer().files;
-        } catch(e) { console.warn("Buffer clear not supported"); }
+        } catch(e) { console.warn("Buffer clear issue"); }
     }
 
-    // 3. التصفير البصري الإجباري (مسح الـ CSS مهما كانت الظروف)
+    // 3. التصفير البصري
     const dropZone = $("drop-zone");
     if (dropZone) {
         dropZone.style.setProperty('background-image', 'none', 'important');
         dropZone.style.backgroundImage = "none";
-        dropZone.style.backgroundSize = "";
-        dropZone.style.backgroundRepeat = "";
-        dropZone.style.backgroundPosition = "";
     }
 
-    // 4. إعادة النص واللون الأصلي
+    // 4. إعادة النص الأصلي
     const statusText = $("status-text");
     if (statusText) {
         const dict = translations?.[currentLang];
-        statusText.innerText = dict?.drop_zone_text || (currentLang === 'ar' ? "إلصق الشارت هنا 📸" : "Paste Chart Here 📸");
+        statusText.innerText = dict?.drop_zone_text || "إلصق الشارت هنا 📸";
         statusText.style.color = ""; 
     }
-    
-    console.log("🧼 Zero Memory Reset Complete");
 };
 
 /* =======================
-   7. منطق الجلسات والعطلات (أصلي)
+   7. منطق الجلسات والعطلات (أصلي - محفوظ بالكامل)
    ======================= */
 async function updateMarketSessions() {
     const now = new Date();
@@ -277,7 +277,7 @@ async function updateMarketSessions() {
 }
 
 /* =======================
-   8. محرك التحليل (فخامة العرض + استعادة القوة)
+   8. محرك التحليل (معدل جراحياً لدعم اللوحة العريضة)
    ======================= */
 function formatAIValue(val) {
     if (!val) return '---';
@@ -303,7 +303,7 @@ async function runInstitutionalAnalysis() {
     const resBox = $("result-box");
     const resContent = $("res-data-content");
 
-    btn.innerText = currentLang === 'ar' ? "تحليل مؤسسي جاري..." : "KAIA ANALYZING...";
+    btn.innerText = currentLang === 'ar' ? "تحليل جاري..." : "ANALYZING...";
     btn.disabled = true;
 
     try {
@@ -311,7 +311,6 @@ async function runInstitutionalAnalysis() {
         uploadFd.append("chart", fileInput.files[0]);
 
         const uploadRes = await fetch("/api/upload-chart", { method: "POST", body: uploadFd });
-        if (!uploadRes.ok) throw new Error("UPLOAD_FAIL");
         const uploadData = await uploadRes.json();
 
         const analyzeFd = new FormData();
@@ -326,56 +325,25 @@ async function runInstitutionalAnalysis() {
             body: analyzeFd
         });
 
-        if (!analyzeRes.ok) throw new Error("ANALYSIS_FAIL");
         const data = await analyzeRes.json();
-        // --- إضافة منطق رسالة الترقية الذكية ---
-        if (data.status === "upgrade_required") {
-            alert(data.detail); // ستظهر الرسالة التي كتبناها في السيرفر (يرجى الترقية...)
-            btn.innerText = currentLang === 'ar' ? "بدء التحليل" : "Analyze";
-            btn.disabled = false;
-            return; // توقف هنا ولا تكمل التحليل
-        }
-        const analysis = data.analysis;
         
-        resBox.style.display = "block";
+        if (data.status === "upgrade_required") {
+            alert(data.detail);
+            btn.disabled = false;
+            btn.innerText = currentLang === 'ar' ? "بدء التحليل" : "Analyze";
+            return;
+        }
 
+        const analysis = data.analysis;
+
+        // [تعديل جراحي] توجيه النتائج للوحة العريضة في حال الباقة البلاتينية
         if (data.tier_mode === "Platinum") {
-            const stopHuntData = formatAIValue(analysis.stop_hunt_risk_zones);
-            const upsideLevels = formatAIValue(analysis.key_levels?.upside || analysis.key_levels);
-            const downsideLevels = formatAIValue(analysis.key_levels?.downside || '---');
-            const smcEvidence = formatAIValue(analysis.institutional_evidence || analysis.analysis_text);
-
-            resContent.innerHTML = `
-                <div class="analysis-result-card" style="border:2px solid var(--gold); padding:20px; border-radius:15px; background:rgba(255,215,0,0.02);">
-                    <h3 style="color:var(--gold); text-align:center;">🏆 KAIA MASTER VISION</h3>
-                    
-                    <div class="whale-section" style="margin-top:15px; padding:10px; background:rgba(239,68,68,0.05); border:1px dashed #ef4444; border-radius:10px;">
-                        <strong style="color:#ef4444;">🎯 مناطق مصائد السيولة (Stop-Hunt Zones):</strong>
-                        <div style="font-size:14px; margin-top:5px; line-height:1.5;">${stopHuntData}</div>
-                    </div>
-
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;">
-                        <div style="padding:10px; background:#050b14; border-radius:10px; border-right:3px solid var(--success);">
-                            <small style="color:var(--success)">Key Upside Levels</small>
-                            <div style="font-family:monospace; font-weight:bold; font-size:14px; margin-top:5px;">${upsideLevels}</div>
-                        </div>
-                        <div style="padding:10px; background:#050b14; border-radius:10px; border-right:3px solid #ef4444;">
-                            <small style="color:#ef4444">Key Downside Levels</small>
-                            <div style="font-family:monospace; font-weight:bold; font-size:14px; margin-top:5px;">${downsideLevels}</div>
-                        </div>
-                    </div>
-
-                    <div style="margin-top:15px; padding:10px; background:rgba(255,255,255,0.03); border-radius:10px;">
-                        <strong>🛡️ الأدلة المؤسسية (SMC Evidence):</strong>
-                        <p style="font-size:14px; margin-top:5px; line-height:1.6;">${smcEvidence}</p>
-                    </div>
-
-                    <div style="margin-top:15px; font-size:12px; opacity:0.7; text-align:center;">
-                        Confidence Score: ${analysis.confidence_score || 'N/A'}
-                    </div>
-                </div>
-            `;
+            resBox.style.display = "none"; // إخفاء الجانبي الصغير
+            if (typeof renderMasterVisionUI === "function") {
+                renderMasterVisionUI(analysis); // فتح اللوحة العريضة
+            }
         } else {
+            resBox.style.display = "block"; // فتح الجانبي الصغير للتحليلات العادية
             resContent.innerHTML = `
                 <div class="analysis-result-card" style="padding:15px; border-right:4px solid var(--primary);">
                     <h3 style="color:var(--primary);">KAIA ANALYSIS</h3>
@@ -389,7 +357,7 @@ async function runInstitutionalAnalysis() {
         syncUserData();
 
     } catch (e) {
-        alert(currentLang === 'ar' ? "⚠️ حدث خطأ في معالجة الشارت." : "⚠️ Error analyzing chart.");
+        alert(currentLang === 'ar' ? "⚠️ فشل في معالجة الطلب." : "⚠️ Error processing chart.");
         console.error(e);
     } finally {
         btn.innerText = currentLang === 'ar' ? "بدء التحليل" : "Analyze";
@@ -465,10 +433,4 @@ window.onload = () => {
     setInterval(updateMarketSessions, 60000);
     if ($("run-btn")) $("run-btn").onclick = runInstitutionalAnalysis;
     if ($("drop-zone")) $("drop-zone").onclick = () => $("chartUpload").click();
-    
-    // ربط أي زر إغلاق (X) موجود داخل صندوق النتائج بدالة التصفير
-    const closeBtn = document.querySelector("#result-box .close-btn");
-    if (closeBtn) {
-        closeBtn.onclick = resetWorkspace;
-    }
 };
