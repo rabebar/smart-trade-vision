@@ -22,12 +22,11 @@
 
     <style>
         html, body { 
-    overflow-x: hidden; 
-    overflow-y: auto !important; 
-    touch-action: pan-y;
-    -webkit-overflow-scrolling: touch;
-
-}
+            overflow-x: hidden; 
+            overflow-y: auto !important; 
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
+        }
         /* تعريف المتغيرات اللونية الأساسية للباقات */
         :root {
             --trial-color: #10b981;
@@ -180,79 +179,81 @@
         }
         .service-item h4 { font-weight: 900; font-size: 16px; color: #fff; margin: 0; }
         .service-item p { font-size: 11px; color: var(--muted); margin-top: 5px; font-weight: 700; }
+        
         /* بار تنبيه التفعيل في الصفحة الرئيسية */
-.verification-alert-bar {
-    display: none;
-    background: linear-gradient(90deg, #1e293b, #0f172a);
-    border-bottom: 2px solid #3b82f6;
-    padding: 15px;
-    text-align: center;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 10000;
-}
-.v-content { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
-.v-text { font-weight: 800; color: #fff; font-size: 14px; }
-.v-btn { background: #3b82f6; color: #000; padding: 8px 20px; border-radius: 8px; text-decoration: none; font-weight: 900; font-size: 13px; }
-body.has-banner .top-navbar { margin-top: 50px; }
-/* --- تنسيقات واجهة النتائج البلاتينية (KAIA Master) --- */
-.platinum-result-wrap { 
-    border: 2px solid var(--gold); 
-    border-radius: 20px; 
-    padding: 20px; 
-    background: rgba(255, 215, 0, 0.03); 
-    margin-top: 15px; 
-}
-.plat-header { 
-    color: var(--gold); 
-    text-align: center; 
-    font-weight: 900; 
-    margin-bottom: 20px; 
-    font-size: 20px; 
-    text-shadow: 0 0 10px rgba(255,215,0,0.3); 
-}
-.levels-grid { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: 15px; 
-    margin-bottom: 20px; 
-}
-.level-card { 
-    background: #0b1222; 
-    border-radius: 15px; 
-    padding: 12px; 
-    border: 1px solid rgba(255,255,255,0.05); 
-}
-.level-card.up { border-right: 4px solid var(--success); }
-.level-card.down { border-right: 4px solid #ef4444; }
-.price-tag { 
-    font-family: monospace; 
-    font-size: 18px; 
-    font-weight: 900; 
-    color: #fff; 
-    display: block; 
-    margin: 5px 0; 
-}
-.stop-hunt-alert { 
-    background: rgba(239, 68, 68, 0.1); 
-    border: 2px dashed #ef4444; 
-    border-radius: 15px; 
-    padding: 15px; 
-    margin-bottom: 20px; 
-}
-.scenario-box { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: 10px; 
-}
-.scen-card { 
-    background: rgba(255,255,255,0.02); 
-    padding: 12px; 
-    border-radius: 12px; 
-    font-size: 13px; 
-}
+        .verification-alert-bar {
+            display: none;
+            background: linear-gradient(90deg, #1e293b, #0f172a);
+            border-bottom: 2px solid #3b82f6;
+            padding: 15px;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10000;
+        }
+        .v-content { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .v-text { font-weight: 800; color: #fff; font-size: 14px; }
+        .v-btn { background: #3b82f6; color: #000; padding: 8px 20px; border-radius: 8px; text-decoration: none; font-weight: 900; font-size: 13px; }
+        body.has-banner .top-navbar { margin-top: 50px; }
+
+        /* --- تنسيقات واجهة النتائج البلاتينية (KAIA Master) --- */
+        .platinum-result-wrap { 
+            border: 2px solid var(--gold); 
+            border-radius: 20px; 
+            padding: 20px; 
+            background: rgba(255, 215, 0, 0.03); 
+            margin-top: 15px; 
+        }
+        .plat-header { 
+            color: var(--gold); 
+            text-align: center; 
+            font-weight: 900; 
+            margin-bottom: 20px; 
+            font-size: 20px; 
+            text-shadow: 0 0 10px rgba(255,215,0,0.3); 
+        }
+        .levels-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; 
+            margin-bottom: 20px; 
+        }
+        .level-card { 
+            background: #0b1222; 
+            border-radius: 15px; 
+            padding: 12px; 
+            border: 1px solid rgba(255,255,255,0.05); 
+        }
+        .level-card.up { border-right: 4px solid var(--success); }
+        .level-card.down { border-right: 4px solid #ef4444; }
+        .price-tag { 
+            font-family: monospace; 
+            font-size: 18px; 
+            font-weight: 900; 
+            color: #fff; 
+            display: block; 
+            margin: 5px 0; 
+        }
+        .stop-hunt-alert { 
+            background: rgba(239, 68, 68, 0.1); 
+            border: 2px dashed #ef4444; 
+            border-radius: 15px; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+        }
+        .scenario-box { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+        }
+        .scen-card { 
+            background: rgba(255,255,255,0.02); 
+            padding: 12px; 
+            border-radius: 12px; 
+            font-size: 13px; 
+        }
     </style>
 </head>
 <body>
@@ -272,24 +273,17 @@ body.has-banner .top-navbar { margin-top: 50px; }
     <div id="intro-content" style="max-width: 850px; padding: 20px;">
         <div id="intro-loader">
             <div style="width: 60px; height: 60px; background-color: #3b82f6; border-radius: 50%; margin: 0 auto 20px auto; box-shadow: 0px 0px 20px rgba(59, 130, 246, 0.6); animation: pulse 1.5s infinite;"></div>
-            <p style="color: #3b82f6; font-weight: 800; letter-spacing: 2px;">
-                جاري تشغيل محرك KAIA AI...<br>
-                <span style="font-size: 14px; opacity: 0.8; display: block; margin-top: 5px;">Starting KAIA AI Engine...</span>
+            <p style="color: #3b82f6; font-weight: 800; letter-spacing: 2px;" data-i18n="intro_loading">
+                جاري تشغيل محرك KAIA AI...
             </p>
         </div>
         <div id="intro-reveal" style="display:none;">
-            <h1 style="font-size: 70px; font-weight: 900; color: #3b82f6; margin-bottom: 20px; text-shadow: 0px 0px 30px rgba(59, 130, 246, 0.4);">KAIA AI</h1>
-            <p style="font-size: 22px; line-height: 1.6; color: #ffffff; margin-bottom: 35px; font-weight: 600;">
-                أنت لا تتداول وحدك بعد الآن.. محرك KAIA AI يقرأ لك ما تخفيه البنوك، ويحسب لك ما يخشاه البشر.<br>
-                <span style="font-size: 17px; opacity: 0.8; display: block; margin-top: 10px; font-weight: 400;">
-                    You don't trade alone anymore.. KAIA AI reads what banks hide and calculates what humans fear.
-                </span>
+            <h1 style="font-size: 70px; font-weight: 900; color: #3b82f6; margin-bottom: 20px; text-shadow: 0px 0px 30px rgba(59, 130, 246, 0.4);" data-i18n="intro_title">KAIA AI</h1>
+            <p style="font-size: 22px; line-height: 1.6; color: #ffffff; margin-bottom: 35px; font-weight: 600;" data-i18n="intro_desc">
+                أنت لا تتداول وحدك بعد الآن.. محرك KAIA AI يقرأ لك ما تخفيه البنوك، ويحسب لك ما يخشاه البشر.
             </p>
-            <button id="ignite-system-btn" class="core-analyze-btn" style="height: auto; padding: 20px 45px; font-size: 20px; line-height: 1.4; font-weight: 900;">
-                الدخول إلى غرفة العمليات المؤسسية<br>
-                <span style="font-size: 14px; display: block; margin-top: 5px; opacity: 0.8; font-weight: 600;">
-                    Enter Institutional Operations Room
-                </span>
+            <button id="ignite-system-btn" class="core-analyze-btn" style="height: auto; padding: 20px 45px; font-size: 20px; line-height: 1.4; font-weight: 900;" data-i18n="intro_btn">
+                الدخول إلى غرفة العمليات المؤسسية
             </button>
         </div>
     </div>
@@ -387,7 +381,7 @@ body.has-banner .top-navbar { margin-top: 50px; }
 <!-- شريط أخبار كايا الهجين (مخفي افتراضياً ويظهر للعربي فقط) -->
 <div id="kaia-ticker-container" style="display: none; background: #050b14; border-bottom: 1px solid rgba(59,130,246,0.2); padding: 8px 0; overflow: hidden; position: relative; z-index: 10;">
     <div id="kaia-ticker-wrap">
-        <p style="text-align: center; font-size: 13px; color: var(--primary); opacity: 0.5; margin: 0;">جاري جلب النبض العالمي...</p>
+        <p style="text-align: center; font-size: 13px; color: var(--primary); opacity: 0.5; margin: 0;" data-i18n="intro_loading">جاري جلب النبض العالمي...</p>
     </div>
 </div>
 
@@ -404,18 +398,18 @@ body.has-banner .top-navbar { margin-top: 50px; }
     <div class="services-dashboard">
         <div class="service-item">
             <i class="fa-solid fa-brain" style="color: var(--primary);"></i>
-            <h4>تحليل SMC المتقدم</h4>
-            <p>قراءة مناطق السيولة والأوردر بلوك</p>
+            <h4 data-i18n="service_smc_title">تحليل SMC المتقدم</h4>
+            <p data-i18n="service_smc_desc">قراءة مناطق السيولة والأوردر بلوك</p>
         </div>
         <div class="service-item" style="border-right: 1px solid rgba(255,255,255,0.1); border-left: 1px solid rgba(255,255,255,0.1);">
             <i class="fa-solid fa-wave-square" style="color: var(--success);"></i>
-            <h4>نظرية موجات إليوت</h4>
-            <p>تحديد موقع السعر في الدورة الموجية</p>
+            <h4 data-i18n="service_elliott_title">نظرية موجات إليوت</h4>
+            <p data-i18n="service_elliott_desc">تحديد موقع السعر في الدورة الموجية</p>
         </div>
         <div class="service-item">
             <i class="fa-solid fa-gem" style="color: var(--gold);"></i>
-            <h4>KAIA Master Vision</h4>
-            <p>دمج الاستراتيجيات برؤية سيادية</p>
+            <h4 data-i18n="service_master_title">KAIA Master Vision</h4>
+            <p data-i18n="service_master_desc">دمج الاستراتيجيات برؤية سيادية</p>
         </div>
     </div>
 </section>
@@ -437,43 +431,43 @@ body.has-banner .top-navbar { margin-top: 50px; }
     <div class="horizontal-grid tiers-4" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; max-width: 1300px; margin: 0 auto;">
         <div class="price-card trial">
             <h3 data-i18n="plan_trial" style="color: var(--trial-color); font-weight: 900;">TRIAL</h3>
-            <div class="price">مجاناً</div>
+            <div class="price" data-i18n="plan_btn_free">مجاناً</div>
             <ul class="plan-features">
-                <li><i class="fa-solid fa-check"></i> 3 تحليلات SMC مجانية</li>
-                <li><i class="fa-solid fa-check"></i> رادار الفوركس الأساسي</li>
-                <li><i class="fa-solid fa-xmark" style="color:red"></i> ميزات الاحتراف مغلقة</li>
+                <li><i class="fa-solid fa-check"></i> <span data-i18n="plan_feature_credits_3">3 تحليلات SMC مجانية</span></li>
+                <li><i class="fa-solid fa-check"></i> <span data-i18n="plan_feature_smc">رادار الفوركس الأساسي</span></li>
+                <li><i class="fa-solid fa-xmark" style="color:red"></i> <span data-i18n="plan_feature_support">ميزات الاحتراف مغلقة</span></li>
             </ul>
-            <button class="plan-btn" data-plan="Trial" data-price="0">ابدأ التجربة</button>
+            <button class="plan-btn" data-plan="Trial" data-price="0" data-i18n="hero_btn">ابدأ التجربة</button>
         </div>
         <div class="price-card basic">
             <h3 data-i18n="plan_basic" style="color: var(--basic-color); font-weight: 900;">BASIC</h3>
             <div class="price">$5</div>
             <ul class="plan-features">
-                <li><i class="fa-solid fa-check"></i> 20 تحليلاً شهرياً</li>
-                <li><i class="fa-solid fa-check"></i> رادار الأسواق الكامل</li>
-                <li><i class="fa-solid fa-check"></i> خريطة قوة العملات</li>
+                <li><i class="fa-solid fa-check"></i> <span data-i18n="plan_feature_credits_10">20 تحليلاً شهرياً</span></li>
+                <li><i class="fa-solid fa-check"></i> <span data-i18n="p_b_2">رادار الأسواق الكامل</span></li>
+                <li><i class="fa-solid fa-check"></i> <span data-i18n="p_b_3">خريطة قوة العملات</span></li>
             </ul>
-            <button class="plan-btn" data-plan="Basic" data-price="5">اشترك الآن</button>
+            <button class="plan-btn" data-plan="Basic" data-price="5" data-i18n="plan_btn_sub">اشترك الآن</button>
         </div>
         <div class="price-card pro">
             <h3 data-i18n="plan_pro" style="color: var(--pro-color); font-weight: 900;">PRO</h3>
             <div class="price">$15</div>
             <ul class="plan-features">
-                <li><i class="fa-solid fa-star"></i> 40 تحليلاً (فريم 1m)</li>
-                <li><i class="fa-solid fa-star"></i> KAIA Master Vision 🛡️</li>
-                <li><i class="fa-solid fa-star"></i> معالجة فائقة السرعة</li>
+                <li><i class="fa-solid fa-star"></i> <span data-i18n="plan_feature_credits_40">40 تحليلاً (فريم 1m)</span></li>
+                <li><i class="fa-solid fa-star"></i> <span data-i18n="plan_feature_all">KAIA Master Vision 🛡️</span></li>
+                <li><i class="fa-solid fa-star"></i> <span data-i18n="p_pro_3">معالجة فائقة السرعة</span></li>
             </ul>
-            <button class="plan-btn" data-plan="Pro" data-price="15">ترقية الآن</button>
+            <button class="plan-btn" data-plan="Pro" data-price="15" data-i18n="plan_btn_upgrade">ترقية الآن</button>
         </div>
         <div class="price-card platinum">
             <h3 data-i18n="plan_platinum" style="color: var(--platinum-color); font-weight: 900;">PLATINUM</h3>
             <div class="price">$50</div>
             <ul class="plan-features">
-                <li><i class="fa-solid fa-crown"></i> رتبة الحوت (Whale)</li>
-                <li><i class="fa-solid fa-crown"></i> 200 تحليل شهرياً</li>
-                <li><i class="fa-solid fa-crown"></i> استشارات 1-on-1</li>
+                <li><i class="fa-solid fa-crown"></i> <span data-i18n="plan_feature_whale">رتبة الحوت (Whale)</span></li>
+                <li><i class="fa-solid fa-crown"></i> <span data-i18n="plan_feature_credits_200">200 تحليل شهرياً</span></li>
+                <li><i class="fa-solid fa-crown"></i> <span data-i18n="p_plat_3">استشارات 1-on-1</span></li>
             </ul>
-            <button class="plan-btn" data-plan="Platinum" data-price="50">امتلك السيادة</button>
+            <button class="plan-btn" data-plan="Platinum" data-price="50" data-i18n="plan_btn_sub">امتلك السيادة</button>
         </div>
     </div>
 </section>
@@ -490,13 +484,10 @@ body.has-banner .top-navbar { margin-top: 50px; }
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <label data-i18n="strategy_label" style="font-weight: 800; color: var(--muted);">الاستراتيجية</label>
                 <select id="strategy" class="input-pro" style="height:55px; font-size:15px;">
-    <!-- خيار بلاتيني حصري -->
-    <option id="kaia-premium-opt" value="KAIA Master" style="display:none;">KAIA Master Vision 👑</option>
-    
-    <!-- خيارات متاحة -->
-    <option value="SMC" selected>SMC Concepts 💎</option>
-    <option value="Elliott Waves">Elliott Waves 🌊</option>
-</select>
+                    <option id="kaia-premium-opt" value="KAIA Master" style="display:none;">KAIA Master Vision 👑</option>
+                    <option value="SMC" selected>SMC Concepts 💎</option>
+                    <option value="Elliott Waves">Elliott Waves 🌊</option>
+                </select>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <label data-i18n="timeframe_label" style="font-weight: 800; color: var(--muted);">الفريم</label>
@@ -509,8 +500,7 @@ body.has-banner .top-navbar { margin-top: 50px; }
         <button class="core-analyze-btn" id="run-btn" data-i18n="analyze_btn" style="height: 75px; width: 100%; font-size: 22px; font-weight: 900; border-radius: 15px;">بدء عملية التحليل</button>
         <div id="result-box" style="display: none; margin-top: 40px; border-top: 1px solid var(--border); padding-top: 30px;">
     <div id="res-data-content"></div>
-    <!-- هذا هو الزر الجديد الذي سيقوم بالتنظيف -->
-    <button onclick="resetAnalyzerFull()" style="width:100%; height:60px; background:#1e293b; color:white; border:none; border-radius:15px; margin-top:20px; font-weight:900; cursor:pointer;">
+    <button onclick="resetAnalyzerFull()" style="width:100%; height:60px; background:#1e293b; color:white; border:none; border-radius:15px; margin-top:20px; font-weight:900; cursor:pointer;" data-i18n="analysis_hide_btn">
         إغلاق وتصفير المحلل
     </button>
 </div>
@@ -522,28 +512,28 @@ body.has-banner .top-navbar { margin-top: 50px; }
     <div class="footer-grid-v2">
         <div class="footer-col" style="text-align: right;">
             <h3 style="color: var(--primary); font-weight: 900; margin-bottom: 15px;">KAIA AI <i class="fa-solid fa-microchip"></i></h3>
-            <p style="font-size: 14px; color: #d1d4dc; font-weight: 600; line-height: 1.6;">المحرك الأول للتحليل المؤسسي المبني على الذكاء الاصطناعي.</p>
+            <p data-i18n="footer_desc" style="font-size: 14px; color: #d1d4dc; font-weight: 600; line-height: 1.6;">المحرك الأول للتحليل المؤسسي المبني على الذكاء الاصطناعي.</p>
         </div>
         <div class="footer-col" style="text-align: right;">
-            <h3 style="font-weight: 900; margin-bottom: 15px;">روابط سريعة</h3>
+            <h3 data-i18n="footer_links" style="font-weight: 900; margin-bottom: 15px;">روابط سريعة</h3>
             <ul style="list-style: none; padding: 0; font-size: 14px; font-weight: 700;">
-                <li style="margin-bottom: 10px;"><a href="/dashboard" style="text-decoration: none; color: #fff;">غرفة القيادة</a></li>
-                <li style="margin-bottom: 10px;"><a href="#pricing-section" style="text-decoration: none; color: #fff;">الباقات والأسعار</a></li>
+                <li style="margin-bottom: 10px;"><a href="/dashboard" data-i18n="nav_dashboard" style="text-decoration: none; color: #fff;">غرفة القيادة</a></li>
+                <li style="margin-bottom: 10px;"><a href="#pricing-section" data-i18n="pricing_title" style="text-decoration: none; color: #fff;">الباقات والأسعار</a></li>
             </ul>
         </div>
         <div class="footer-col" style="text-align: right;">
-            <h3 style="font-weight: 900; margin-bottom: 15px;">تواصل معنا</h3>
+            <h3 data-i18n="footer_support" style="font-weight: 900; margin-bottom: 15px;">تواصل معنا</h3>
             <p style="font-size: 16px; font-weight: 900; color: #fff;" dir="ltr"><i class="fa-brands fa-whatsapp" style="color: #25d366;"></i> +970 59 406 0648</p>
         </div>
     </div>
     <div class="footer-bottom-v2">
-        <p style="margin-bottom: 10px; color: #ef4444; font-weight: 800;">إخلاء مسؤولية: التداول ينطوي على مخاطر، التحليلات لأغراض استشارية فقط.</p>
-        <p>جميع الحقوق محفوظة © 2025 لشركة KAIA AI.</p>
+        <p style="margin-bottom: 10px; color: #ef4444; font-weight: 800;" data-i18n="disclaimer_text">إخلاء مسؤولية: التداول ينطوي على مخاطر، التحليلات لأغراض استشارية فقط.</p>
+        <p data-i18n="footer_rights">جميع الحقوق محفوظة © 2025 لشركة KAIA AI.</p>
     </div>
 </footer>
 
 <script src="/static/translations.js"></script>
-<script src="/static/script.js?v=7.6"></script>
+<script src="/static/script.js?v=8.0"></script>
 
 <script id="seasonal-script">
     (function() {
