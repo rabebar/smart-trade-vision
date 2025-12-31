@@ -254,6 +254,46 @@
             border-radius: 12px; 
             font-size: 13px; 
         }
+        /* [حقن ملكي] تنسيق البروشور التسويقي والآلة الكاتبة */
+#intro-reveal {
+    text-align: right;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+.typewriter-line {
+    font-size: 20px;
+    color: #ffffff;
+    line-height: 1.8;
+    margin-bottom: 20px;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.5s ease;
+}
+
+.line-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* تمييز البلاتينية ومحرك كايا ماستر بالذهب المتوهج */
+.highlight-gold {
+    color: #ffd700; /* ذهبي نقي */
+    font-weight: 900;
+    font-size: 24px;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    display: inline-block;
+}
+
+.legal-warning {
+    color: #94a3b8;
+    font-size: 14px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 15px;
+    margin-top: 30px;
+}
     </style>
 </head>
 <body>
@@ -278,14 +318,14 @@
             </p>
         </div>
         <div id="intro-reveal" style="display:none;">
-            <h1 style="font-size: 70px; font-weight: 900; color: #3b82f6; margin-bottom: 20px; text-shadow: 0px 0px 30px rgba(59, 130, 246, 0.4);" data-i18n="intro_title">KAIA AI</h1>
-            <p style="font-size: 22px; line-height: 1.6; color: #ffffff; margin-bottom: 35px; font-weight: 600;" data-i18n="intro_desc">
-                أنت لا تتداول وحدك بعد الآن.. محرك KAIA AI يقرأ لك ما تخفيه البنوك، ويحسب لك ما يخشاه البشر.
-            </p>
-            <button id="ignite-system-btn" class="core-analyze-btn" style="height: auto; padding: 20px 45px; font-size: 20px; line-height: 1.4; font-weight: 900;" data-i18n="intro_btn">
-                الدخول إلى غرفة العمليات المؤسسية
-            </button>
-        </div>
+    <!-- شاشة عرض البروشور التسويقي -->
+    <div id="brochure-screen" style="text-align: right; min-height: 300px;"></div>
+    
+    <!-- زر الدخول المتوهج (سيظهر برمجياً في النهاية) -->
+    <button id="ignite-system-btn" class="core-analyze-btn" style="display:none; height: auto; padding: 20px 45px; font-size: 22px; margin-top: 40px; font-weight: 900; width: 100%; border: 2px solid #ffd700; background: linear-gradient(90deg, #000, #0b1222); color: #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.2);">
+        تفعيل المنظومة السيادية والدخول
+    </button>
+</div>
     </div>
 </div>
 
@@ -535,27 +575,82 @@
 <script src="/static/translations.js"></script>
 <script src="/static/script.js?v=8.0"></script>
 
-<script id="seasonal-script">
+<script id="kaia-total-logic">
+    // [1] تأثيرات الأجواء الملكية (الثلج)
     (function() {
         const now = new Date();
         const expiryDate = new Date('2026-01-06'); 
         if (now < expiryDate) {
-            const introTitle = document.querySelector('#kaia-intro-overlay h1');
-            if (introTitle) {
-                introTitle.style.setProperty("direction", "ltr", "important");
-                const originalText = "KAIA AI";
-                introTitle.innerHTML = '<span class="santa-k">K</span>' + originalText.substring(1);
-            }
             setInterval(() => {
                 const flake = document.createElement('div');
                 flake.innerHTML = '•'; flake.className = 'snowflake';
                 flake.style.left = Math.random() * 100 + 'vw'; flake.style.opacity = Math.random();
-                flake.style.fontSize = (Math.random() * 10 + 10) + 'px'; flake.style.animationDuration = (Math.random() * 4 + 3) + 's';
+                flake.style.fontSize = (Math.random() * 10 + 10) + 'px'; 
+                flake.style.animationDuration = (Math.random() * 4 + 3) + 's';
                 document.body.appendChild(flake);
                 setTimeout(() => flake.remove(), 6000);
             }, 400);
         }
     })();
+
+    // [2] محرك البروشور التسويقي بنظام الآلة الكاتبة السريعة
+    const brochureData = [
+        "جاري الاتصال... تم تفعيل المنظومة السيادية. أهلاً بك يا مدير في KAIA AI. أنا مدير أعمالك الاستراتيجي، شريكك في كشف ما تخفيه الشاشات وفهم نية الحيتان.",
+        "ترسانة غرفة القيادة جاهزة بتنظيم فائق: شارت TradingView المطور مع حاسبة مخاطر ونقاط صارمة. آلة حاسبة تقنية مدمجة. جدول قوة العملات مع الأجندة الاقتصادية. مفكرة المتداول الذكية لتدوين خططك. كل ما تحتاجه في واجهة واحدة خالية من الضجيج.",
+        "حدد رتبتك القيادية: الباقة التجريبية (Trial) للاختبار. الباقة الأساسية (Basic) للرادار الكامل. الباقة الاحترافية (Pro) لكافة الاستراتيجيات. <span class='highlight-gold'>الباقة البلاتينية (Platinum)</span>: رتبة الملك.. تشمل كشف سيولة الحيتان عبر محرك <span class='highlight-gold'>KAIA Master</span> والدردشة المباشرة معي كمدير أعمالك.",
+        "<div class='legal-warning'>⚠️ تنبيه مخاطر قانوني: التداول ينطوي على مخاطر عالية جداً. محرك KAIA AI هو أداة تحليلية تعليمية وليس نصيحة مالية مرخصة. بدخولك للمنصة، أنت تقر بمسؤوليتك الكاملة وتخلي مسؤولية المنصة عن أي خسائر مالية.</div>"
+    ];
+
+    function runTypewriterBrochure() {
+        const screen = document.getElementById('brochure-screen');
+        const introReveal = document.getElementById('intro-reveal');
+        const introLoader = document.getElementById('intro-loader');
+        const igniteBtn = document.getElementById('ignite-system-btn');
+
+        if (introLoader) introLoader.style.display = 'none';
+        if (introReveal) introReveal.style.display = 'block';
+
+        let lineIndex = 0;
+
+        function typeLine() {
+            if (lineIndex < brochureData.length) {
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'typewriter-line line-visible';
+                screen.appendChild(lineDiv);
+
+                let charIndex = 0;
+                const text = brochureData[lineIndex];
+
+                const interval = setInterval(() => {
+                    lineDiv.innerHTML = text.substring(0, charIndex);
+                    charIndex++;
+                    
+                    if (charIndex > text.length) {
+                        clearInterval(interval);
+                        lineIndex++;
+                        setTimeout(typeLine, 500); 
+                    }
+                }, 10); 
+            } else {
+                if (igniteBtn) {
+                    igniteBtn.style.display = 'block';
+                    igniteBtn.style.animation = 'logo-glow 2s infinite';
+                }
+            }
+        }
+        typeLine();
+    }
+
+    // [3] إدارة تشغيل المنظومة
+    document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(runTypewriterBrochure, 1500);
+        const btn = document.getElementById('ignite-system-btn');
+        if (btn) {
+            btn.onclick = () => {
+                document.getElementById('kaia-intro-overlay').style.display = 'none';
+            };
+        }
+    });
 </script>
 
 <!-- المحرك الإعلامي الملكي المطور (الإصدار النهائي المستقر والمحسن) -->
