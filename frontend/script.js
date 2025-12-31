@@ -2,7 +2,7 @@
 
 /* ============================================================
    KAIA AI - MASTER FRONTEND ENGINE (Final Integrated)
-   Version: 7.6 - Exact Line Match & Password Shield
+   Version: 7.6.1 - Forced Visibility Fix
    ============================================================ */
 
 // --- 1. الثوابت والمتغيرات العامة ---
@@ -206,7 +206,10 @@ function updateAuthModalState() {
     
     const fields = ["name-field-wrap", "whatsapp-field-wrap", "country-field-wrap", "pass-confirm-field-wrap"];
     fields.forEach(id => { 
-        if($(id)) $(id).style.display = isRegisterMode ? "block" : "none"; 
+        if($(id)) {
+            // [تحسين حاسم لضعف النظر] إجبار المتصفح على إظهار الخانة باستخدام خاصية important برمجياً
+            $(id).style.setProperty('display', isRegisterMode ? "block" : "none", "important"); 
+        }
     });
 
     if ($("modal-title")) $("modal-title").innerText = isRegisterMode ? (dict.auth_toggle_reg || "Register") : (dict.auth_title || "Login");
@@ -256,12 +259,12 @@ async function handleAuthSubmit() {
     const rawEmail = $("auth-email")?.value || "";
     const email = rawEmail.trim().toLowerCase();
     const pass = $("auth-pass")?.value;
-    const passConfirm = $("auth-pass-confirm")?.value; // جلب قيمة تأكيد كلمة المرور
+    const passConfirm = $("auth-pass-confirm")?.value;
    
-if (isRegisterMode && pass !== passConfirm) {
-    alert(currentLang === "ar" ? "عذراً، كلمتا المرور غير متطابقتين" : "Passwords do not match");
-    return; // إيقاف العملية فوراً
-}
+    if (isRegisterMode && pass !== passConfirm) {
+        alert(currentLang === "ar" ? "عذراً، كلمتا المرور غير متطابقتين" : "Passwords do not match");
+        return; 
+    }
     
     if (!email || !pass) {
         alert(currentLang === "ar" ? "يرجى إدخال كافة البيانات المطلوبة" : "Please fill all required data");
@@ -270,25 +273,19 @@ if (isRegisterMode && pass !== passConfirm) {
 
     try {
         if (isRegisterMode) {
-            // [حماية المتصفح] التحقق من تطابق كلمتي المرور قبل الإرسال
-            if (pass !== passConfirm) {
-                alert(currentLang === "ar" ? "عذراً، كلمتا المرور غير متطابقتين" : "Passwords do not match");
-                return;
-            }
-
             const res = await fetch("/api/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-               body: JSON.stringify({
-            email: email,
-            password: pass,
-            confirm_password: passConfirm, // هذا هو السطر الذي سنضيفه
-            full_name: $("auth-fullname").value || "Trader",
-            phone: "000",
-            whatsapp: $("auth-whatsapp").value || "",
-            country: $("auth-country").value || "Global",
-            tier: selectedPlan.name 
-        })
+                body: JSON.stringify({
+                    email: email,
+                    password: pass,
+                    confirm_password: passConfirm,
+                    full_name: $("auth-fullname").value || "Trader",
+                    phone: "000",
+                    whatsapp: $("auth-whatsapp").value || "",
+                    country: $("auth-country").value || "Global",
+                    tier: selectedPlan.name 
+                })
             });
             
             const data = await res.json();
