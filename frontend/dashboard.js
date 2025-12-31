@@ -305,6 +305,9 @@ async function runInstitutionalAnalysis() {
 
     btn.innerText = currentLang === 'ar' ? "تحليل جاري..." : "ANALYZING...";
     btn.disabled = true;
+    // [حقن المسح الفوري] تنظيف الشاشة من أي نتائج قديمة بمجرد ضغط الزر
+    if ($("result-box")) $("result-box").style.display = "none";
+    if ($("platinum-wide-panel")) $("platinum-wide-panel").style.display = "none";
 
     try {
         const uploadFd = new FormData();

@@ -763,14 +763,25 @@ function renderMasterVisionUI(data) {
             <b style="color:var(--danger); font-size:16px;"><i class="fa-solid fa-triangle-exclamation"></i> ${t['stop_hunt_title']}:</b>
             <p style="margin:10px 0; font-size:15px; font-weight:700; color:#fff;">${smartString(data.stop_hunt_risk_zones)}</p>
         </div>
+        <!-- ملاحظة إخلاء المسؤولية القانونية الثابتة -->
+        <div style="margin-top:25px; padding:20px; border-top:1px solid rgba(255,255,255,0.1); text-align:center;">
+            <p style="font-size:13px; color:rgba(255,255,255,0.5); line-height:1.6; font-style:italic; font-weight:600; max-width:800px; margin:0 auto;">
+                ${t['legal_note_report']}
+            </p>
+        </div>
     `;
 wideContent.innerHTML = html;
 }
 
-// دالة إغلاق التقرير العريض ليعمل زر [X]
+// دالة الإغلاق الذكية (تخفي التقرير وتمسح الصورة والذاكرة فوراً)
 function closeWideReport() {
     const widePanel = document.getElementById("platinum-wide-panel");
     if (widePanel) widePanel.style.display = "none";
+    
+    // استدعاء وظيفة التصفير الشاملة الموجودة في ملف JS
+    if (typeof resetWorkspace === 'function') {
+        resetWorkspace();
+    }
 }
 </script>
 </body>
