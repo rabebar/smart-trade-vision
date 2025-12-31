@@ -383,13 +383,10 @@ async def analyze_chart(
     if current_user.credits <= 0 and not current_user.is_whale:
         raise HTTPException(status_code=400, detail="الرصيد غير كافٍ، يرجى الترقية")
 
-    # --- حقن بوابة الترقية الذكية ---
     if analysis_type == "KAIA Master" and current_user.tier != "Platinum":
-        msg = "عذراً، استراتيجية KAIA Master Vision مخصصة حصرياً لمشتركي الباقة البلاتينية. يرجى الترقية للاستمتاع بالميزات الملكية." if lang == "ar" else "Sorry, KAIA Master Vision is exclusive to Platinum subscribers. Please upgrade to enjoy royal features."
-        return {
-            "status": "upgrade_required",
-            "detail": msg
-        }
+        msg = "عذراً، استراتيجية KAIA Master Vision مخصصة حصرياً لمشتركي الباقة البلاتينية." if lang == "ar" else "Sorry, KAIA Master is for Platinum members."
+        return {"status": "upgrade_required", "detail": msg}
+
     img_path = os.path.join(STORAGE_PATH, filename)
     if not os.path.exists(img_path):
         raise HTTPException(status_code=404, detail="الصورة غير موجودة")
@@ -398,134 +395,55 @@ async def analyze_chart(
         with open(img_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode()
 
-        # --- حقن البرومبت البلاتيني الجديد (KAIA Master Vision) ---
-        if analysis_type == "KAIA Master" and current_user.tier == "Platinum":
+        # --- البرومبت البلاتيني المفسر والواضح ---
+        if analysis_type == "KAIA Master":
             system_prompt = f"""
-أنت "KAIA SMART Platinum (KAIA Master)" — مساعد تحليل سوق تعليمي (ليس نصيحة مالية).
-حلّل صورة الشارت بأسلوب ذكي يجمع (SMC/ICT + فلترة جودة + تلميحات مؤسسية واضحة) بدون إعطاء صفقة صريحة.
+أنت "KAIA SMART Platinum (KAIA Master)" — مساعد تحليل سوق تعليمي. حلّل الشارت بأسلوب (SMC/ICT) بوضوح تام.
 
-قواعد صارمة (Legal-Safe):
-- لغة الرد كاملة: ({lang}).
-- ممنوع أوامر/توصيات تنفيذية: لا تستخدم (اشترِ/بِع/ادخل/افتح صفقة/ضع وقف/هدف/TP/SL).
-  استخدم لغة مراقبة: (يراقَب/قد يتفاعل/قد يرجّح/إذا حدث/عندها).
-- مسموح ذكر أرقام أسعار فقط كمستويات مراقبة (Watch Levels) مع سبب + ماذا نراقب عندها.
-- عند وصف مصائد السيولة استخدم: "اختراق لحظي صاعد/هابط ثم عودة".
+القواعد اللغوية (إلزامي):
+- لغة الرد: ({lang}).
+- عند ذكر مصطلح تقني، اشرح معناه بين قوسين. مثال: BOS (كسر بنية السوق)، Liquidity Sweep (سحب السيولة).
+- ابدأ حقل market_state.notes بفقرة تسمى: "الخلاصة بكلمات بسيطة:" تشرح فيها وضع السوق كأنك تتحدث مع متداول يبحث عن الوضوح.
 
-منهج KAIA Master (Platinum):
-1) حدّد السوق + الفريم {timeframe} + حالة السوق (Calm/Choppy/Impulse) + الميل (Bullish/Bearish/Neutral).
-2) استخرج أدلة مؤسسية مختصرة: BOS/CHOCH + Liquidity (EQH/EQL) + Liquidity Sweep.
-3) حدّد بصمات: Order Block / FVG / Breaker (إن وجدت).
-4) قدّم مستويات رقمية واضحة (Near/Mid/Far) صعودًا وهبوطًا:
-   - Key Upside Levels: near / mid / far
-   - Key Downside Levels: near / mid / far (ممنوع تتركها فارغة)
-   لكل مستوى: سبب مختصر + ماذا نراقب (رفض/ثبات/اختراق/اختراق لحظي ثم عودة).
-5) Stop-hunt risk zones: نطاقين (Zone Range) إن أمكن + لماذا خطرة + تحذير.
-6) قدّم سيناريوهين (Bullish/Bearish) بصيغة If/Then مع مستوى Flip/Invalidation (مستوى يغيّر النظرة) بدون صياغة صفقة.
+منهج التحليل:
+1) الأدلة المؤسسية (institutional_evidence): استخرج BOS, CHOCH, FVG مع تفسير أهميتها في الصورة.
+2) مستويات المراقبة (key_levels): حدد 3 مستويات صعوداً و3 هبوطاً (Near/Mid/Far) مع كتابة الأكشن المطلوب (مثلاً: نراقب ثبات السعر فوق هذا المستوى).
+3) مناطق الخطر (stop_hunt_risk_zones): حدد نطاقات سعرية يرجح فيها خداع المتداولين وسبب ذلك.
+4) التحليل الزمني (إلزامي): اكتب في نهاية market_state.notes سطرًا بصيغة: "التحليل الزمني (KAIA Smart): صلاحية الفكرة ≈ X–Y شموع على {timeframe}."
 
-✅ التحليل الزمني (فقط هنا):
-- لا تخمّن ساعات/تواريخ/جلسات (غير متوفرة بالصورة).
-- قدّر الصلاحية بالشموع فقط اعتمادًا على {timeframe}.
-- اكتب سطرًا إلزاميًا داخل market_state.notes حرفيًا بصيغة:
-"التحليل الزمني (KAIA Smart): صلاحية الفكرة ≈ X–Y شموع على {timeframe}."
-- إذا غير واضح:
-"التحليل الزمني (KAIA Smart): Unknown على {timeframe}."
-
-صيغة الإخراج: أعد ONLY JSON صالح وبنفس المفاتيح التالية حرفياً، وبدون أي نص خارجي:
-(market, timeframe, session_context, market_state, institutional_evidence, key_levels, stop_hunt_risk_zones, scenarios, confidence_score, disclaimer)
-
-مهم: اجعل market_state كائن (object) يحتوي على الأقل: directional_bias و notes (وفيه سطر التحليل الزمني الإلزامي).
-"""
-        elif analysis_type == "Elliott Waves":
-            system_prompt = f"""
-أنت خبير "KAIA AI Elliott Waves". حلل الشارت المرفق بناءً على نظرية موجات إليوت.
-حدد الموجة الحالية (1-5 أو A-C) والأهداف المتوقعة.
-يجب أن يكون الرد باللغة ({lang}) وبصيغة JSON حصراً.
-المفاتيح المطلوبة: (market_bias, wave_count, analysis_text, risk_note, market, timeframe, confidence)
+صيغة الإخراج JSON فقط: (market, timeframe, market_state, institutional_evidence, key_levels, stop_hunt_risk_zones, scenarios, confidence_score)
+ملاحظة: key_levels يجب أن يحتوي upside و downside كقوائم (lists).
 """
         else:
-            system_prompt = f"""
-أنت "KAIA AI Institutional Analyst". حلّل الشارت بأسلوب (SMC/ICT).
-يجب أن يكون الرد باللغة ({lang}) وبصيغة JSON حصراً وبالمفاتيح التالية حرفياً:
-(market_bias, market_phase, confidence, analysis_text, risk_note, market, timeframe)
-"""
+            system_prompt = f"أنت خبير تحليل فني. حلل الشارت بأسلوب {analysis_type} باللغة ({lang}). أعد JSON حصراً بمفاتيح: (market_bias, analysis_text, market, timeframe)."
 
         response = client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": f"Analyze this {analysis_type} chart on {timeframe} timeframe in {lang} language."},
-                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded_string}"}}
-                    ]
-                }
-            ],
+            messages=[{"role": "system", "content": system_prompt},
+                      {"role": "user", "content": [{"type": "text", "text": f"Analyze this {analysis_type} chart on {timeframe}"},
+                                                 {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded_string}"}}] } ],
             response_format={"type": "json_object"},
             temperature=0.3
         )
 
-        raw_output = response.choices[0].message.content
+        result = json.loads(response.choices[0].message.content)
         
-        # --- نظام درع الحماية (Parsing Shield) ---
-        try:
-            match = re.search(r'\{.*\}', raw_output, re.DOTALL)
-            if match:
-                result = json.loads(match.group(0))
-            else:
-                result = json.loads(raw_output)
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"AI Output Format Error: {str(e)}")
-
-        # --- مواءمة البيانات القديمة مع المفاتيح الجديدة لضمان استقرار العرض ---
-        if "market_bias" not in result:
-            m_state = result.get("market_state", {})
-            if isinstance(m_state, dict):
-                result["market_bias"] = m_state.get("directional_bias", "Neutral")
-            else:
-                result["market_bias"] = str(m_state) if m_state else "Neutral"
-
-        if "analysis_text" not in result:
-            m_state = result.get("market_state", {})
-            if isinstance(m_state, dict):
-                result["analysis_text"] = m_state.get("notes", "Analysis complete")
-            else:
-                result["analysis_text"] = str(m_state) if m_state else "Institutional view"
-
-        final_market = result.get("market") or "Asset"
-        final_bias = result.get("market_bias")
-        final_notes = result.get("analysis_text")
-
-        # حفظ التحليل في السجل
-        db.add(Analysis(
-            user_id=current_user.id,
-            symbol=str(final_market),
-            signal=str(final_bias),
-            reason=str(final_notes),
-            timeframe=timeframe
-        ))
-
-        if not current_user.is_whale:
-            current_user.credits -= 1
-
+        # مواءمة البيانات وحفظها في قاعدة البيانات
+        final_notes = result.get("market_state", {}).get("notes", result.get("analysis_text", "Done"))
+        db.add(Analysis(user_id=current_user.id, symbol=result.get("market", "Asset"), 
+                        signal=result.get("market_state", {}).get("directional_bias", "Neutral"),
+                        reason=final_notes[:500], timeframe=timeframe))
+        
+        if not current_user.is_whale: current_user.credits -= 1
         db.commit()
 
-        return {
-            "status": "success",
-            "analysis": result,
-            "tier_mode": "Platinum" if analysis_type == "KAIA Master" else "Standard",
-            "remaining_credits": current_user.credits
-        }
+        return {"status": "success", "analysis": result, "tier_mode": "Platinum" if analysis_type == "KAIA Master" else "Standard"}
 
-    except HTTPException as he:
-        raise he
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
-        if os.path.exists(img_path):
-            try: os.remove(img_path)
-            except: pass
-
+        if os.path.exists(img_path): os.remove(img_path)
+        
 # -----------------------------------------------------------------
 # 12. توجيه الصفحات ودعم PWA (المستعادة بالكامل)
 # -----------------------------------------------------------------

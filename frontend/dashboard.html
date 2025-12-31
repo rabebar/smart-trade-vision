@@ -49,6 +49,7 @@
             gap: 20px;
             padding: 20px;
             height: calc(100vh - 50px);
+            position: relative; /* لضمان تمركز التقرير العريض */
         }
 
         /* العمود الجانبي (تحليل + حاسبة) */
@@ -69,6 +70,54 @@
             border: 1px solid var(--border);
             overflow: hidden;
             position: relative;
+            z-index: 1;
+        }
+
+        /* [حقن] تنسيق لوحة النتائج البلاتينية العريضة */
+        .platinum-wide-panel {
+            display: none; /* تظهر برمجياً */
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            top: 20px;
+            bottom: 20px;
+            background: rgba(2, 6, 23, 0.95);
+            backdrop-filter: blur(15px);
+            z-index: 1000;
+            border-radius: 25px;
+            border: 2px solid var(--gold);
+            padding: 30px;
+            overflow-y: auto;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            animation: slideInWide 0.4s ease-out;
+        }
+
+        @keyframes slideInWide {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* تنسيق الأقسام داخل اللوحة العريضة */
+        .report-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr 1.2fr;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .report-card-v2 {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 20px;
+        }
+
+        .summary-box-v2 {
+            grid-column: 1 / -1;
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), rgba(2, 6, 23, 0.1));
+            border-right: 5px solid var(--primary);
+            padding: 25px;
+            margin-bottom: 10px;
         }
 
         /* تنسيق صندوق التحليل الجانبي */
@@ -429,6 +478,15 @@
 </div>
 
 <main class="workspace-container">
+   <!-- [حقن] لوحة التقرير البلاتينية العريضة -->
+<div id="platinum-wide-panel" class="platinum-wide-panel">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gold); padding-bottom: 15px;">
+        <h2 id="wide-report-main-title" style="color: var(--gold); margin: 0; font-weight: 900;"><i class="fa-solid fa-crown"></i> KAIA STRATEGIC REPORT</h2>
+        <button id="close-wide-btn-text" onclick="closeWideReport()" style="background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 900; cursor: pointer;">Close [X]</button>
+    </div>
+    <div id="wide-res-content"></div>
+</div>
+
     <aside class="sidebar-tools">
         <div class="analysis-mini-core">
             <div style="margin-bottom: 20px; font-weight: 900; color: var(--primary); display: flex; justify-content: space-between; align-items: center;">
@@ -583,7 +641,6 @@
 <script src="/static/translations.js"></script>
 <script src="/static/dashboard.js"></script>
 <script>
-// توحيد القيادة: الاعتماد على dashboard.js الخارجي لضمان مسح الصورة وعرض النتائج
 const userToken = localStorage.getItem("token");
 
 async function syncDash() {
@@ -594,30 +651,120 @@ async function syncDash() {
         if (res.ok) {
             document.getElementById("dash-user").innerText = u.full_name;
             document.getElementById("dash-credits").innerText = u.credits;
+            
+            // التعامل مع حالة التفعيل
             if (!u.is_verified) {
                 document.getElementById("activation-banner").style.display = "block";
                 document.getElementById("whatsapp-verify-link").href = `https://wa.me/970594060648?text=مرحباً، أريد تفعيل حسابي: ${u.email}`;
                 const runBtn = document.getElementById("run-btn");
-                if (runBtn) { runBtn.innerText = "بانتظار التفعيل ⏳"; runBtn.style.opacity = "0.5"; runBtn.style.pointerEvents = "none"; }
-            } else { document.getElementById("activation-banner").style.display = "none"; }
+                if (runBtn) { 
+                    runBtn.innerText = "بانتظار التفعيل ⏳"; 
+                    runBtn.style.opacity = "0.5"; 
+                    runBtn.style.pointerEvents = "none"; 
+                }
+            } else { 
+                document.getElementById("activation-banner").style.display = "none"; 
+            }
             
+            // تحديث رتبة المستخدم (الأيقونات الملكية)
             const iconPlace = document.getElementById("rank-icon-place");
             if (u.tier === "Platinum") iconPlace.innerHTML = '<i class="fa-solid fa-whale rank-icon tier-platinum"></i>';
             else if (u.tier === "Pro") iconPlace.innerHTML = '<i class="fa-solid fa-medal rank-icon tier-pro"></i>';
             else iconPlace.innerHTML = '<i class="fa-solid fa-tree rank-icon"></i>';
             
-            document.body.style.visibility = "visible"; document.body.style.opacity = "1";
+            document.body.style.visibility = "visible"; 
+            document.body.style.opacity = "1";
         }
-    } catch(e) {}
+    } catch(e) {
+        console.error("Sync Error:", e);
+    }
 }
 
+// تشغيل المحرك عند تحميل الصفحة
 document.addEventListener("DOMContentLoaded", () => {
-    // ربط زر التحليل بالمحرك الأصلي في dashboard.js
     if(typeof runInstitutionalAnalysis === 'function') {
         document.getElementById("run-btn").onclick = runInstitutionalAnalysis;
     }
     syncDash();
 });
+
+// [حقن ملكي] دالة بناء واجهة النتائج الاحترافية المترجمة بالكامل (النسخة العريضة)
+function renderMasterVisionUI(data) {
+    const widePanel = document.getElementById("platinum-wide-panel");
+    const wideContent = document.getElementById("wide-res-content");
+    const currentLang = document.getElementById("language-select").value || "ar";
+    const t = translations[currentLang];
+
+    // 1. تحديث عناوين اللوحة من ملف الترجمة
+    document.getElementById("wide-report-main-title").innerHTML = `<i class="fa-solid fa-crown"></i> ${t['plat_report_title']}`;
+    document.getElementById("close-wide-btn-text").innerText = `${t['close_report']} [X]`;
+    
+    // 2. إظهار اللوحة العريضة
+    widePanel.style.display = "block";
+
+    // 3. استخراج التحليل الزمني من الملاحظات بشكل ذكي
+    let timeAnalysisStr = data.market_state.notes.match(/التحليل الزمني \(KAIA Smart\):.*$/m)?.[0] || "";
+    let cleanNotes = data.market_state.notes.replace(timeAnalysisStr, "").trim();
+
+    // 4. بناء هيكل التقرير العريض
+    let html = `
+        <div class="summary-box-v2" style="margin-top: 20px;">
+            <h3 style="color: var(--primary); margin: 0 0 10px 0;"><i class="fa-solid fa-comment-dots"></i> ${t['simple_summary']}:</h3>
+            <p style="font-size: 20px; line-height: 1.6; color: #fff; font-weight: 700;">${cleanNotes || "..."}</p>
+            ${timeAnalysisStr ? `<div style="margin-top:15px; color:var(--gold); font-weight:900; font-size:16px;"><i class="fa-solid fa-clock"></i> ${timeAnalysisStr}</div>` : ""}
+        </div>
+
+        <div class="report-grid">
+            <!-- العمود الأول: بصمات الحيتان مفسرة -->
+            <div class="report-card-v2">
+                <h4 style="color:var(--primary); border-bottom:1px solid rgba(59,130,246,0.3); padding-bottom:10px;"><i class="fa-solid fa-fingerprint"></i> ${t['whale_prints']}</h4>
+                <div style="font-size: 15px; line-height: 1.8; color: #d1d4dc; font-weight:600;">
+                    ${data.institutional_evidence}
+                </div>
+            </div>
+
+            <!-- العمود الثاني: مستويات المراقبة الرقمية -->
+            <div class="report-card-v2">
+                <h4 style="color:var(--gold); border-bottom:1px solid rgba(255,215,0,0.3); padding-bottom:10px;"><i class="fa-solid fa-layer-group"></i> ${t['watch_levels']}</h4>
+                <div style="margin-top:10px;">
+                    <b style="color:var(--success); font-size:14px;">${t['upside_targets']}:</b>
+                    ${data.key_levels.upside.map(l => `<div style="margin:8px 0;">- <span style="font-family:monospace; color:#fff; font-weight:900; font-size:16px;">${l.price}</span> <small>(${l.label})</small></div>`).join('')}
+                    <hr style="opacity:0.1; margin:15px 0;">
+                    <b style="color:var(--danger); font-size:14px;">${t['downside_targets']}:</b>
+                    ${data.key_levels.downside.map(l => `<div style="margin:8px 0;">- <span style="font-family:monospace; color:#fff; font-weight:900; font-size:16px;">${l.price}</span> <small>(${l.label})</small></div>`).join('')}
+                </div>
+            </div>
+
+            <!-- العمود الثالث: سيناريوهات الحركة المتوقعة -->
+            <div class="report-card-v2">
+                <h4 style="color:var(--success); border-bottom:1px solid rgba(16,185,129,0.3); padding-bottom:10px;"><i class="fa-solid fa-shuffle"></i> ${t['scenarios_title']}</h4>
+                <div style="font-size: 14px; margin-top:10px; font-weight:600;">
+                    <div style="margin-bottom:20px;">
+                        <b style="color:var(--success)">${t['if_bullish']}:</b>
+                        <p style="margin:8px 0; color:#fff;">${data.scenarios.bullish.idea || data.scenarios.bullish}</p>
+                    </div>
+                    <div>
+                        <b style="color:var(--danger)">${t['if_bearish']}:</b>
+                        <p style="margin:8px 0; color:#fff;">${data.scenarios.bearish.idea || data.scenarios.bearish}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- التحذير من مصائد السيولة في الأسفل -->
+        <div style="margin-top:25px; text-align:center; padding:20px; background:rgba(239, 68, 68, 0.1); border-radius:20px; border:1px dashed var(--danger);">
+            <b style="color:var(--danger); font-size:16px;"><i class="fa-solid fa-triangle-exclamation"></i> ${t['stop_hunt_title']}:</b>
+            <p style="margin:10px 0; font-size:15px; font-weight:700; color:#fff;">${data.stop_hunt_risk_zones.map(z => z.why_risky).join(' | ')}</p>
+        </div>
+    `;
+    
+    wideContent.innerHTML = html;
+}
+
+// دالة إغلاق التقرير العريض
+function closeWideReport() {
+    document.getElementById("platinum-wide-panel").style.display = "none";
+}
 </script>
 </body>
 </html>
