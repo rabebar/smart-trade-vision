@@ -2,7 +2,7 @@
 
 /* ============================================================
    KAIA AI - MASTER FRONTEND ENGINE (Final Integrated)
-   Version: 7.4 - Fixed Password Mismatch Gateway
+   Version: 7.6 - Exact Line Match & Password Shield
    ============================================================ */
 
 // --- 1. الثوابت والمتغيرات العامة ---
@@ -115,7 +115,7 @@ async function updateUIBasedOnAuth() {
                         // 3. حماية إضافية: تعطيل زر تجربة المحرك (Demo) في الصفحة الرئيسية
                         const demoBtn = document.getElementById("run-btn");
                         if (demoBtn) {
-                            demoBtn.innerText = "بانتظار التفعيل الحساب ⏳";
+                            demoBtn.innerText = "بانتظار تفعيل الحساب ⏳";
                             demoBtn.style.opacity = "0.5";
                             demoBtn.style.pointerEvents = "none";
                         }
@@ -256,7 +256,7 @@ async function handleAuthSubmit() {
     const rawEmail = $("auth-email")?.value || "";
     const email = rawEmail.trim().toLowerCase();
     const pass = $("auth-pass")?.value;
-    const passConfirm = $("auth-pass-confirm")?.value; // [إضافة] جلب قيمة تأكيد كلمة المرور
+    const passConfirm = $("auth-pass-confirm")?.value; // جلب قيمة تأكيد كلمة المرور
     
     if (!email || !pass) {
         alert(currentLang === "ar" ? "يرجى إدخال كافة البيانات المطلوبة" : "Please fill all required data");
@@ -265,7 +265,7 @@ async function handleAuthSubmit() {
 
     try {
         if (isRegisterMode) {
-            // [حماية المتصفح] التحقق من التطابق قبل الإرسال لتوفير الجهد
+            // [حماية المتصفح] التحقق من تطابق كلمتي المرور قبل الإرسال
             if (pass !== passConfirm) {
                 alert(currentLang === "ar" ? "عذراً، كلمتا المرور غير متطابقتين" : "Passwords do not match");
                 return;
@@ -277,7 +277,7 @@ async function handleAuthSubmit() {
                 body: JSON.stringify({
                     email: email,
                     password: pass,
-                    confirm_password: passConfirm, // [إرسال] الحقل المطلوب للسيرفر وشيمات Pydantic
+                    confirm_password: passConfirm, // إرسال حقل التأكيد للسيرفر
                     full_name: $("auth-fullname").value || "Trader",
                     phone: "000",
                     whatsapp: $("auth-whatsapp").value || "",
@@ -361,10 +361,12 @@ function initUploadEngine() {
         if(fileInput.files[0]) {
             const reader = new FileReader();
             reader.onload = (e) => {
-                dropZone.style.backgroundImage = `url(${e.target.result})`;
-                dropZone.style.backgroundSize = "contain";
-                dropZone.style.backgroundRepeat = "no-repeat";
-                dropZone.style.backgroundPosition = "center";
+                if (dropZone) {
+                    dropZone.style.backgroundImage = `url(${e.target.result})`;
+                    dropZone.style.backgroundSize = "contain";
+                    dropZone.style.backgroundRepeat = "no-repeat";
+                    dropZone.style.backgroundPosition = "center";
+                }
             };
             reader.readAsDataURL(fileInput.files[0]);
             updateStatus(fileInput.files[0].name);
@@ -502,7 +504,11 @@ window.onload = async () => {
                     name: btn.getAttribute("data-plan"), 
                     price: btn.getAttribute("data-price") 
                 };
-                if (authToken) { isRegisterMode = false; } else { isRegisterMode = true; }
+                if (authToken) { 
+                    isRegisterMode = false; 
+                } else { 
+                    isRegisterMode = true; 
+                }
                 updateAuthModalState();
                 $("auth-modal").style.display = "flex";
             };
