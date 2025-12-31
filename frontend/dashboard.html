@@ -754,7 +754,11 @@ function renderMasterVisionUI(data) {
         <!-- التحذير من مصائد السيولة في الأسفل -->
         <div style="margin-top:25px; text-align:center; padding:20px; background:rgba(239, 68, 68, 0.1); border-radius:20px; border:1px dashed var(--danger);">
             <b style="color:var(--danger); font-size:16px;"><i class="fa-solid fa-triangle-exclamation"></i> ${t['stop_hunt_title']}:</b>
-            <p style="margin:10px 0; font-size:15px; font-weight:700; color:#fff;">${data.stop_hunt_risk_zones.map(z => z.why_risky).join(' | ')}</p>
+            <p style="margin:10px 0; font-size:15px; font-weight:700; color:#fff;">
+    ${Array.isArray(data.stop_hunt_risk_zones) 
+      ? data.stop_hunt_risk_zones.map(z => typeof z === 'object' ? (z.why_risky || z.zone_range) : z).join(' | ') 
+      : (data.stop_hunt_risk_zones || "...")}
+</p>
         </div>
     `;
     
