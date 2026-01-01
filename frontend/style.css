@@ -469,3 +469,25 @@ body {
     .footer-about { margin: 0 auto; }
     .footer-col h4::after { right: 50%; transform: translateX(50%); }
 }
+/* --- إخفاء شريط التمرير المزعج في قسم التحليل --- */
+
+/* 1. استهداف الحاوية اليمنى (التي يظهر فيها السكرول) */
+.analysis-core-wrapper, 
+.core-body, 
+.dashboard-wrapper {
+    -ms-overflow-style: none;  /* لإخفائه في متصفح إيدج وإنترنت إكسبلورر */
+    scrollbar-width: none;     /* لإخفائه في متصفح فايرفوكس */
+}
+
+/* 2. استهداف متصفحات كروم وسافاري (الأكثر استخداماً) */
+.analysis-core-wrapper::-webkit-scrollbar, 
+.core-body::-webkit-scrollbar, 
+.dashboard-wrapper::-webkit-scrollbar {
+    display: none;             /* إخفاء الشريط تماماً */
+}
+
+/* 3. لضمان عدم وجود مساحة بيضاء مكان الشريط */
+.hero-grid-container {
+    align-items: stretch;      /* جعل العناصر تتمدد بشكل متساوي */
+    overflow: hidden;          /* منع ظهور سكرول خارجي غير مرغوب فيه */
+}
