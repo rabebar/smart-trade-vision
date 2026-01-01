@@ -310,12 +310,37 @@
                     <td>${art.language === 'ar' ? '🇸🇦' : '🇺🇸'}</td>
                     <td style="opacity:0.6;">${new Date(art.created_at).toLocaleDateString()}</td>
                     <td>
-                        <button class="btn btn-edit-alt" onclick="window.location.href='/editor?edit=${art.id}'">تعديل</button>
+                        <button class="btn btn-edit-alt" onclick="window.location.href='/editor?edit=${art.id}'">
+    <i class="fa-solid fa-pen-to-square"></i> تعديل
+</button>
+
+<button class="btn btn-delete" onclick="deleteArticle(${art.id}, '${art.title.replace(/'/g, "\\'")}')">
+    <i class="fa-solid fa-trash"></i> حذف
+</button>
                     </td>
                 </tr>`).join("");
         } catch (e) { }
     }
+// دالة حذف المقالات من السيرفر
+    async function deleteArticle(id, title) {
+        if (!confirm(`⚠️ تحذير نهائي: هل تريد حذف مقال (${title})؟`)) return;
 
+        try {
+            const res = await fetch(`/api/admin/delete_article/${id}`, { 
+                method: "DELETE", 
+                headers: { "Authorization": "Bearer " + token } 
+            });
+
+            if (res.ok) {
+                alert("تم الحذف بنجاح ✅");
+                loadArticlesForAdmin(); // تحديث الجدول فوراً
+            } else {
+                alert("عذراً، فشل الحذف. قد لا تملك الصلاحية الكافية.");
+            }
+        } catch (e) {
+            alert("خطأ في الاتصال بالسيرفر 🛰️");
+        }
+    }
     window.onload = checkAdminAuth;
 </script>
 </body>
