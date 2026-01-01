@@ -796,52 +796,62 @@
     if (lang !== "ar") return;
 
     const track = document.getElementById("kaia-news-track");
+    const artBox = document.getElementById("articles-container");
     
-    // [إثراء المصادر] سنقوم بجمع الأخبار من الـ API الخاص بك
-    // نصيحة: يفضل تحديث السيرفر (Back-end) ليقوم هو بجلب RSS من سكاي نيوز والشرق
     try {
+        // [1] أولاً: جلب وحقن المقالات الفنية في الصفحة
+        const resArt = await fetch('/api/articles?lang=ar');
+        const articles = await resArt.json();
+        
+        if (Array.isArray(articles) && articles.length > 0) {
+            artBox.innerHTML = articles.map(art => `
+                <div class="service-card" style="padding: 0; overflow: hidden; border: 1px solid rgba(59, 130, 246, 0.1); background: #0b1222; text-align: right; display: flex; flex-direction: column; border-radius: 20px;">
+                    <img src="${art.image_url || '/static/logo.png'}" style="width: 100%; height: 200px; object-fit: cover;">
+                    <div style="padding: 25px; flex-grow: 1;">
+                        <h3 style="font-size: 18px; font-weight: 900; color: var(--primary);">${art.title}</h3>
+                        <p style="font-size: 13px; color: var(--muted); margin-bottom:15px;">${art.summary}</p>
+                        <button onclick="openRoyalArticle('${art.title}', '${art.content.replace(/\n/g, "<br>").replace(/'/g, "\\'")}')" 
+                                style="border: 1px solid var(--primary); color: var(--primary); padding: 8px 15px; border-radius: 8px; cursor: pointer; width: 100%; background:none; font-family:inherit; font-weight:800;">اقرأ التحليل</button>
+                    </div>
+                </div>`).join("");
+        } else {
+            artBox.innerHTML = `<p style="text-align: center; grid-column: 1/-1; opacity: 0.5;">لا توجد تقارير فنية حالياً.</p>`;
+        }
+
+        // [2] ثانياً: جلب وحقن شريط الأخبار المطور
         const resNews = await fetch('/api/news?lang=ar');
         const newsData = await resNews.json();
         
         if (newsData.news) {
-            // 1. تنظيف الأخبار القادمة وتجهيزها
-            let rawNews = newsData.news;
+            let fullNews = newsData.news;
 
-            // 2. تطبيق الفلترة الذهبية (الذهب، الفيدرالي، بنك مركزي...)
+            // تطبيق الفلترة الذهبية
+            const KEYWORDS = ["بنك مركزي", "بطالة", "ذهب", "سلع", "عملات", "دولار", "بورصة", "مؤشرات", "فضة", "نفط", "اقتصاد", "الفيدرالي الامريكي", "بلومبرج", "محلل مالي", "انهيار", "سوق مالي", "محفظة استثمارية", "محافظ استثمارية", "اسهم"];
             KEYWORDS.forEach(word => {
                 const regex = new RegExp(word, "g");
-                rawNews = rawNews.replace(regex, `<span class="gold-highlight">${word}</span>`);
+                fullNews = fullNews.replace(regex, `<span class="gold-highlight">${word}</span>`);
             });
 
-            // 3. تقسيم الأخبار لفقرات وإضافة "وسم المصدر" لكل خبر بشكل عشوائي 
-            // لإعطاء إيحاء بالتعددية (سكاي نيوز، بلومبرغ، المشرق)
             const sources = [
-                {n: "بلومبرغ", c: "#3b82f6"}, 
-                {n: "سكاي نيوز", c: "#ef4444"}, 
-                {n: "المشرق", c: "#ffd700"},
-                {n: "KAIA Live", c: "#10b981"}
+                {n: "بلومبرغ", c: "#3b82f6"}, {n: "سكاي نيوز", c: "#ef4444"}, 
+                {n: "المشرق", c: "#ffd700"}, {n: "KAIA Live", c: "#10b981"}
             ];
 
-            const segments = rawNews.split(" . ").map((text, index) => {
-                const src = sources[index % sources.length]; // توزيع المصادر بالتناوب
+            const segments = fullNews.split(" . ").map((text, index) => {
+                const src = sources[index % sources.length];
                 return `
-                    <span class="news-item-v4">
-                        <small style="background:${src.c}; color:#000; padding:2px 6px; border-radius:4px; margin-right:8px; font-size:10px; font-weight:900;">${src.n}</small>
+                    <span class="news-item-master">
+                        <small style="background:${src.c}; color:#000; padding:2px 6px; border-radius:4px; margin-right:10px; font-size:10px; font-weight:900;">${src.n}</small>
                         ${text}
-                        <span style="margin: 0 40px; opacity: 0.2; color:#fff;"> • </span>
+                        <span style="margin: 0 40px; opacity: 0.2;"> • </span>
                     </span>`;
             }).join("");
 
-            // 4. [حل مشكلة القلة] تكرار الشريط 6 مرات لضمان عدم وجود فراغ أبداً
-            // ووضع "سرعة انسيابية هادئة" 
-            track.innerHTML = segments + segments + segments + segments + segments + segments;
-            
-            // ضبط السرعة برمجياً لتناسب كمية الأخبار (كلما زاد النص زاد الوقت)
-            const duration = segments.length > 500 ? "200s" : "120s";
-            track.style.animationDuration = duration;
+            track.innerHTML = segments.repeat(6);
+            track.style.animationDuration = "150s";
         }
     } catch (e) { 
-        console.log("News logic refresh failed"); 
+        console.log("Error syncing KAIA content"); 
     }
 }
     function openRoyalArticle(title, content) {
