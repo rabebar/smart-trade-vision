@@ -33,6 +33,7 @@
             --basic-color: #94a3b8;
             --pro-color: #3b82f6;
             --platinum-color: #ffd700;
+            --gold: #ffd700; /* إضافة متغير الذهب */
         }
 
         /* دعم تغيير اتجاه الموقع برمجياً عند اختيار لغة أجنبية */
@@ -92,6 +93,59 @@
             overflow: hidden;
             height: 100%;
         }
+
+        /* [حقن مطور] شريط الأخبار V4 - حركة سلسة من اليسار لليمين وفلترة ذهبية */
+        #kaia-ticker-container {
+            display: none;
+            background: #050b14;
+            border-bottom: 1px solid rgba(59,130,246,0.2);
+            height: 44px;
+            overflow: hidden;
+            position: relative;
+            z-index: 10;
+            align-items: center;
+            direction: ltr; /* التوجيه لليسار لليمين */
+        }
+        .ticker-urgent-tag {
+            background: linear-gradient(90deg, #ef4444, #b91c1c);
+            color: #fff;
+            padding: 0 15px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            font-weight: 900;
+            font-size: 13px;
+            z-index: 20;
+            position: absolute;
+            left: 0;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.6);
+        }
+        .news-track-master {
+            display: flex;
+            white-space: nowrap;
+            animation: ticker-swipe-ltr 65s linear infinite;
+        }
+        .news-item-master {
+            color: #fff;
+            padding: 0 45px;
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            font-family: 'Cairo', sans-serif;
+        }
+        /* الكلمات الذهبية المتوهجة */
+        .gold-highlight {
+            color: #ffd700 !important;
+            text-shadow: 0 0 12px rgba(255, 215, 0, 0.7);
+            font-weight: 900;
+            margin: 0 5px;
+        }
+        @keyframes ticker-swipe-ltr {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        #kaia-ticker-container:hover .news-track-master { animation-play-state: paused; }
 
         /* تنسيقات كروت الباقات الفردية */
         .price-card.trial { border-top: 5px solid var(--trial-color); }
@@ -309,7 +363,7 @@
 </div>
 
 <!-- 1. واجهة الاستقبال (Intro Overlay) -->
-<div id="kaia-intro-overlay" class="modal-overlay" style="z-index: 9999; background-color: #000000; position: fixed; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; flex-direction: column;">
+<div id="kaia-intro-overlay" class="modal-overlay" style="z-index: 99999; background-color: #000000; position: fixed; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; flex-direction: column;">
     <div id="intro-content" style="max-width: 850px; padding: 20px;">
         <div id="intro-loader">
             <div style="width: 60px; height: 60px; background-color: #3b82f6; border-radius: 50%; margin: 0 auto 20px auto; box-shadow: 0px 0px 20px rgba(59, 130, 246, 0.6); animation: pulse 1.5s infinite;"></div>
@@ -321,7 +375,7 @@
     <!-- شاشة عرض البروشور التسويقي -->
     <div id="brochure-screen" style="text-align: right; min-height: 300px;"></div>
     
-    <!-- زر الدخول المتوهج (سيظهر برمجياً في النهاية) -->
+    <!-- زر الدخول المتوهج -->
     <button id="ignite-system-btn" class="core-analyze-btn" style="display:none; height: auto; padding: 20px 45px; font-size: 22px; margin-top: 40px; font-weight: 900; width: 100%; border: 2px solid #ffd700; background: linear-gradient(90deg, #000, #0b1222); color: #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.2);">
         تفعيل المنظومة السيادية والدخول
     </button>
@@ -418,10 +472,11 @@
     </div>
 </div>
 
-<!-- شريط أخبار كايا الهجين (مخفي افتراضياً ويظهر للعربي فقط) -->
-<div id="kaia-ticker-container" style="display: none; background: #050b14; border-bottom: 1px solid rgba(59,130,246,0.2); padding: 8px 0; overflow: hidden; position: relative; z-index: 10;">
-    <div id="kaia-ticker-wrap">
-        <p style="text-align: center; font-size: 13px; color: var(--primary); opacity: 0.5; margin: 0;" data-i18n="intro_loading">جاري جلب النبض العالمي...</p>
+<!-- [تحديث ملكي] شريط أخبار كايا الهجين المطور V4 -->
+<div id="kaia-ticker-container">
+    <div class="ticker-urgent-tag"><i class="fa-solid fa-tower-broadcast"></i> عاجل KAIA</div>
+    <div class="news-track-master" id="kaia-news-track">
+        <!-- يتم الحقن بواسطة الجافا سكريبت -->
     </div>
 </div>
 
@@ -576,10 +631,10 @@
 <script src="/static/script.js?v=8.0"></script>
 
 <script id="kaia-total-logic">
-    // [1] قائمة الدول العربية (لتحويل اللغة تلقائياً)
+    // [1] قائمة الدول العربية
     const arabicCountries = ['SA', 'AE', 'QA', 'KW', 'OM', 'BH', 'EG', 'JO', 'PS', 'LB', 'SY', 'IQ', 'LY', 'DZ', 'MA', 'TN', 'YE', 'SD', 'MA', 'MR'];
 
-    // [2] بيانات البروشور باللغتين
+    // [2] بيانات البروشور
     const content = {
         "ar": {
             "lines": [
@@ -607,17 +662,18 @@
         const introLoader = document.getElementById('intro-loader');
         const igniteBtn = document.getElementById('ignite-system-btn');
 
-        let lang = "en"; // اللغة الافتراضية
+        let lang = "ar"; 
 
         try {
-            // فحص موقع الزائر عبر الـ IP
             const response = await fetch('https://ipapi.co/json/');
             const locationData = await response.json();
             if (arabicCountries.includes(locationData.country_code)) {
                 lang = "ar";
+            } else {
+                lang = "en";
             }
         } catch (e) {
-            console.log("Location fetch failed, using default English");
+            console.log("Location fetch failed, using default Arabic");
         }
 
         if (introLoader) introLoader.style.display = 'none';
@@ -631,7 +687,7 @@
             if (lineIndex < brochureData.length) {
                 const lineDiv = document.createElement('div');
                 lineDiv.className = 'typewriter-line line-visible';
-                if (lang === 'en') lineDiv.style.textAlign = 'left'; // ضبط الاتجاه للانجليزي
+                if (lang === 'en') lineDiv.style.textAlign = 'left'; 
                 screen.appendChild(lineDiv);
 
                 let charIndex = 0;
@@ -645,7 +701,7 @@
                         lineIndex++;
                         setTimeout(typeLine, 500); 
                     }
-                }, 10); 
+                }, 12); 
             } else {
                 if (igniteBtn) {
                     igniteBtn.style.display = 'block';
@@ -656,7 +712,7 @@
         typeLine();
     }
 
-    // إدارة الأجواء الموسمية (الثلج)
+    // إدارة الثلج
     (function() {
         const expiryDate = new Date('2026-01-06'); 
         if (new Date() < expiryDate) {
@@ -677,58 +733,46 @@
         if (btn) {
             btn.onclick = () => {
                 document.getElementById('kaia-intro-overlay').style.display = 'none';
+                syncKAIAWorld();
             };
         }
     });
 </script>
 
-<!-- المحرك الإعلامي الملكي المطور (الإصدار النهائي المستقر والمحسن) -->
+<!-- المحرك الإعلامي الملكي المطور الإصدار النهائي -->
 <script>
-    // [1] دالة السيطرة على الإظهار والإخفاء (تأثير فوري)
+    // [قائمة الكلمات المفتاحية]
+    const KEYWORDS = ["بنك مركزي", "بطالة", "ذهب", "سلع", "عملات", "دولار", "بورصة", "مؤشرات", "فضة", "نفط", "اقتصاد", "الفيدرالي الامريكي", "بلومبرج", "محلل مالي", "انهيار", "سوق مالي", "محفظة استثمارية", "محافظ استثمارية", "اسهم"];
+
     function forceShowTicker() {
         const langSelect = document.getElementById("language-select");
-        const lang = langSelect ? langSelect.value : (localStorage.getItem("kaia_lang") || "ar");
-        
+        const lang = langSelect ? langSelect.value : "ar";
         const container = document.getElementById("kaia-ticker-container");
         const articlesSection = document.getElementById("articles-section");
 
         if (lang === "ar") {
-            if (container) container.style.setProperty("display", "block", "important");
-            if (articlesSection) articlesSection.style.setProperty("display", "block", "important");
+            if (container) container.style.display = "flex";
+            if (articlesSection) articlesSection.style.display = "block";
         } else {
-            if (container) container.style.setProperty("display", "none", "important");
-            if (articlesSection) articlesSection.style.setProperty("display", "none", "important");
+            if (container) container.style.display = "none";
+            if (articlesSection) articlesSection.style.display = "none";
         }
     }
 
-    // [2] دالة جلب البيانات بنظام التدفق السريع (Articles First then News)
     async function syncKAIAWorld() {
         forceShowTicker(); 
-
         const langSelect = document.getElementById("language-select");
-        const lang = langSelect ? langSelect.value : (localStorage.getItem("kaia_lang") || "ar");
-        
+        const lang = langSelect ? langSelect.value : "ar";
         if (lang !== "ar") return;
 
-        const tickerWrap = document.getElementById("kaia-ticker-wrap");
+        const track = document.getElementById("kaia-news-track");
         const artBox = document.getElementById("articles-container");
         
-        // أ. جلب المقالات فوراً (أسرع لأنها محلية)
         try {
+            // أ. جلب المقالات
             const resArt = await fetch('/api/articles?lang=ar');
             const articles = await resArt.json();
-            let myTitles = "";
-
             if (Array.isArray(articles) && articles.length > 0) {
-                myTitles = articles.map(a => ` 🔥 ${a.title}`).join(" ★ ");
-                
-                // تحديث شريط الماركي مبدئياً بالمقالات فقط لضمان الظهور الفوري
-                tickerWrap.innerHTML = `
-                    <marquee id="kaia-main-marquee" scrollamount="5" direction="right" onmouseover="this.stop();" onmouseout="this.start();" style="color: #fff; font-weight: 700; font-size: 13px; cursor:pointer;">
-                        <span style="color:#ffd700;">${myTitles}</span>
-                    </marquee>`;
-
-                // تحديث قسم المقالات في الصفحة
                 artBox.innerHTML = articles.map(art => `
                     <div class="service-card" style="padding: 0; overflow: hidden; border: 1px solid rgba(59, 130, 246, 0.1); background: #0b1222; text-align: right; display: flex; flex-direction: column; border-radius: 20px;">
                         <img src="${art.image_url || '/static/logo.png'}" style="width: 100%; height: 200px; object-fit: cover;">
@@ -741,21 +785,29 @@
                     </div>`).join("");
             }
 
-            // ب. جلب الأخبار العالمية (قد تتأخر قليلاً لذا نضيفها بعد وصولها)
+            // ب. جلب الأخبار بنظام الفلترة المطور (V4)
             fetch('/api/news?lang=ar')
                 .then(r => r.json())
                 .then(newsData => {
-                    const marquee = document.getElementById("kaia-main-marquee");
-                    if (marquee && newsData.news) {
-                        const separator = myTitles ? " <span style='color:rgba(255,255,255,0.3)'> | </span> " : "";
-                        marquee.innerHTML += `${separator}<span style="color:#fff;">🌍 أخبار العالم: ${newsData.news}</span>`;
+                    if (newsData.news) {
+                        let fullNews = newsData.news;
+                        // حقن الذهب
+                        KEYWORDS.forEach(word => {
+                            const regex = new RegExp(word, "g");
+                            fullNews = fullNews.replace(regex, `<span class="gold-highlight">${word}</span>`);
+                        });
+
+                        const segments = fullNews.split(" . ").map(text => 
+                            `<span class="news-item-master"><i class="fa-solid fa-bolt" style="color:#ffd700; margin-right:15px;"></i> ${text}</span>`
+                        ).join("");
+
+                        track.innerHTML = segments + segments; 
                     }
                 })
-                .catch(e => console.log("Global News delay or error"));
+                .catch(e => console.log("News fetch delay"));
 
         } catch (e) { 
-            console.error("Critical Ticker Error");
-            if (tickerWrap) tickerWrap.innerHTML = `<p style="text-align:center; color:var(--primary); font-size:12px; margin:0;">نراقب تحركات الأسواق حالياً...</p>`;
+            console.error("Critical Sync Error");
         }
     }
 
@@ -765,16 +817,11 @@
         win.document.close();
     }
 
-    // [3] إدارة التشغيل الفوري والذكي
     document.addEventListener("DOMContentLoaded", () => {
-        forceShowTicker(); // التحقق من اللغة فوراً
-        syncKAIAWorld();   // البدء بجلب البيانات
+        forceShowTicker();
+        setTimeout(syncKAIAWorld, 500);
     });
 
-    // تأكيد إضافي لضمان تحديث البيانات في حال وجود تأخير في السيرفر
-    setTimeout(syncKAIAWorld, 500);
-
-    // مراقبة تغيير اللغة يدوياً من قبل المستخدم
     const selector = document.getElementById("language-select");
     if (selector) {
         selector.addEventListener("change", () => {
@@ -782,7 +829,9 @@
             setTimeout(syncKAIAWorld, 100); 
         });
     }
-    // المحرك الرئيسي للتحليل وربط النتائج بالسيرفر
+</script>
+
+<script id="analysis-logic-script">
 async function runMobileAnalysis() {
     const fileInput = document.getElementById("chartUpload");
     const file = fileInput.files[0];
@@ -796,11 +845,8 @@ async function runMobileAnalysis() {
     fd.append("chart", file);
     
     try {
-        // 1. رفع الصورة مؤقتاً للسيرفر
         const upRes = await fetch("/api/upload-chart", { method: "POST", body: fd });
         const upData = await upRes.json();
-        
-        // 2. طلب التحليل الذكي
         const anFd = new FormData();
         anFd.append("filename", upData.filename);
         anFd.append("timeframe", document.getElementById("timeframe").value);
@@ -817,8 +863,6 @@ async function runMobileAnalysis() {
         
         if(res.ok) {
             document.getElementById("result-box").style.display = "block";
-            
-            // التبديل الذكي بين العرض البلاتيني والعادي
             if(result.tier_mode === "Platinum") {
                 renderMasterVisionUI(result.analysis);
             } else {
@@ -829,141 +873,51 @@ async function runMobileAnalysis() {
                         <b style="color:var(--gold); font-size:18px;">Bias: ${result.analysis.market_bias}</b>
                     </div>`;
             }
-            // تحديث الرصيد بعد الخصم
-            if(typeof syncData === 'function') syncData();
-            
         } else {
             alert(result.detail || "حدث خطأ في عملية التحليل");
         }
     } catch(e) { 
-        alert("فشل الاتصال بمحرك KAIA AI.. تأكد من اتصالك بالإنترنت"); 
+        alert("فشل الاتصال بمحرك KAIA AI"); 
     }
-    
     btn.disabled = false; 
     btn.innerText = "بدء عملية التحليل";
 }
     
-// دالة بناء واجهة النتائج الاحترافية المحدثة لمحرك KAIA Master (Platinum Edition)
 function renderMasterVisionUI(data) {
     const resBox = document.getElementById("res-data-content");
-    
-    // استخراج التحليل الزمني من الملاحظات بشكل ذكي
-    let timeAnalysisStr = "";
-    if (data.market_state && data.market_state.notes) {
-        const match = data.market_state.notes.match(/التحليل الزمني \(KAIA Smart\):.*$/m);
-        if (match) {
-            timeAnalysisStr = match[0];
-            // تنظيف الملاحظات الأصلية من سطر التحليل الزمني لعدم التكرار
-            data.market_state.notes = data.market_state.notes.replace(timeAnalysisStr, "").trim();
-        }
-    }
-
     let html = `
         <div class="platinum-result-wrap">
             <div class="plat-header"><i class="fa-solid fa-crown"></i> KAIA MASTER VISION (PLATINUM)</div>
-            
-            <!-- ملخص الحالة والتحليل الزمني -->
             <div style="text-align:center; margin-bottom:20px;">
-                <span style="background:var(--primary); padding:5px 15px; border-radius:10px; font-size:12px; color:#fff;">${data.market} | ${data.timeframe}</span>
                 <h3 style="color:var(--gold); margin-top:10px; font-size:24px;">Bias: ${data.market_state.directional_bias}</h3>
-                
-                ${timeAnalysisStr ? `
-                    <div style="margin-top:10px; padding:10px; border:1px solid var(--gold); border-radius:12px; background:rgba(255,215,0,0.05); color:var(--gold); font-weight:bold; font-size:14px;">
-                        <i class="fa-solid fa-clock-rotate-left"></i> ${timeAnalysisStr}
-                    </div>
-                ` : ''}
             </div>
-
-            <!-- البصمات المؤسسية (New Section) -->
-            <div style="margin-bottom:20px; padding:15px; background:rgba(255,255,255,0.02); border-radius:15px; border:1px solid rgba(59,130,246,0.2);">
-                <h4 style="color:var(--primary); margin:0 0 10px 0; font-size:15px;"><i class="fa-solid fa-fingerprint"></i> الأدلة المؤسسية (SMC Evidence)</h4>
-                <div style="font-size:13px; color:#d1d4dc; line-height:1.6;">
-                    ${data.institutional_evidence ? data.institutional_evidence : 'جاري تحليل تجمعات السيولة...'}
-                </div>
-            </div>
-
-            <!-- مناطق خطر اصطياد السيولة -->
             <div class="stop-hunt-alert">
                 <h4 style="color:#ef4444; margin:0 0 10px 0; font-size:15px;"><i class="fa-solid fa-bullseye"></i> Stop-Hunt Risk Zones</h4>
                 ${data.stop_hunt_risk_zones && data.stop_hunt_risk_zones.length > 0 ? 
                     data.stop_hunt_risk_zones.map(z => `<div style="font-size:13px; margin-bottom:5px;"><b>${z.zone_range || z.zone_price_hint}:</b> ${z.why_risky}</div>`).join('') 
                     : '<div style="font-size:12px;">لم يتم رصد مصائد سيولة واضحة حالياً.</div>'}
             </div>
-
-            <!-- مستويات المراقبة الرقمية المحدثة -->
-            <h4 style="margin-bottom:10px; font-size:16px;"><i class="fa-solid fa-layer-group"></i> مستويات المراقبة (Watch Levels)</h4>
             <div class="levels-grid">
-                <!-- مستويات صاعدة -->
                 <div class="level-card up">
                     <small style="color:var(--success); font-weight:900;">Upside Key Levels</small>
-                    <div style="margin-top:8px;">
-                        ${data.key_levels.upside.map(l => `
-                            <div style="margin-bottom:8px;">
-                                <span class="price-tag">${l.price}</span>
-                                <small style="display:block; font-size:11px; color:var(--success); font-weight:bold;">${l.label}</small>
-                                <small style="display:block; font-size:10px; color:var(--muted);">${l.reason || ''}</small>
-                            </div>
-                        `).join('<hr style="opacity:0.05; margin:5px 0;">')}
-                    </div>
+                    ${data.key_levels.upside.map(l => `<div style="margin-bottom:8px;"><span class="price-tag">${l.price}</span><small style="display:block; font-size:11px; color:var(--success); font-weight:bold;">${l.label}</small></div>`).join('')}
                 </div>
-                <!-- مستويات هابطة -->
                 <div class="level-card down">
                     <small style="color:#ef4444; font-weight:900;">Downside Key Levels</small>
-                    <div style="margin-top:8px;">
-                        ${data.key_levels.downside.map(l => `
-                            <div style="margin-bottom:8px;">
-                                <span class="price-tag">${l.price}</span>
-                                <small style="display:block; font-size:11px; color:#ef4444; font-weight:bold;">${l.label}</small>
-                                <small style="display:block; font-size:10px; color:var(--muted);">${l.reason || ''}</small>
-                            </div>
-                        `).join('<hr style="opacity:0.05; margin:5px 0;">')}
-                    </div>
+                    ${data.key_levels.downside.map(l => `<div style="margin-bottom:8px;"><span class="price-tag">${l.price}</span><small style="display:block; font-size:11px; color:#ef4444; font-weight:bold;">${l.label}</small></div>`).join('')}
                 </div>
             </div>
-
-            <!-- السيناريوهات الاستراتيجية -->
-            <div class="scenario-box">
-                <div class="scen-card" style="border-right:3px solid var(--success)">
-                    <b style="color:var(--success)"><i class="fa-solid fa-arrow-trend-up"></i> Bullish If/Then</b>
-                    <p style="margin:5px 0; font-size:12px; line-height:1.4;">${data.scenarios.bullish.idea || data.scenarios.bullish}</p>
-                    <div style="margin-top:5px; padding:5px; background:rgba(0,0,0,0.2); border-radius:5px;">
-                        <small style="color:var(--gold)">Flip Level: ${data.scenarios.bullish.invalidation_level || 'N/A'}</small>
-                    </div>
-                </div>
-                <div class="scen-card" style="border-right:3px solid #ef4444">
-                    <b style="color:#ef4444"><i class="fa-solid fa-arrow-trend-down"></i> Bearish If/Then</b>
-                    <p style="margin:5px 0; font-size:12px; line-height:1.4;">${data.scenarios.bearish.idea || data.scenarios.bearish}</p>
-                    <div style="margin-top:5px; padding:5px; background:rgba(0,0,0,0.2); border-radius:5px;">
-                        <small style="color:var(--gold)">Flip Level: ${data.scenarios.bearish.invalidation_level || 'N/A'}</small>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- ملاحظات إضافية -->
-            <div style="margin-top:20px; padding:15px; background:rgba(255,255,255,0.03); border-radius:15px; font-size:14px; border:1px solid rgba(255,255,255,0.05); color:#d1d4dc;">
+            <div style="margin-top:20px; padding:15px; background:rgba(255,255,255,0.03); border-radius:15px; font-size:14px; color:#d1d4dc;">
                 <b style="color:var(--primary)">ملاحظات المحلل:</b> ${data.market_state.notes || 'لا يوجد ملاحظات إضافية.'}
             </div>
-        </div>
-    `;
-    
+        </div>`;
     resBox.innerHTML = html;
 }
 
-    function resetAnalyzerFull() {
-    // 1. إخفاء النتائج
+function resetAnalyzerFull() {
     document.getElementById("result-box").style.display = "none";
-    
-    // 2. مسح بيانات الملف
     document.getElementById("chartUpload").value = "";
-    
-    // 3. (السطر المنقذ) مسح الصورة المرئية من صندوق الرفع
-    const dz = document.getElementById("drop-zone");
-    if(dz) dz.style.backgroundImage = "none"; 
-
-    // 4. إعادة النص الأصلي
-    const st = document.getElementById("status-text");
-    if(st) st.innerText = "قم بلصق صورة الشارت هنا 📸";
-
+    document.getElementById("status-text").innerText = "قم بلصق صورة الشارت هنا 📸";
 }
 </script>
 

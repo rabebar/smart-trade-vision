@@ -124,43 +124,70 @@ NEWS_CACHE = {
 }
 
 @app.get("/api/news")
-def get_news(lang: str = "ar"):
+def get_news(lang: str = "ar", db: Session = Depends(get_db)):
+    # النظام يعمل فقط للنسخة العربية حالياً بناءً على طلب المدير
+    if lang != "ar":
+        return {"news": "KAIA AI: Monitoring global markets..."}
+
     global NEWS_CACHE
-    lang_key = "en" if lang == "en" else "ar"
     now = datetime.now()
-    cache_entry = NEWS_CACHE[lang_key]
+    cache_entry = NEWS_CACHE["ar"]
     
-    if cache_entry["timestamp"]:
-        if (now - cache_entry["timestamp"]).seconds < 600:
-            return {"news": cache_entry["data"]}
+    # تحديث الكاش كل 10 دقائق لضمان السرعة وعدم الضغط على المصادر
+    if cache_entry["timestamp"] and (now - cache_entry["timestamp"]).seconds < 600:
+        return {"news": cache_entry["data"]}
 
     try:
-        if lang_key == "en":
-            rss_url = "https://www.investing.com/rss/news_285.rss" 
-        else:
-            rss_url = "https://sa.investing.com/rss/news_1.rss"
+        final_ticker_items = []
+
+        # 1. جلب آخر 3 مقالات من تقاريرك الخاصة أولاً
+        my_articles = db.query(Article).filter(Article.language == "ar").order_by(Article.id.desc()).limit(3).all()
+        for art in my_articles:
+            final_ticker_items.append(f"🔥 من تقارير المحلل: {art.title}")
+
+        # 2. الكلمات المفتاحية الاستراتيجية المحددة من قبل المدير
+        keywords = [
+            "بطالة", "تضخم", "تداول", "بورصة", "بنك", "أسعار", "اتفاقيات", 
+            "تجارة", "رجال أعمال", "رجل أعمال", "هبوط", "ارتفاع", "مؤشرات", 
+            "صناديق استثمارية", "سيولة", "الفيدرالي", "الذهب", "النفط"
+        ]
+
+        # 3. مصادر الأخبار الكبرى (سكاي نيوز الاقتصادية و Investing)
+        rss_sources = [
+            "https://www.skynewsarabia.com/web/rss/business.xml", # سكاي نيوز اقتصاد
+            "https://sa.investing.com/rss/news_1.rss"             # انفستنج أخبار عامة
+        ]
             
         headers = {"User-Agent": "Mozilla/5.0"}
-        response = requests.get(rss_url, timeout=5, headers=headers)
         
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.content, "xml")
-            items = soup.find_all("item")
-            titles = []
-            for i in items[:15]:
-                if i.title:
-                    clean_t = i.title.text.strip().replace("'", "").replace('"', "")
-                    titles.append(clean_t)
+        for url in rss_sources:
+            try:
+                response = requests.get(url, timeout=5, headers=headers)
+                if response.status_code == 200:
+                    soup = BeautifulSoup(response.content, "xml")
+                    items = soup.find_all("item")
+                    for i in items[:15]:
+                        title = i.title.text.strip()
+                        # فلترة الخبر بناءً على الكلمات المفتاحية
+                        if any(key in title for key in keywords):
+                            clean_t = title.replace("'", "").replace('"', "")
+                            # تمييز العاجل
+                            if "عاجل" in clean_t:
+                                clean_t = f"🚨 [عاجل] {clean_t.replace('عاجل', '').strip()}"
+                            final_ticker_items.append(clean_t)
+            except: continue
+
+        if final_ticker_items:
+            # دمج الأخبار بفاصل النجمة الفخمة
+            final_text = " ★ ".join(final_ticker_items)
+            NEWS_CACHE["ar"]["data"] = final_text
+            NEWS_CACHE["ar"]["timestamp"] = now
+            return {"news": final_text}
             
-            if titles:
-                final_text = " ★ ".join(titles)
-                NEWS_CACHE[lang_key]["data"] = final_text
-                NEWS_CACHE[lang_key]["timestamp"] = now
-                return {"news": final_text}
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"News Engine Error: {e}")
             
-    return {"news": NEWS_CACHE[lang_key]["data"]}
+    return {"news": NEWS_CACHE["ar"]["data"]}
 
 
 # -----------------------------------------------------------------
