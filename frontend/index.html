@@ -799,11 +799,13 @@
     const artBox = document.getElementById("articles-container");
     
     try {
-        // [1] أولاً: جلب وحقن المقالات الفنية في الصفحة
+        // [1] جلب المقالات الفنية
         const resArt = await fetch('/api/articles?lang=ar');
         const articles = await resArt.json();
-        
+        let articleTitlesForTicker = "";
+
         if (Array.isArray(articles) && articles.length > 0) {
+            // أ. حقن المقالات في صندوق "رؤى المحلل"
             artBox.innerHTML = articles.map(art => `
                 <div class="service-card" style="padding: 0; overflow: hidden; border: 1px solid rgba(59, 130, 246, 0.1); background: #0b1222; text-align: right; display: flex; flex-direction: column; border-radius: 20px;">
                     <img src="${art.image_url || '/static/logo.png'}" style="width: 100%; height: 200px; object-fit: cover;">
@@ -814,19 +816,27 @@
                                 style="border: 1px solid var(--primary); color: var(--primary); padding: 8px 15px; border-radius: 8px; cursor: pointer; width: 100%; background:none; font-family:inherit; font-weight:800;">اقرأ التحليل</button>
                     </div>
                 </div>`).join("");
-        } else {
-            artBox.innerHTML = `<p style="text-align: center; grid-column: 1/-1; opacity: 0.5;">لا توجد تقارير فنية حالياً.</p>`;
+
+            // ب. تجهيز عناوين المقالات لتظهر في شريط الأخبار (مع أيقونة النار)
+            articleTitlesForTicker = articles.map(a => 
+                `<span class="news-item-master">
+                    <i class="fa-solid fa-fire" style="color:#ff4500; margin-right:10px;"></i> 
+                    تحليل خاص: ${a.title}
+                    <span style="margin: 0 40px; opacity: 0.2;"> • </span>
+                </span>`
+            ).join("");
         }
 
-        // [2] ثانياً: جلب وحقن شريط الأخبار المطور
+        // [2] جلب الأخبار العالمية
         const resNews = await fetch('/api/news?lang=ar');
         const newsData = await resNews.json();
+        let newsSegments = "";
         
         if (newsData.news) {
             let fullNews = newsData.news;
 
-            // تطبيق الفلترة الذهبية
-            const KEYWORDS = ["بنك مركزي", "بطالة", "ذهب", "سلع", "عملات", "دولار", "بورصة", "مؤشرات", "فضة", "نفط", "اقتصاد", "الفيدرالي الامريكي", "بلومبرج", "محلل مالي", "انهيار", "سوق مالي", "محفظة استثمارية", "محافظ استثمارية", "اسهم"];
+            // تلوين الكلمات الذهبية
+            const KEYWORDS = ["بنك مركزي", "بطالة", "ذهب", "سلع", "عملات", "دولار", "بورصة", "مؤشرات", "فضة", "نفط", "اقتصاد", "الفيدرالي الامريكي", "بلومبرج", "محلل مالي", "انهيار", "سوق مالي", "محفظة استثمارية", "اسهم"];
             KEYWORDS.forEach(word => {
                 const regex = new RegExp(word, "g");
                 fullNews = fullNews.replace(regex, `<span class="gold-highlight">${word}</span>`);
@@ -837,7 +847,7 @@
                 {n: "المشرق", c: "#ffd700"}, {n: "KAIA Live", c: "#10b981"}
             ];
 
-            const segments = fullNews.split(" . ").map((text, index) => {
+            newsSegments = fullNews.split(" . ").map((text, index) => {
                 const src = sources[index % sources.length];
                 return `
                     <span class="news-item-master">
@@ -846,12 +856,17 @@
                         <span style="margin: 0 40px; opacity: 0.2;"> • </span>
                     </span>`;
             }).join("");
-
-            track.innerHTML = segments.repeat(6);
-            track.style.animationDuration = "200s";
         }
+
+        // [3] دمج المقالات مع الأخبار وحقنها في الشريط
+        const finalTickerContent = articleTitlesForTicker + newsSegments;
+        if (finalTickerContent) {
+            track.innerHTML = finalTickerContent.repeat(6);
+            track.style.animationDuration = "240s";
+        }
+
     } catch (e) { 
-        console.log("Error syncing KAIA content"); 
+        console.log("Sync failed"); 
     }
 }
     function openRoyalArticle(title, content) {
