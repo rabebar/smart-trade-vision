@@ -602,28 +602,58 @@
     </div>
 </section>
 
-<!-- 9. الفوتر وإخلاء المسؤولية -->
+<!-- 9. الفوتر وإخلاء المسؤولية المؤسسي المطور -->
 <footer class="main-footer-v2">
     <div class="footer-grid-v2">
-        <div class="footer-col" style="text-align: right;">
-            <h3 style="color: var(--primary); font-weight: 900; margin-bottom: 15px;">KAIA AI <i class="fa-solid fa-microchip"></i></h3>
-            <p data-i18n="footer_desc" style="font-size: 14px; color: #d1d4dc; font-weight: 600; line-height: 1.6;">المحرك الأول للتحليل المؤسسي المبني على الذكاء الاصطناعي.</p>
+        <!-- العمود 1: هوية المنصة -->
+        <div class="footer-col">
+            <h3 class="footer-brand">KAIA AI <i class="fa-solid fa-microchip"></i></h3>
+            <p class="footer-about" data-i18n="footer_about">
+                المحرك السيادي للتحليل المؤسسي المبني على الذكاء الاصطناعي، مصمم لتقديم رؤية استراتيجية دقيقة لأسواق المال.
+            </p>
         </div>
-        <div class="footer-col" style="text-align: right;">
-            <h3 data-i18n="footer_links" style="font-weight: 900; margin-bottom: 15px;">روابط سريعة</h3>
-            <ul style="list-style: none; padding: 0; font-size: 14px; font-weight: 700;">
-                <li style="margin-bottom: 10px;"><a href="/dashboard" data-i18n="nav_dashboard" style="text-decoration: none; color: #fff;">غرفة القيادة</a></li>
-                <li style="margin-bottom: 10px;"><a href="#pricing-section" data-i18n="pricing_title" style="text-decoration: none; color: #fff;">الباقات والأسعار</a></li>
+
+        <!-- العمود 2: روابط النفاذ السريع -->
+        <div class="footer-col">
+            <h4 data-i18n="footer_quick_links">روابط سريعة</h4>
+            <ul class="footer-links-list">
+                <li><a href="/dashboard" data-i18n="nav_dashboard">غرفة القيادة</a></li>
+                <li><a href="#pricing-section" data-i18n="pricing_title">الباقات والأسعار</a></li>
+                <li><a href="#demo-analysis-area" data-i18n="nav_analyzer">المحلل الذكي</a></li>
             </ul>
         </div>
-        <div class="footer-col" style="text-align: right;">
-            <h3 data-i18n="footer_support" style="font-weight: 900; margin-bottom: 15px;">تواصل معنا</h3>
-            <p style="font-size: 16px; font-weight: 900; color: #fff;" dir="ltr"><i class="fa-brands fa-whatsapp" style="color: #25d366;"></i> +970 59 406 0648</p>
+
+        <!-- العمود 3: الشؤون القانونية (موائمة فلسطين) -->
+        <div class="footer-col">
+            <h4 data-i18n="footer_legal">الشؤون القانونية</h4>
+            <ul class="footer-links-list">
+                <!-- استدعاء دالة عرض النصوص القانونية التي سنضيفها لاحقاً -->
+                <li><a href="javascript:void(0)" onclick="openLegalPortal('terms')" data-i18n="footer_terms">شروط الاستخدام</a></li>
+                <li><a href="javascript:void(0)" onclick="openLegalPortal('privacy')" data-i18n="footer_privacy">سياسة الخصوصية</a></li>
+                <li><a href="javascript:void(0)" onclick="openLegalPortal('disclaimer')" data-i18n="footer_disclaimer">إخلاء المسؤولية</a></li>
+            </ul>
+        </div>
+
+        <!-- العمود 4: الدعم والاتصال -->
+        <div class="footer-col">
+            <h4 data-i18n="footer_support_title">الدعم والاتصال</h4>
+            <p class="footer-contact-item" dir="ltr">
+                <i class="fa-brands fa-whatsapp"></i> +970 59 406 0648
+            </p>
+            <p class="footer-note" data-i18n="footer_response_note">استجابة فورية خلال ساعات العمل الرسمي</p>
         </div>
     </div>
+
+    <!-- الجزء السفلي: إخلاء المسؤولية والحقوق -->
     <div class="footer-bottom-v2">
-        <p style="margin-bottom: 10px; color: #ef4444; font-weight: 800;" data-i18n="disclaimer_text">إخلاء مسؤولية: التداول ينطوي على مخاطر، التحليلات لأغراض استشارية فقط.</p>
-        <p data-i18n="footer_rights">جميع الحقوق محفوظة © 2025 لشركة KAIA AI.</p>
+        <div class="risk-disclaimer-box">
+            <p data-i18n="disclaimer_short">
+                تنبيه: التداول ينطوي على مخاطر مالية عالية. KAIA AI أداة تحليلية تعليمية وليست مستشاراً مالياً مرخصاً.
+            </p>
+        </div>
+        <p class="copyright-text">
+            &copy; 2026 KAIA AI. <span data-i18n="footer_rights">جميع الحقوق محفوظة - دولة فلسطين.</span>
+        </p>
     </div>
 </footer>
 
