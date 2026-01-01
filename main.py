@@ -19,6 +19,15 @@ import json
 import requests
 import uuid
 import re
+# دالة تطهير النصوص: تحذف أي كود HTML أو تنسيقات خارجية لمنع تشوه الموقع
+def clean_html_content(text: str):
+    if not text:
+        return ""
+    # حذف كافة أوسمة HTML (مثل <div> و <span> و <button>)
+    clean = re.compile('<.*?>')
+    text = re.sub(clean, '', text)
+    # تنظيف المسافات الزائدة لضمان مظهر احترافي
+    return " ".join(text.split())
 from bs4 import BeautifulSoup
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -337,8 +346,9 @@ def admin_add_article(data: dict, current_user: User = Depends(get_current_user)
     
     new_art = Article(
         title=data.get("title"), 
-        summary=data.get("summary"), 
-        content=data.get("content"), 
+        # تنظيف الملخص والمحتوى من أي أكواد خارجية قبل الحفظ
+        summary=clean_html_content(data.get("summary")), 
+        content=clean_html_content(data.get("content")), 
         image_url=data.get("image_url"), 
         language=data.get("language", "ar")
     )
@@ -361,8 +371,8 @@ def admin_update_article(art_id: int, data: dict, current_user: User = Depends(g
     
     db.query(Article).filter(Article.id == art_id).update({
         "title": data.get("title"), 
-        "summary": data.get("summary"), 
-        "content": data.get("content"), 
+        "summary": clean_html_content(data.get("summary")), 
+        "content": clean_html_content(data.get("content")), 
         "image_url": data.get("image_url"), 
         "language": data.get("language")
     })
