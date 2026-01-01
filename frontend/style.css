@@ -488,6 +488,29 @@ body {
 
 /* 3. لضمان عدم وجود مساحة بيضاء مكان الشريط */
 .hero-grid-container {
-    align-items: stretch;      /* جعل العناصر تتمدد بشكل متساوي */
+
+    align-items: flex-start !important;
     overflow: hidden;          /* منع ظهور سكرول خارجي غير مرغوب فيه */
+}
+/* تخصيص المعالجة لقسم المقالات فقط لضمان عدم تأثر بقية الموقع */
+#articles-container .service-card {
+    height: auto !important;
+    max-height: 380px !important; /* طول مثالي للصورة والعنوان والزر */
+    display: flex !important;
+    flex-direction: column !important;
+    align-self: flex-start !important;
+    margin-bottom: 20px;
+}
+
+/* ضمان تناسق الصور داخل قسم المقالات فقط */
+#articles-container .service-card img {
+    height: 170px !important;
+    width: 100% !important;
+    object-fit: cover !important;
+}
+
+/* منع تمدد حاوية المقالات الكبرى */
+#articles-container {
+    align-items: flex-start !important;
+    display: grid !important;
 }
