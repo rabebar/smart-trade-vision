@@ -577,3 +577,23 @@ body {
     background: var(--primary); /* لون أزرق كايا */
     border-radius: 10px;
 }
+/* سكرول خاص بجدول سجل التحليلات */
+.history-reason-cell {
+    max-height: 120px; /* تحديد أقصى ارتفاع للسطر الواحد */
+    overflow-y: auto;  /* إظهار سكرول عند الحاجة */
+    font-size: 13px;
+    line-height: 1.6;
+    padding-right: 5px;
+    color: #d1d5db;
+    text-align: right;
+    width: 300px; /* عرض مناسب للخلية */
+}
+
+/* تجميل سكرول الجدول */
+.history-reason-cell::-webkit-scrollbar {
+    width: 4px;
+}
+.history-reason-cell::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 10px;
+}

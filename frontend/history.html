@@ -38,16 +38,27 @@
         .KAIA-table th { background: #050b14; color: var(--primary); padding: 15px; font-weight: 900; border-bottom: 2px solid var(--primary); text-align: center; }
         .KAIA-table td { padding: 20px 15px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
 
-        .reason-col { 
-            text-align: justify; 
-            line-height: 1.8; 
+       .reason-col { 
+            text-align: right; 
             color: #d1d5db; 
             font-size: 13px; 
-            min-width: 300px;
+            min-width: 350px;
             max-width: 500px;
             border-right: 2px solid var(--primary);
-            padding-right: 20px !important;
+            padding: 10px 15px !important;
         }
+
+        /* حاوية السكرول الأنيقة داخل الجدول */
+        .reason-scroll-box {
+            max-height: 120px; /* تحديد ارتفاع السطر بـ 120 بكسل فقط */
+            overflow-y: auto;  /* ظهور السكرول عند الحاجة فقط */
+            padding-left: 10px;
+            line-height: 1.6;
+        }
+
+        /* تجميل شكل السكرول ليكون نحيفاً وأزرق */
+        .reason-scroll-box::-webkit-scrollbar { width: 4px; }
+        .reason-scroll-box::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
         
         .strategy-badge { 
             background: rgba(59, 130, 246, 0.1); 
@@ -172,7 +183,7 @@
                             ${formatLevels(item.entry_data || item.entry)}
                         </div>
                     </td>
-                    <td class="reason-col">${item.reason || ''}</td>
+                    <td class="reason-col"><div class="reason-scroll-box">${item.reason || ''}</div></td>
                 </tr>
                 `;
             }).join("");
