@@ -298,6 +298,12 @@ def admin_update_user(data: dict, current_user: User = Depends(get_current_user)
     user.tier = data.get("tier", user.tier)
     user.is_premium = (data.get("tier") != "Trial")
     user.is_whale = (data.get("tier") == "Platinum")
+
+    # --- إضافة حفظ البيانات المالية الجديدة (CRM) ---
+    if "subscription_fee" in data:
+        user.subscription_fee = float(data.get("subscription_fee", 0.0))
+    if "payment_status" in data:
+        user.payment_status = data.get("payment_status", "Unpaid")
     
     if "is_verified" in data:
         user.is_verified = data["is_verified"]
@@ -470,7 +476,9 @@ async def analyze_chart(
         db.add(Analysis(user_id=current_user.id, symbol=result.get("market", "Asset"), 
                         signal=result.get("market_state", {}).get("directional_bias", "Neutral"),
                         reason=final_notes[:500], timeframe=timeframe))
-        
+        # --- تحديث إحصائيات الاستهلاك والنشاط للنظام الجديد (CRM) ---
+        current_user.total_used_analyzes += 1
+        current_user.last_active = datetime.now(timezone.utc)
         if not current_user.is_whale: current_user.credits -= 1
         db.commit()
 

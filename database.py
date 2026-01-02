@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine, Column, Integer, String, Boolean, ForeignKey, DateTime, Text, inspect, text
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, ForeignKey, DateTime, Text, inspect, text, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime, timezone
@@ -60,6 +60,11 @@ class User(Base):
     is_admin = Column(Boolean, default=False)
     is_premium = Column(Boolean, default=False)
     is_whale = Column(Boolean, default=False) 
+    # --- خانات نظام الإدارة الجديد (CRM) ---
+    subscription_fee = Column(Float, default=0.0)
+    payment_status = Column(String, default="Unpaid")
+    total_used_analyzes = Column(Integer, default=0)
+    last_active = Column(DateTime, nullable=True)
 
     analyses = relationship("Analysis", back_populates="owner", cascade="all, delete-orphan")
 
@@ -136,7 +141,15 @@ def migrate_database():
                 conn.execute(text("ALTER TABLE users ADD COLUMN subscription_start TIMESTAMP NULL"))
             if "subscription_end" not in columns:
                 conn.execute(text("ALTER TABLE users ADD COLUMN subscription_end TIMESTAMP NULL"))
-
+# 3. إضافة حقول الإدارة المالية والنشاط (CRM)
+            if "subscription_fee" not in columns:
+                conn.execute(text("ALTER TABLE users ADD COLUMN subscription_fee FLOAT DEFAULT 0.0"))
+            if "payment_status" not in columns:
+                conn.execute(text("ALTER TABLE users ADD COLUMN payment_status VARCHAR DEFAULT 'Unpaid'"))
+            if "total_used_analyzes" not in columns:
+                conn.execute(text("ALTER TABLE users ADD COLUMN total_used_analyzes INTEGER DEFAULT 0"))
+            if "last_active" not in columns:
+                conn.execute(text("ALTER TABLE users ADD COLUMN last_active TIMESTAMP NULL"))
             # 3. توحيد الإيميلات
             if not SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
                 conn.execute(text("UPDATE users SET email = LOWER(TRIM(email))"))
