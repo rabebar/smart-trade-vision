@@ -294,10 +294,20 @@ def admin_update_user(data: dict, current_user: User = Depends(get_current_user)
     if not user:
         raise HTTPException(status_code=404, detail="المستخدم غير موجود")
     
-    user.credits = data.get("credits", user.credits)
-    user.tier = data.get("tier", user.tier)
-    user.is_premium = (data.get("tier") != "Trial")
-    user.is_whale = (data.get("tier") == "Platinum")
+    # خريطة الرصيد المعتمدة
+    credits_map = {"Trial": 3, "Basic": 20, "Pro": 40, "Platinum": 200}
+    
+    # إذا تغيرت الباقة، قم بتحديث الرصيد تلقائياً حسب الخريطة
+    new_tier = data.get("tier", user.tier)
+    if new_tier != user.tier:
+        user.tier = new_tier
+        user.credits = credits_map.get(new_tier, user.credits)
+    else:
+        # إذا لم تتغير الباقة، اسمح بتعديل الرصيد يدوياً كما هو
+        user.credits = data.get("credits", user.credits)
+
+    user.is_premium = (user.tier != "Trial")
+    user.is_whale = (user.tier == "Platinum")
 
     # --- إضافة حفظ البيانات المالية الجديدة (CRM) ---
     if "subscription_fee" in data:
