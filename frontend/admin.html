@@ -355,10 +355,12 @@
                     </td>
                     <td>
                         <div class="usage-box">
-                            تم استهلاك: <span class="usage-count">${u.total_used_analyzes || 0}</span>
+                            حياة الحساب: <span class="usage-count">${u.total_used_analyzes || 0}</span>
                         </div>
-                        <div style="font-size:10px; margin-top:2px;">
-                            المتبقي: <input type="number" id="cred-${u.id}" value="${u.credits}" style="width:45px; padding:2px;" onchange="saveUser(${u.id})">
+                        <div style="font-size:11px; margin-top:5px; color: var(--gold); font-weight:900;">
+                            المتبقي: 
+                            <input type="number" id="cred-${u.id}" value="${u.credits}" style="width:40px; background:#000; color:#fff; border:1px solid var(--primary); text-align:center;" onchange="saveUser(${u.id})">
+                            <span style="color:var(--muted); margin-right:2px;"> / ${u.tier === 'Trial' ? 3 : u.tier === 'Basic' ? 20 : u.tier === 'Pro' ? 40 : 200}</span>
                         </div>
                     </td>
                     <td>
