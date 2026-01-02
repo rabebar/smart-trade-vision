@@ -28,6 +28,50 @@ def clean_html_content(text: str):
     text = re.sub(clean, '', text)
     # تنظيف المسافات الزائدة لضمان مظهر احترافي
     return " ".join(text.split())
+# دالة تثبيت المخرجات: تضمن استخدام القاموس السيادي وحماية الواجهة من الانهيار
+def normalize_kaia_output(result: dict, timeframe: str):
+    defaults = {
+        "market": result.get("market", "Asset"),
+        "timeframe": result.get("timeframe", timeframe),
+        "market_state": {
+            "directional_bias": "قيد الفحص",
+            "notes": "",
+            "economic_context": "لا توجد أحداث مؤثرة حالياً",
+            "session_hint": "غير واضح",
+            "validity_candles": f"≈ 6–18 شمعة على {timeframe}"
+        },
+        "zones": {"supply": [], "demand": []},
+        "institutional_evidence": {"bos": [], "choch": [], "fvg": [], "liquidity": []},
+        "key_levels": {"upside": [], "downside": []},
+        "stop_hunt_risk_zones": [],
+        "execution_blueprint": {
+            "setup_name": "رؤية كايا الحالية",
+            "bias": "قيد الفحص", 
+            "نقطة_انطلاق_مناسبة": "تحت المراقبة", 
+            "شرط_التغير_الهيكلي": "قيد الفحص",
+            "مستوى_سعر_يبطل_التحليل": "غير محدد", 
+            "سعر_مستهدف_تستهدفه_المؤسسات": [], 
+            "صلاحية_الرؤية": f"Intraday ({timeframe})",
+            "ملاحظة_المخاطر": "تنبيه: تحرك السيولة المؤسسية عالي المخاطر"
+        },
+        "confidence_score": 50
+    }
+
+    # دمج البيانات القادمة من الذكاء الاصطناعي مع القالب الافتراضي
+    out = defaults
+    for k, v in result.items():
+        if isinstance(v, dict) and isinstance(out.get(k), dict):
+            out[k].update(v)
+        else:
+            out[k] = v
+
+    # تأمين قوائم العرض والطلب لضمان استقرار العرض
+    if "zones" in out:
+        for key in ["supply", "demand"]:
+            if not isinstance(out["zones"].get(key), list):
+                out["zones"][key] = []
+            
+    return out
 from bs4 import BeautifulSoup
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -448,24 +492,29 @@ async def analyze_chart(
         with open(img_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode()
 
-        # --- البرومبت البلاتيني المفسر والواضح ---
+       # --- البرومبت البلاتيني السيادي (النسخة v2026 المطهرة) ---
         if analysis_type == "KAIA Master":
             system_prompt = f"""
-أنت "KAIA SMART Platinum (KAIA Master)" — مساعد تحليل سوق تعليمي. حلّل الشارت بأسلوب (SMC/ICT) بوضوح تام.
+أنت "KAIA SMART Platinum (KAIA Master)" — مساعد تحليل سوق تعليمي بأسلوب (SMC/ICT).
+لغة الرد: ({lang}).
 
-القواعد اللغوية (إلزامي):
-- لغة الرد: ({lang}).
-- عند ذكر مصطلح تقني، اشرح معناه بين قوسين. مثال: BOS (كسر بنية السوق)، Liquidity Sweep (سحب السيولة).
-- ابدأ حقل market_state.notes بفقرة تسمى: "الخلاصة بكلمات بسيطة:" تشرح فيها وضع السوق كأنك تتحدث مع متداول يبحث عن الوضوح.
+قواعد إلزامية (صارمة):
+- أعد JSON فقط (بدون أي نص خارج JSON).
+- ممنوع تعدد السيناريوهات: سيناريو واحد فقط داخل execution_blueprint.
+- استخدم مصطلحات القاموس السيادي حصراً:
+  رؤية كايا الحالية / نقطة_انطلاق_مناسبة / مستوى_سعر_يبطل_التحليل / سعر_مستهدف_تستهدفه_المؤسسات / شرط_التغير_الهيكلي.
+- إذا معلومة غير مؤكدة من الصورة: استخدم null أو "غير واضح" ولا تخمّن.
+- قيود الحجم: market_state.notes <= 450 حرف | كل reason <= 180 حرف.
 
-منهج التحليل:
-1) الأدلة المؤسسية (institutional_evidence): استخرج BOS, CHOCH, FVG مع تفسير أهميتها في الصورة.
-2) مستويات المراقبة (key_levels): حدد 3 مستويات صعوداً و3 هبوطاً (Near/Mid/Far) مع كتابة الأكشن المطلوب (مثلاً: نراقب ثبات السعر فوق هذا المستوى).
-3) مناطق الخطر (stop_hunt_risk_zones): حدد نطاقات سعرية يرجح فيها خداع المتداولين وسبب ذلك.
-4) التحليل الزمني (إلزامي): اكتب في نهاية market_state.notes سطرًا بصيغة: "التحليل الزمني (KAIA Smart): صلاحية الفكرة ≈ X–Y شموع على {timeframe}."
+العدسات التحليلية:
+1) العدسة الفنية: BOS/CHOCH/FVG والسيولة المؤسسية.
+2) العدسة الزمنية: session_hint (Asia/London/NY) و validity_candles (صلاحية التحليل بالشموع).
+3) العدسة الاقتصادية: اذكر التأثيرات الكبرى إن وجدت في الـ context المرفق.
 
-صيغة الإخراج JSON فقط: (market, timeframe, market_state, institutional_evidence, key_levels, stop_hunt_risk_zones, scenarios, confidence_score)
-ملاحظة: key_levels يجب أن يحتوي upside و downside كقوائم (lists).
+المخرجات المطلوبة (JSON Schema):
+(market, timeframe, market_state, zones, institutional_evidence, key_levels, stop_hunt_risk_zones, macro_events, execution_blueprint, confidence_score)
+
+ملاحظة لـ execution_blueprint: يجب أن يضم (setup_name: "رؤية كايا الحالية" | bias: "صاعد" أو "هابط" | نقطة_انطلاق_مناسبة | مستوى_سعر_يبطل_التحليل | سعر_مستهدف_تستهدفه_المؤسسات: كقائمة | validity).
 """
         else:
             system_prompt = f"أنت خبير تحليل فني. حلل الشارت بأسلوب {analysis_type} باللغة ({lang}). أعد JSON حصراً بمفاتيح: (market_bias, analysis_text, market, timeframe)."
@@ -479,21 +528,40 @@ async def analyze_chart(
             temperature=0.3
         )
 
-        result = json.loads(response.choices[0].message.content)
+        # 1. تحويل الرد إلى JSON وتمريره عبر "فلتر التثبيت" لضمان القاموس السيادي
+        raw_result = json.loads(response.choices[0].message.content)
+        result = normalize_kaia_output(raw_result, timeframe)
         
-        # مواءمة البيانات وحفظها في قاعدة البيانات
-        final_notes = result.get("market_state", {}).get("notes", result.get("analysis_text", "Done"))
-        db.add(Analysis(user_id=current_user.id, symbol=result.get("market", "Asset"), 
-                        signal=result.get("market_state", {}).get("directional_bias", "Neutral"),
-                        reason=final_notes[:500], timeframe=timeframe))
-        # --- تحديث إحصائيات الاستهلاك والنشاط للنظام الجديد (CRM) ---
+        # 2. تحضير "الخلاصة المدمجة" للسجل (تجمع الخلاصة مع نقطة الانطلاق)
+        bp = result.get("execution_blueprint", {})
+        notes = result.get("market_state", {}).get("notes", "")
+        compact_reason = f"{notes}\n★ نقطة الانطلاق: {bp.get('نقطة_انطلاق_مناسبة')}\n★ الإبطال: {bp.get('مستوى_سعر_يبطل_التحليل')}"
+        
+        # 3. حفظ التحليل في قاعدة البيانات
+        db.add(Analysis(
+            user_id=current_user.id, 
+            symbol=result.get("market", "Asset"), 
+            signal=result.get("market_state", {}).get("directional_bias", bp.get("bias", "Neutral")),
+            reason=compact_reason[:500], 
+            timeframe=timeframe
+        ))
+        
+        # 4. تحديث إحصائيات الاستهلاك والنشاط (CRM)
         current_user.total_used_analyzes += 1
         current_user.last_active = datetime.now(timezone.utc)
-        if not current_user.is_whale: current_user.credits -= 1
+
+        # 5. خصم الرصيد (إلا إذا كان ملكاً بلاتينياً)
+        if not current_user.is_whale: 
+            current_user.credits -= 1
+            
         db.commit()
 
-        return {"status": "success", "analysis": result, "tier_mode": "Platinum" if analysis_type == "KAIA Master" else "Standard"}
-
+        return {
+            "status": "success", 
+            "analysis": result, 
+            "tier_mode": "Platinum" if analysis_type == "KAIA Master" else "Standard"
+        }
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
