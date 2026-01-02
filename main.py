@@ -548,7 +548,11 @@ async def upload_chart(chart: UploadFile = File(...)):
 # -----------------------------------------------------------------
 
 @app.get("/api/nuclear-wipe")
-def nuclear_wipe(email: str, db: Session = Depends(get_db)):
+def nuclear_wipe(email: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # القفل: التأكد أن من يطلب المسح هو أدمن مسجل دخوله
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="غير مسموح لك بالوصول لهذا الأمر السيادي")
+    
     target = email.lower().strip()
     user = db.query(User).filter(User.email == target).first()
     if user:
@@ -559,7 +563,11 @@ def nuclear_wipe(email: str, db: Session = Depends(get_db)):
     return {"message": "المستخدم غير موجود"}
 
 @app.get("/api/fix-my-account")
-def fix_my_account(email: str, new_password: str, db: Session = Depends(get_db)):
+def fix_my_account(email: str, new_password: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # القفل: التأكد أن من يطلب الترقية هو أدمن مسجل دخوله
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="صلاحيات غير كافية للقيام بهذا الإجراء")
+    
     target = email.lower().strip()
     user = db.query(User).filter(User.email == target).first()
     if user:
