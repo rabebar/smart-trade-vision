@@ -789,7 +789,7 @@
         }
     }
 
-   async function syncKAIAWorld() {
+async function syncKAIAWorld() {
     forceShowTicker(); 
     const langSelect = document.getElementById("language-select");
     const lang = langSelect ? langSelect.value : "ar";
@@ -799,18 +799,21 @@
     const artBox = document.getElementById("articles-container");
     
     try {
-        // [1] جلب المقالات - تعديل: (صورة + عنوان + زر) مع منع التمدد الطولي
         const resArt = await fetch('/api/articles?lang=ar');
         const articles = await resArt.json();
         let articleTitlesForTicker = "";
 
         if (Array.isArray(articles) && articles.length > 0) {
             artBox.innerHTML = articles.map(art => {
-                // "التطهير الشامل": حذف أي كود HTML خارجي وتحويله لنص خام لقتل الخلفية البيضاء
-                const cleanContent = art.content.replace(/<[^>]*>?/gm, ' '); 
-                const previewText = cleanContent.substring(0, 100) + "...";
+                const tempDiv = document.createElement("div");
+                tempDiv.innerHTML = art.content;
+                const cleanText = tempDiv.textContent || tempDiv.innerText || "";
                 const shortTitle = art.title.length > 55 ? art.title.substring(0, 55) + "..." : art.title;
                 
+                // تشفير آمن للنصوص لمنع كسر الزر بسبب علامات التنصيص
+                const safeTitle = btoa(unescape(encodeURIComponent(art.title)));
+                const safeContent = btoa(unescape(encodeURIComponent(art.content)));
+
                 return `
                 <div class="service-card" style="background: #0b1222 !important; overflow: hidden !important; height: 440px !important; display: flex !important; flex-direction: column !important; border: 1px solid rgba(59, 130, 246, 0.2) !important;">
                     <img src="${art.image_url || '/static/logo.png'}" style="width: 100%; height: 180px; object-fit: cover; display: block;">
@@ -818,10 +821,10 @@
                         <h3 style="font-size: 16px; font-weight: 900; color: #3b82f6 !important; margin: 0 0 10px 0; line-height: 1.4; height: 45px; overflow: hidden;">
                             ${shortTitle}
                         </h3>
-                        <p style="font-size: 13px; color: #94a3b8 !important; line-height: 1.6; height: 60px; overflow: hidden; background: transparent !important;">
-                            ${previewText}
+                        <p style="font-size: 13px; color: #94a3b8 !important; margin-bottom: 20px; line-height: 1.6; height: 60px; overflow: hidden; background: transparent !important;">
+                            ${cleanText.substring(0, 100)}...
                         </p>
-                        <button onclick="openRoyalArticle('${art.title.replace(/'/g, "\\'")}', '${art.content.replace(/\n/g, "<br>").replace(/'/g, "\\'")}')" 
+                        <button onclick="openRoyalArticle('${safeTitle}', '${safeContent}')" 
                                 style="border: none; color: #fff; background: #3b82f6; padding: 12px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: 900; margin-top: auto;">
                             اقرأ التحليل
                         </button>
@@ -829,47 +832,40 @@
                 </div>`;
             }).join("");
 
-            articleTitlesForTicker = articles.map(a => 
-                `<span class="news-item-master"><i class="fa-solid fa-fire" style="color:#ff4500; margin-right:10px;"></i> تحليل خاص: ${a.title} <span style="margin: 0 40px; opacity: 0.2;"> • </span></span>`
-            ).join("");
+            articleTitlesForTicker = articles.map(a => `<span class="news-item-master"><i class="fa-solid fa-fire" style="color:#ff4500; margin-right:10px;"></i> تحليل خاص: ${a.title} <span style="margin: 0 40px; opacity: 0.2;"> • </span></span>`).join("");
         }
 
-        // [2] جلب الأخبار العالمية
         const resNews = await fetch('/api/news?lang=ar');
         const newsData = await resNews.json();
         let newsSegments = "";
         
         if (newsData.news) {
             let fullNews = newsData.news;
-            const TICKER_KEYWORDS = ["بنك مركزي", "بطالة", "ذهب", "سلع", "عملات", "دولار", "بورصة", "مؤشرات", "فضة", "نفط", "اقتصاد", "الفيدرالي الامريكي", "بلومبرج", "محلل مالي", "انهيار", "سوق مالي", "محفظة استثمارية", "اسهم"];
-            TICKER_KEYWORDS.forEach(word => {
-                const regex = new RegExp(word, "g");
-                fullNews = fullNews.replace(regex, `<span class="gold-highlight">${word}</span>`);
-            });
-
             const sources = [{n: "بلومبرغ", c: "#3b82f6"}, {n: "سكاي نيوز", c: "#ef4444"}, {n: "المشرق", c: "#ffd700"}, {n: "KAIA Live", c: "#10b981"}];
-
             newsSegments = fullNews.split(" . ").map((text, index) => {
                 const src = sources[index % sources.length];
                 return `<span class="news-item-master"><small style="background:${src.c}; color:#000; padding:2px 6px; border-radius:4px; margin-right:10px; font-size:10px; font-weight:900;">${src.n}</small>${text}<span style="margin: 0 40px; opacity: 0.2;"> • </span></span>`;
             }).join("");
         }
 
-        // [3] دمج المحتوى وفرض السرعة 300 ثانية
         const finalTickerContent = articleTitlesForTicker + newsSegments;
         if (finalTickerContent) {
-            track.innerHTML = finalTickerContent.repeat(8);
+            track.innerHTML = finalTickerContent.repeat(3);
             track.style.animationDuration = "750s"; 
         }
 
-    } catch (e) { console.log("Sync Error"); }
+    } catch (e) { console.log("Sync Error:", e); }
 }
-    function openRoyalArticle(title, content) {
-        const win = window.open("", "_blank");
-        win.document.write('<html><head><title>'+title+'</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"><style>body{background:#020617; color:white; font-family:"Cairo",sans-serif; padding:50px; line-height:2; text-align:right; direction:rtl;}.container{max-width:800px; margin:0 auto; background:#0b1222; padding:40px; border-radius:20px; border:1px solid #1e293b;}h1{color:#3b82f6; font-weight:900;}p{font-size:18px; color:#d1d5db; white-space:pre-wrap;}.btn{background:#3b82f6; color:#000; border:none; padding:12px 30px; border-radius:10px; font-weight:900; cursor:pointer; margin-top:40px; font-family:inherit;}</style></head><body><div class="container"><h1>'+title+'</h1><p>'+content+'</p><button class="btn" onclick="window.close()">إغلاق التقرير</button></div></body></html>');
-        win.document.close();
-    }
 
+function openRoyalArticle(encTitle, encContent) {
+    try {
+        const title = decodeURIComponent(escape(atob(encTitle)));
+        const content = decodeURIComponent(escape(atob(encContent)));
+        const win = window.open("", "_blank");
+        win.document.write(`<html><head><title>${title}</title><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"><style>body{background:#020617; color:white; font-family:'Cairo',sans-serif; padding:50px; line-height:2; text-align:right; direction:rtl;}.container{max-width:800px; margin:0 auto; background:#0b1222; padding:40px; border-radius:20px; border:1px solid #1e293b;}h1{color:#3b82f6; font-weight:900;}p{font-size:18px; color:#d1d5db; white-space:pre-wrap;}.btn{background:#3b82f6; color:#000; border:none; padding:12px 30px; border-radius:10px; font-weight:900; cursor:pointer; margin-top:40px; font-family:inherit;}</style></head><body><div class="container"><h1>${title}</h1><p>${content}</p><button class="btn" onclick="window.close()">إغلاق التقرير</button></div></body></html>`);
+        win.document.close();
+    } catch (e) { console.error("Error:", e); }
+}
     document.addEventListener("DOMContentLoaded", () => {
         forceShowTicker();
         setTimeout(syncKAIAWorld, 500);

@@ -524,3 +524,37 @@ body {
     margin-top: auto !important; 
     margin-bottom: 15px !important;
 }
+/* --- قفل الألوان السيادي لزر الواتساب في كافة أنحاء المنصة --- */
+
+#whatsapp-verify-link, 
+.v-btn, 
+.whatsapp-link,
+.payment-side a {
+    color: #ffffff !important; /* نص أبيض دائماً */
+    text-decoration: none !important;
+    background-color: #25d366 !important; /* خلفية واتساب خضراء */
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px !important;
+    border-radius: 10px !important;
+    font-weight: 900 !important;
+    transition: 0.3s;
+}
+
+/* منع تحول الزر للون البنفسجي بعد الضغط عليه في أي مكان */
+#whatsapp-verify-link:visited, 
+.v-btn:visited,
+.whatsapp-link:visited,
+.payment-side a:visited {
+    color: #ffffff !important;
+}
+
+/* تأثير عند تمرير الماوس لجعل الزر حياً */
+#whatsapp-verify-link:hover, 
+.v-btn:hover, 
+.whatsapp-link:hover,
+.payment-side a:hover {
+    background-color: #128c7e !important;
+    transform: scale(1.02);
+}
