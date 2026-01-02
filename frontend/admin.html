@@ -339,7 +339,7 @@
                         </button>
                     </td>
                     <td>
-                        <select id="tier-${u.id}" onchange="saveUser(${u.id})">
+                        <select id="tier-${u.id}" onchange="syncTierCredits(${u.id})">
                             <option value="Trial" ${u.tier==='Trial'?'selected':''}>Trial</option>
                             <option value="Basic" ${u.tier==='Basic'?'selected':''}>Basic</option>
                             <option value="Pro" ${u.tier==='Pro'?'selected':''}>Pro</option>
@@ -587,6 +587,20 @@
         // تحديث الأرقام في المربعات العلوية فوراً
         document.getElementById("total-paid").innerText = tPaid.toFixed(2);
         document.getElementById("total-unpaid").innerText = tUnpaid.toFixed(2);
+    }
+    // وظيفة المزامنة التلقائية: تحديث الرصيد فور تغيير نوع الباقة
+    function syncTierCredits(userId) {
+        const tierSelect = document.getElementById(`tier-${userId}`);
+        const creditsInput = document.getElementById(`cred-${userId}`);
+        
+        // خريطة الشحن الآلي
+        const tierLimits = {"Trial": 3, "Basic": 20, "Pro": 40, "Platinum": 200};
+        
+        // تحديث الرقم داخل المربع أمام عينك فوراً
+        creditsInput.value = tierLimits[tierSelect.value];
+        
+        // حفظ التغيير فوراً في السيرفر
+        saveUser(userId);
     }
     window.onload = checkAdminAuth;
 </script>
