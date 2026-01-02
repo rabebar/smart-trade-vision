@@ -558,3 +558,22 @@ body {
     background-color: #128c7e !important;
     transform: scale(1.02);
 }
+/* --- منطقة التمرير الأنيقة لسجل التحليل (Scroll Zone) --- */
+.analysis-scroll-zone {
+    max-height: 450px; /* أقصى ارتفاع مسموح به قبل ظهور السكرول */
+    overflow-y: auto;  /* إظهار التمرير العمودي فقط عند الحاجة */
+    padding-right: 10px;
+    margin-bottom: 20px;
+}
+
+/* تخصيص شكل شريط التمرير ليكون مخفياً وأنيقاً */
+.analysis-scroll-zone::-webkit-scrollbar {
+    width: 6px;
+}
+.analysis-scroll-zone::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+.analysis-scroll-zone::-webkit-scrollbar-thumb {
+    background: var(--primary); /* لون أزرق كايا */
+    border-radius: 10px;
+}

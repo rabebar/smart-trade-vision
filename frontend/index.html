@@ -935,31 +935,37 @@ async function runMobileAnalysis() {
 function renderMasterVisionUI(data) {
     const resBox = document.getElementById("res-data-content");
     let html = `
-        <div class="platinum-result-wrap">
-            <div class="plat-header"><i class="fa-solid fa-crown"></i> KAIA MASTER VISION (PLATINUM)</div>
-            <div style="text-align:center; margin-bottom:20px;">
-                <h3 style="color:var(--gold); margin-top:10px; font-size:24px;">Bias: ${data.market_state.directional_bias}</h3>
-            </div>
-            <div class="stop-hunt-alert">
-                <h4 style="color:#ef4444; margin:0 0 10px 0; font-size:15px;"><i class="fa-solid fa-bullseye"></i> Stop-Hunt Risk Zones</h4>
-                ${data.stop_hunt_risk_zones && data.stop_hunt_risk_zones.length > 0 ? 
-                    data.stop_hunt_risk_zones.map(z => `<div style="font-size:13px; margin-bottom:5px;"><b>${z.zone_range || z.zone_price_hint}:</b> ${z.why_risky}</div>`).join('') 
-                    : '<div style="font-size:12px;">لم يتم رصد مصائد سيولة واضحة حالياً.</div>'}
-            </div>
-            <div class="levels-grid">
-                <div class="level-card up">
-                    <small style="color:var(--success); font-weight:900;">Upside Key Levels</small>
-                    ${data.key_levels.upside.map(l => `<div style="margin-bottom:8px;"><span class="price-tag">${l.price}</span><small style="display:block; font-size:11px; color:var(--success); font-weight:bold;">${l.label}</small></div>`).join('')}
+        <div class="platinum-result-wrap" style="padding: 0;">
+            <!-- 1. الهيدر الثابت في الأعلى -->
+            <div class="plat-header" style="padding: 20px 0;"><i class="fa-solid fa-crown"></i> KAIA MASTER VISION (PLATINUM)</div>
+            
+            <!-- 2. بداية منطقة التمرير الأنيقة -->
+            <div class="analysis-scroll-zone" style="padding: 0 20px;">
+                <div style="text-align:center; margin-bottom:20px;">
+                    <h3 style="color:var(--gold); margin-top:10px; font-size:24px;">Bias: ${data.market_state.directional_bias}</h3>
                 </div>
-                <div class="level-card down">
-                    <small style="color:#ef4444; font-weight:900;">Downside Key Levels</small>
-                    ${data.key_levels.downside.map(l => `<div style="margin-bottom:8px;"><span class="price-tag">${l.price}</span><small style="display:block; font-size:11px; color:#ef4444; font-weight:bold;">${l.label}</small></div>`).join('')}
+                <div class="stop-hunt-alert">
+                    <h4 style="color:#ef4444; margin:0 0 10px 0; font-size:15px;"><i class="fa-solid fa-bullseye"></i> Stop-Hunt Risk Zones</h4>
+                    ${data.stop_hunt_risk_zones && data.stop_hunt_risk_zones.length > 0 ? 
+                        data.stop_hunt_risk_zones.map(z => `<div style="font-size:13px; margin-bottom:5px;"><b>${z.zone_range || z.zone_price_hint}:</b> ${z.why_risky}</div>`).join('') 
+                        : '<div style="font-size:12px;">لم يتم رصد مصائد سيولة واضحة حالياً.</div>'}
                 </div>
-            </div>
-            <div style="margin-top:20px; padding:15px; background:rgba(255,255,255,0.03); border-radius:15px; font-size:14px; color:#d1d4dc;">
-                <b style="color:var(--primary)">ملاحظات المحلل:</b> ${data.market_state.notes || 'لا يوجد ملاحظات إضافية.'}
-            </div>
-        </div>`;
+                <div class="levels-grid">
+                    <div class="level-card up">
+                        <small style="color:var(--success); font-weight:900;">Upside Key Levels</small>
+                        ${data.key_levels.upside.map(l => `<div style="margin-bottom:8px;"><span class="price-tag">${l.price}</span><small style="display:block; font-size:11px; color:var(--success); font-weight:bold;">${l.label}</small></div>`).join('')}
+                    </div>
+                    <div class="level-card down">
+                        <small style="color:#ef4444; font-weight:900;">Downside Key Levels</small>
+                        ${data.key_levels.downside.map(l => `<div style="margin-bottom:8px;"><span class="price-tag">${l.price}</span><small style="display:block; font-size:11px; color:#ef4444; font-weight:bold;">${l.label}</small></div>`).join('')}
+                    </div>
+                </div>
+                <div style="margin-top:20px; padding:15px; background:rgba(255,255,255,0.03); border-radius:15px; font-size:14px; color:#d1d4dc;">
+                    <b style="color:var(--primary)">ملاحظات المحلل:</b> ${data.market_state.notes || 'لا يوجد ملاحظات إضافية.'}
+                </div>
+            </div> <!-- إغلاق منطقة التمرير -->
+        </div> <!-- إغلاق الحاوية الكبرى -->
+    `;
     resBox.innerHTML = html;
 }
 
