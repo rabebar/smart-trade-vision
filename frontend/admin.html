@@ -206,7 +206,8 @@
                 document.body.style.opacity = "1";
                 loadUsers();
                 loadArticlesForAdmin();
-                updateNotificationBadge();
+                // هذا هو سطر التشغيل الذي كان ينقصنا:
+                updateNotificationBadge(); 
             }
         } catch (e) { window.location.href = "/"; }
     }
