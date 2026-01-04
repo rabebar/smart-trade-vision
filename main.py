@@ -488,11 +488,11 @@ async def analyze_chart(
     if not os.path.exists(img_path):
         raise HTTPException(status_code=404, detail="الصورة غير موجودة")
 
-   try:
+    try:
         with open(img_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode()
 
-        # --- البرومبت البلاتيني المفسر والواضح ---
+ # --- البرومبت البلاتيني المفسر والواضح ---
         if analysis_type == "KAIA Master":
             system_prompt = f"""
 أنت "KAIA SMART Platinum" — محلل سوق خوارزمي بأسلوب (SMC/ICT).
@@ -537,6 +537,7 @@ async def analyze_chart(
 صيغة الإخراج JSON فقط (نفس المفاتيح القديمة حصراً):
 (market, timeframe, market_state, institutional_evidence, key_levels, stop_hunt_risk_zones, scenarios, confidence_score)
 """
+
         else:
             system_prompt = f"أنت خبير تحليل فني. حلل الشارت بأسلوب {analysis_type} باللغة ({lang}). أعد JSON حصراً بمفاتيح: (market_bias, analysis_text, market, timeframe)."
 
