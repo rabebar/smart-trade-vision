@@ -488,11 +488,12 @@ async def analyze_chart(
     if not os.path.exists(img_path):
         raise HTTPException(status_code=404, detail="الصورة غير موجودة")
 
-    try:
+   try:
         with open(img_path, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read()).decode()
- # --- البرومبت البلاتيني المفسر والواضح ---
-      if analysis_type == "KAIA Master":
+
+        # --- البرومبت البلاتيني المفسر والواضح ---
+        if analysis_type == "KAIA Master":
             system_prompt = f"""
 أنت "KAIA SMART Platinum" — محلل سوق خوارزمي بأسلوب (SMC/ICT).
 هدفك: تقديم خطة تداول رقمية واضحة داخل هيكل التحليل المعتاد.
@@ -510,8 +511,8 @@ async def analyze_chart(
 
 1) market_state.notes (هنا نضع خطة التداول):
    - ابدأ هذا الحقل *حصراً* بهذا التنسيق البارز:
-     "🔴 القرار: [SHROT/LONG/NO TRADE]
-      ⚡ المنطقة: [Sera-Zone X to Y]
+     "🔴 القرار: [SHORT/LONG/NO TRADE]
+      ⚡ المنطقة: [Zone X to Y]
       🛑 الوقف: [Price]
       🎯 الأهداف: [TP1, TP2]
       📝 الخلاصة: [شرح بسيط لوضع السوق في سطرين]"
@@ -536,7 +537,6 @@ async def analyze_chart(
 صيغة الإخراج JSON فقط (نفس المفاتيح القديمة حصراً):
 (market, timeframe, market_state, institutional_evidence, key_levels, stop_hunt_risk_zones, scenarios, confidence_score)
 """
-            
         else:
             system_prompt = f"أنت خبير تحليل فني. حلل الشارت بأسلوب {analysis_type} باللغة ({lang}). أعد JSON حصراً بمفاتيح: (market_bias, analysis_text, market, timeframe)."
 
